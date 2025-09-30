@@ -3,6 +3,8 @@ use freya::prelude::*;
 use libwebp::WebPDecodeRGBA;
 use reqwest::{Url, header::CONTENT_TYPE};
 
+use crate::settings::GlobalSettings;
+
 #[derive(Props, Clone, PartialEq)]
 pub struct MyNetworkImageProps {
     /// Width of the image container. Default to `auto`.
@@ -31,8 +33,6 @@ pub struct MyNetworkImageProps {
     pub sampling: Option<String>,
 }
 
-const CACHE_DIR: &str = "./cache";
-
 #[component]
 pub fn MyNetworkImage(
     MyNetworkImageProps {
@@ -53,15 +53,19 @@ pub fn MyNetworkImage(
     let mut status = use_signal(|| ImageState::Loading);
     let mut assets_tasks = use_signal::<Vec<Task>>(Vec::new);
 
+    let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
+    let settings = &ctx.read();
+    let cache_path = &settings.cache_directory;
+
     let a11y_id = focus.attribute();
     let key = url.to_string();
     let url = url.read();
 
-    if let Ok(asset) = cacache::read_sync(CACHE_DIR, &key) {
+    if let Ok(asset) = cacache::read_sync(cache_path, &key) {
         // Image loaded from cache
         status.set(ImageState::Loaded(asset.into()));
     } else {
-        to_owned![url];
+        to_owned![url, cache_path];
         use_effect(move || {
             // Cancel previous asset fetching requests
             for asset_task in assets_tasks.write().drain(..) {
@@ -69,11 +73,11 @@ pub fn MyNetworkImage(
             }
 
             // Loading image
-            to_owned![key, url];
+            to_owned![key, url, cache_path];
             let asset_task = spawn(async move {
                 let asset = fetch_image(url).await;
                 if let Ok(asset_bytes) = asset {
-                    let _ = cacache::write_sync(CACHE_DIR, &key, &asset_bytes);
+                    let _ = cacache::write_sync(cache_path, &key, &asset_bytes);
 
                     // Image loaded
                     status.set(ImageState::Loaded(asset_bytes));

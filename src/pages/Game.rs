@@ -1,6 +1,7 @@
 use crate::{
     components::{MyButton, MyNetworkImage, MyNewsWidget},
     context::Context,
+    settings::GlobalSettings,
 };
 use freya::prelude::*;
 use reqwest::Url;
@@ -28,6 +29,18 @@ pub fn Game(game_id: String) -> Element {
                 }
             }
         };
+    };
+
+    let onpress = move |_| {
+        println!("Button Pressed!");
+        let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
+        let settings = &ctx.read();
+        let installed_games = &settings.installed_games;
+        if installed_games.contains_key(&game_id) {
+            let game = &installed_games[&game_id];
+
+            game.runner.run_game(game);
+        }
     };
 
     rsx! {
@@ -68,7 +81,7 @@ pub fn Game(game_id: String) -> Element {
                     },
 
                     MyButton {
-                        onpress: move |_| println!("Button Pressed!"),
+                        onpress,
 
                         rect {
                             font_size: "24",
