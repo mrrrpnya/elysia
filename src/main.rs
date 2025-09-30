@@ -14,8 +14,7 @@ mod layout;
 mod pages;
 
 use crate::context::Context;
-use crate::game_providers::get_game_content;
-use crate::game_providers::hoyoplay::get_games;
+use crate::game_providers::hoyoplay::{get_game_content, get_games};
 
 fn main() {
     launch_cfg(

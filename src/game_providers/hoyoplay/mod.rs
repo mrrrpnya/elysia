@@ -5,7 +5,7 @@ pub mod api;
 use api::{ApiResponse, Game, GetGames};
 use serde::{Deserialize, Serialize};
 
-use crate::game_providers::api::GetGameContent;
+use crate::game_providers::hoyoplay::api::GetGameContent;
 
 const API_URL: &str = "https://sg-hyp-api.hoyoverse.com/hyp/hyp-connect/api";
 const LAUNCHER_ID: &str = "VYTpXlbWo8";
