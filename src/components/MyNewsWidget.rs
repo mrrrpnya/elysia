@@ -1,12 +1,12 @@
 use freya::prelude::*;
 use reqwest::Url;
 
-use crate::components::MyNetworkImage;
+use crate::components::{MyAnimatedCarousel, MyNetworkImage};
 use crate::context::Context;
 use crate::game_providers::get_game_content;
 
 #[component]
-pub fn MyNewsWidget(game_id: String) -> Element {
+pub fn MyNewsWidget(game_id: String, width: usize) -> Element {
     let ctx = &use_context::<Context>();
     let Some(content) = ctx.api_news.get(&game_id) else {
         return rsx! {};
@@ -32,24 +32,22 @@ pub fn MyNewsWidget(game_id: String) -> Element {
 
             rect { // Image Carousel
                 onwheel,
-                content: "flex",
                 direction: "horizontal",
                 spacing: "0",
-                width: "100%",
-                height: "160",
                 padding: "0",
 
-                for (i, url) in content.banners.iter().enumerate() {
-                    ImageCard {
-                        key: "{i}",
-                        selected: i == selected(),
-                        MyNetworkImage {
-                            url: url.image.url.parse::<Url>().unwrap(),
-                            aspect_ratio: "max",
-                            cover: "center",
-                            sampling: "catmull-rom"
+                MyAnimatedCarousel {
+                    width,
+                    items: content.banners.iter().map(|url| {
+                        rsx!{
+                            MyNetworkImage {
+                                url: url.image.url.parse::<Url>().unwrap(),
+                                aspect_ratio: "min",
+                                //cover: "fill",
+                                sampling: "catmull-rom"
+                            }
                         }
-                    }
+                    }).collect(),
                 }
             },
 
@@ -58,29 +56,4 @@ pub fn MyNewsWidget(game_id: String) -> Element {
             }
         }
     }
-}
-
-#[component]
-fn ImageCard(selected: ReadOnlySignal<bool>, children: Element) -> Element {
-    let animations = use_animation(move |conf| {
-        conf.on_deps_change(OnDepsChange::Rerun);
-        conf.on_creation(OnCreation::Run);
-        let (from, to) = if selected() { (0.0, 1.0) } else { (1.0, 0.0) };
-        AnimNum::new(from, to)
-            .time(250)
-            .ease(Ease::Out)
-            .function(Function::Expo)
-    });
-
-    let width = animations.get().read().read();
-
-    rsx!(
-        rect {
-            corner_radius: "16",
-            height: "100%",
-            width: "flex({width})",
-            overflow: "clip",
-            {children}
-        }
-    )
 }

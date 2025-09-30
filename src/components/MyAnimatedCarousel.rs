@@ -3,20 +3,25 @@ use freya::{core::custom_attributes::NodeReferenceLayout, prelude::*};
 use crate::components::Expand;
 
 #[component]
-pub fn MyAnimatedCarousel(items: Vec<Element>) -> Element {
+pub fn MyAnimatedCarousel(items: Vec<Element>, width: usize) -> Element {
     let (reference, node_size) = use_node_signal();
-    let mut selected = use_signal(|| 0);
+    let mut state = use_signal(|| CarouselState::Stopped(0));
 
     let len = items.len();
     let onwheel = move |e: Event<WheelData>| {
         let direction = e.get_delta_y().signum();
 
-        let current = selected();
+        let current: CarouselState = *state.read();
 
-        if direction > 0.0 && current < len - 1 {
-            *selected.write() += 1
-        } else if direction < 0.0 && current > 0 {
-            *selected.write() -= 1
+        match current {
+            CarouselState::Stopped(index) => {
+                if direction > 0.0 && index < len - 1 {
+                    *state.write() = CarouselState::Running(index, index + 1);
+                } else if direction < 0.0 && index > 0 {
+                    *state.write() = CarouselState::Running(index, index - 1);
+                }
+            }
+            CarouselState::Running(_, _) => {}
         };
     };
 
@@ -24,53 +29,90 @@ pub fn MyAnimatedCarousel(items: Vec<Element>) -> Element {
         rect {
             onwheel,
             reference,
-            Carousel { items, selected, node_size }
+            Carousel { width, items, state, node_size }
         }
     )
 }
 
 #[component]
 fn Carousel(
+    width: usize,
     items: Vec<Element>,
-    selected: Signal<usize>,
+    state: Signal<CarouselState>,
     node_size: ReadOnlySignal<NodeReferenceLayout>,
 ) -> Element {
-    let previous = use_signal(|| selected.read().to_owned());
-    let animation = use_animation_with_dependencies(&selected, move |_conf, _selected| {
-        let (start, end) = if selected() % 2 == 0 {
-            (1., 0.)
-        } else {
-            (0., 1.)
-        };
-
-        AnimNum::new(start, end)
-            .time(600)
+    let animation = use_animation(move |_conf| {
+        AnimNum::new(1.0, 0.0)
+            .time(300)
             .ease(Ease::Out)
             .function(Function::Cubic)
     });
 
-    // Only render the destination route once the animation has finished
     use_effect(move || {
-        if !animation.is_running() && !animation.has_run_yet() {
-            animation.run(AnimDirection::Forward);
-            println!("Selected: {}, Previous: {}", selected(), previous());
-        }
+        let current: CarouselState = *state.read();
+
+        match current {
+            CarouselState::Running(_, to) => {
+                if !animation.is_running() {
+                    if animation.has_run_yet() {
+                        *state.write() = CarouselState::Stopped(to);
+                    } else {
+                        animation.run(AnimDirection::Forward);
+                    }
+                }
+            }
+            CarouselState::Stopped(_) => {
+                animation.reset();
+            }
+        };
     });
 
     let offset = animation.get().read().read();
-    let width = node_size.read().area.width();
-
-    let offset_x = width - (offset * width);
+    let width = width as f32;
 
     rsx!(
         rect {
-            height: "fill",
-            width: "fill",
-
+            overflow: "clip",
+            width: "{width}",
             direction: "horizontal",
-            offset_x: "-{offset_x}",
-            Expand { {items[previous()].clone()} },
-            Expand { {items[selected()].clone()} }
+
+            match *state.read() {
+                CarouselState::Stopped(index) => {
+                    let index = if index >= items.len() {0} else {index};
+                    rsx! {
+                        rect {
+                            width: "{width}",
+                            {&items[index]}
+                        }
+                    }
+                }
+                CarouselState::Running(from, to) => {
+                    let direction = to as f32 - from as f32;
+                    let offset_x = (offset * width) * direction.signum() - width;
+                    let from = if from >= items.len() {0} else {from};
+                    let to = if to >= items.len() {0} else {to};
+
+                    rsx! {
+                        rect {
+                            width: "{width}",
+                            {&items[from]}
+                        }
+
+                        rect {
+                            width: "{width}",
+                            offset_x: "{offset_x}",
+
+                            {&items[to]}
+                        }
+                    }
+                }
+            }
         }
     )
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum CarouselState {
+    Stopped(usize),
+    Running(usize, usize),
 }

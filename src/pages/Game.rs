@@ -60,11 +60,12 @@ pub fn Game(game_id: String) -> Element {
                 cross_align: "end",
                 padding: "32",
                 rect {
-                    width: "345",
+                    width: "500",
                     spacing: "32",
 
                     MyNewsWidget {
-                        game_id: game.id
+                        game_id: game.id,
+                        width: 500,
                     },
 
                     MyButton {

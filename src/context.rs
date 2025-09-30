@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::game_providers::{api::Content, hoyoplay::api::Game};
+use crate::game_providers::hoyoplay::api::{Content, Game};
 
 #[derive(Debug, Clone)]
 pub struct Context {

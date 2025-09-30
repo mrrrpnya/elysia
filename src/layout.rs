@@ -108,6 +108,7 @@ fn AnimatedOutlet(children: Element) -> Element {
     rsx!(
         rect {
             reference,
+            // FIXME: this resets state before and after the animation
             if let Some((from, upwards)) = from_route {
                 FromRouteToCurrent { upwards, from, node_size }
             } else {
