@@ -74,6 +74,7 @@ fn Carousel(
         rect {
             overflow: "clip",
             width: "{width}",
+            corner_radius: "16",
             direction: "horizontal",
 
             match *state.read() {
