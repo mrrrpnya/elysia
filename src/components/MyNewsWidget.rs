@@ -35,8 +35,8 @@ pub fn MyNewsWidget(game_id: String) -> Element {
                 content: "flex",
                 direction: "horizontal",
                 spacing: "0",
-                width: "690",
-                height: "320",
+                width: "100%",
+                height: "160",
                 padding: "0",
 
                 for (i, url) in content.banners.iter().enumerate() {
@@ -47,6 +47,7 @@ pub fn MyNewsWidget(game_id: String) -> Element {
                             url: url.image.url.parse::<Url>().unwrap(),
                             aspect_ratio: "max",
                             cover: "center",
+                            sampling: "catmull-rom"
                         }
                     }
                 }

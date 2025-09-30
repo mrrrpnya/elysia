@@ -6,7 +6,7 @@ use freya_router::prelude::*;
 use reqwest::Url;
 
 use crate::Context;
-use crate::components::{MyNetworkImage, MySidebarItem};
+use crate::components::{Expand, MyNetworkImage, MySidebarItem};
 use crate::game_providers::hoyoplay::api::Game;
 use crate::pages::{ErrorPage, Game, Home};
 
@@ -69,19 +69,6 @@ fn FromRouteToCurrent(
             offset_y: "-{offset}",
             Expand { {top} }
             Expand { {bottom} }
-        }
-    )
-}
-
-#[component]
-fn Expand(children: Element) -> Element {
-    rsx!(
-        rect {
-            height: "100%",
-            width: "100%",
-            main_align: "center",
-            cross_align: "center",
-            {children}
         }
     )
 }
