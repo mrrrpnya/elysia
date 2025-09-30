@@ -3,7 +3,7 @@ use freya::{core::custom_attributes::NodeReferenceLayout, prelude::*};
 use crate::components::Expand;
 
 #[component]
-pub fn MyAnimatedCarousel(items: Vec<Element>, width: usize) -> Element {
+pub fn MyAnimatedCarousel(items: Vec<Element>) -> Element {
     let (reference, node_size) = use_node_signal();
     let mut state = use_signal(|| CarouselState::Stopped(0));
 
@@ -29,14 +29,13 @@ pub fn MyAnimatedCarousel(items: Vec<Element>, width: usize) -> Element {
         rect {
             onwheel,
             reference,
-            Carousel { width, items, state, node_size }
+            Carousel { items, state, node_size }
         }
     )
 }
 
 #[component]
 fn Carousel(
-    width: usize,
     items: Vec<Element>,
     state: Signal<CarouselState>,
     node_size: ReadOnlySignal<NodeReferenceLayout>,
@@ -68,12 +67,12 @@ fn Carousel(
     });
 
     let offset = animation.get().read().read();
-    let width = width as f32;
+    let width = node_size.read().area.width();
 
     rsx!(
         rect {
             overflow: "clip",
-            width: "{width}",
+            width: "100%",
             corner_radius: "16",
             direction: "horizontal",
 
@@ -82,7 +81,7 @@ fn Carousel(
                     let index = if index >= items.len() {0} else {index};
                     rsx! {
                         rect {
-                            width: "{width}",
+                            width: "100%",
                             {&items[index]}
                         }
                     }
@@ -95,12 +94,12 @@ fn Carousel(
 
                     rsx! {
                         rect {
-                            width: "{width}",
+                            width: "100%",
                             {&items[from]}
                         }
 
                         rect {
-                            width: "{width}",
+                            width: "100%",
                             offset_x: "{offset_x}",
 
                             {&items[to]}

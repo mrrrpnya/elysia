@@ -6,7 +6,7 @@ use crate::context::Context;
 use crate::game_providers::get_game_content;
 
 #[component]
-pub fn MyNewsWidget(game_id: String, width: usize) -> Element {
+pub fn MyNewsWidget(game_id: String) -> Element {
     let ctx = &use_context::<Context>();
     let Some(content) = ctx.api_news.get(&game_id) else {
         return rsx! {};
@@ -37,7 +37,6 @@ pub fn MyNewsWidget(game_id: String, width: usize) -> Element {
                 padding: "0",
 
                 MyAnimatedCarousel {
-                    width,
                     items: content.banners.iter().map(|url| {
                         rsx!{
                             MyNetworkImage {

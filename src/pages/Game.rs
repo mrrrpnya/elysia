@@ -64,8 +64,7 @@ pub fn Game(game_id: String) -> Element {
                     spacing: "32",
 
                     MyNewsWidget {
-                        game_id: game.id,
-                        width: 500,
+                        game_id: game.id
                     },
 
                     MyButton {
