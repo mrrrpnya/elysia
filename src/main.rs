@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use crate::runners::{Runner, Wine};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{env, fs};
@@ -14,11 +15,12 @@ mod context;
 mod game_providers;
 mod layout;
 mod pages;
+mod runners;
 mod settings;
 
 use crate::context::Context;
 use crate::game_providers::hoyoplay::{get_game_content, get_games};
-use crate::settings::{GlobalSettings, InstalledGame, RuntimeComponent, Wine};
+use crate::settings::{GlobalSettings, InstalledGame, RuntimeComponent};
 
 fn main() {
     launch_cfg(
@@ -54,7 +56,7 @@ fn app() -> Element {
             environment: HashMap::new(),
             executable_path: PathBuf::from("ZenlessZoneZero.exe"),
             install_path: PathBuf::from("/path/to/Zenless Zone Zero/"),
-            runner: settings::Runner::Wine(Wine {
+            runner: Runner::Wine(Wine {
                 version: "Spritz-Wine-TkG-10.15-3".to_string(),
             }),
             runtime_components: vec![RuntimeComponent::Dxvk("2.7.1".to_string())],
