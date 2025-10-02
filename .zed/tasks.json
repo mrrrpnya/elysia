@@ -1,0 +1,12 @@
+[
+  {
+    "label": "Run (Debug)",
+    "command": "cargo run",
+    "use_new_terminal": false
+  },
+  {
+    "label": "Run (Release)",
+    "command": "cargo run --release",
+    "use_new_terminal": false
+  }
+]
