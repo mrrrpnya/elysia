@@ -22,7 +22,9 @@ impl Runner {
             Runner::Wine(wine) => {
                 wine.run_game(game);
             }
-            Runner::Proton(_) => {}
+            Runner::Proton(proton) => {
+                proton.run_game(game);
+            }
         }
     }
 }
