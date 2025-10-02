@@ -89,7 +89,7 @@ pub fn Game(game_id: String) -> Element {
                             direction: "horizontal",
                             cross_align: "center",
                             main_align: "start",
-                            padding: "8",
+                            padding: "4",
                             label { "Start Game" }
                         }
                     },
@@ -114,6 +114,7 @@ pub fn Game(game_id: String) -> Element {
                         direction: "horizontal",
                         cross_align: "center",
                         spacing: "8",
+                        padding: "4",
                         label { "Meow" }
                     }
                 }
@@ -137,6 +138,7 @@ pub fn Game(game_id: String) -> Element {
                         direction: "horizontal",
                         cross_align: "center",
                         spacing: "8",
+                        padding: "4",
                         label { "Explode" }
                     }
                 }
