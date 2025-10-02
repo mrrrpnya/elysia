@@ -1,9 +1,11 @@
 use freya::prelude::*;
 use reqwest::Url;
 
-use crate::components::{MyAnimatedCarousel, MyNetworkImage};
-use crate::context::Context;
-use crate::game_providers::hoyoplay::get_game_content;
+use crate::{
+    components::{MyAnimatedCarousel, MyNetworkImage},
+    context::Context,
+    game_providers::hoyoplay::get_game_content,
+};
 
 #[component]
 pub fn MyNewsWidget(game_id: String) -> Element {

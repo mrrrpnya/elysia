@@ -1,10 +1,10 @@
-use serde::{Deserialize, Serialize};
-
 mod proton;
 mod wine;
 
 pub use proton::Proton;
 pub use wine::Wine;
+
+use serde::{Deserialize, Serialize};
 
 use crate::settings::InstalledGame;
 

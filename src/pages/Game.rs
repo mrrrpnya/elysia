@@ -1,10 +1,11 @@
+use freya::prelude::*;
+use reqwest::Url;
+
 use crate::{
     components::{MyButton, MyNetworkImage, MyNewsWidget},
     context::Context,
     settings::GlobalSettings,
 };
-use freya::prelude::*;
-use reqwest::Url;
 
 #[component]
 pub fn Game(game_id: String) -> Element {

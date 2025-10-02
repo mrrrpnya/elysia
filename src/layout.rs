@@ -5,10 +5,12 @@ use freya::{
 use freya_router::prelude::*;
 use reqwest::Url;
 
-use crate::Context;
-use crate::components::{Expand, MyNetworkImage, MySidebarItem};
-use crate::game_providers::hoyoplay::api::Game;
-use crate::pages::{ErrorPage, Game, Home};
+use crate::{
+    Context,
+    components::{Expand, MyNetworkImage, MySidebarItem},
+    game_providers::hoyoplay::api::Game,
+    pages::{ErrorPage, Game, Home},
+};
 
 #[derive(Routable, Clone, PartialEq)]
 #[rustfmt::skip]

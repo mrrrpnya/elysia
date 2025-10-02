@@ -3,11 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use std::collections::HashMap;
-use std::path::PathBuf;
-
-use freya::prelude::*;
-
 mod components;
 mod context;
 mod game_providers;
@@ -18,10 +13,17 @@ mod runners;
 mod settings;
 mod utils;
 
-use crate::context::Context;
-use crate::game_providers::hoyoplay::{get_game_content, get_games};
-use crate::runners::{Runner, Wine};
-use crate::settings::{GlobalSettings, InstalledGame, RuntimeComponent};
+use std::collections::HashMap;
+use std::path::PathBuf;
+
+use freya::prelude::*;
+
+use crate::{
+    context::Context,
+    game_providers::hoyoplay::{get_game_content, get_games},
+    runners::{Runner, Wine},
+    settings::{GlobalSettings, InstalledGame, RuntimeComponent},
+};
 
 fn main() {
     launch_cfg(

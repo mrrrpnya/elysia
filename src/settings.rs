@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
-use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::PathBuf};
+
+use serde::{Deserialize, Serialize};
 
 use crate::{
     globals::{CONFIG_PATH, DATA_PATH},
