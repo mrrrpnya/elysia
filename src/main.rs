@@ -3,23 +3,24 @@
     windows_subsystem = "windows"
 )]
 
-use crate::runners::{Runner, Wine};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::{env, fs};
 
 use freya::prelude::*;
 
 mod components;
 mod context;
 mod game_providers;
+mod globals;
 mod layout;
 mod pages;
 mod runners;
 mod settings;
+mod utils;
 
 use crate::context::Context;
 use crate::game_providers::hoyoplay::{get_game_content, get_games};
+use crate::runners::{Runner, Wine};
 use crate::settings::{GlobalSettings, InstalledGame, RuntimeComponent};
 
 fn main() {
@@ -36,11 +37,14 @@ fn main() {
 }
 
 fn app() -> Element {
-    let data_path = get_data_path_or_panic();
-    let mut settings = use_signal(|| match GlobalSettings::load(&data_path) {
-        Ok(settings) => settings,
+    let mut settings = use_signal(|| match GlobalSettings::load() {
+        Ok(mut settings) => {
+            settings.validate();
+            settings
+        }
         Err(_) => {
-            let settings = GlobalSettings::default(&data_path);
+            let mut settings = GlobalSettings::default();
+            settings.validate();
             settings.save();
             settings
         }
@@ -72,76 +76,37 @@ fn app() -> Element {
 
     use_init_theme(|| DARK_THEME);
 
-    let ctx = use_resource(move || {
-        to_owned![data_path];
-        async move {
-            let api_games = get_games()
-                .await
-                .map_err(|e| e.to_string())
-                .map(|v| v.games)
-                .unwrap_or_else(|e| {
-                    println!("Failed to load games from api: {e}");
-                    Vec::new()
-                });
+    let ctx = use_resource(move || async move {
+        let api_games = get_games()
+            .await
+            .map_err(|e| e.to_string())
+            .map(|v| v.games)
+            .unwrap_or_else(|e| {
+                println!("Failed to load games from api: {e}");
+                Vec::new()
+            });
 
-            let mut api_news = HashMap::new();
+        let mut api_news = HashMap::new();
 
-            for game in &api_games {
-                let id = game.id.to_owned();
-                let response = get_game_content(&id).await;
+        for game in &api_games {
+            let id = game.id.to_owned();
+            let response = get_game_content(&id).await;
 
-                match response {
-                    Ok(response) => {
-                        api_news.insert(id, response.content);
-                    }
-                    Err(e) => {
-                        println!("Failed to load game content: {e}");
-                    }
+            match response {
+                Ok(response) => {
+                    api_news.insert(id, response.content);
+                }
+                Err(e) => {
+                    println!("Failed to load game content: {e}");
                 }
             }
+        }
 
-            Context {
-                api_games,
-                api_news,
-                data_path,
-            }
+        Context {
+            api_games,
+            api_news,
         }
     });
     use_context_provider(move || ctx);
     layout::app()
-}
-
-fn get_data_path_or_panic() -> PathBuf {
-    let data_dir = env::var("XDG_DATA_HOME")
-        .map(|v| PathBuf::from(v).join("elysia"))
-        .or_else(|_| {
-            let var = env::var("HOME");
-            match var {
-                Ok(home) => Ok(PathBuf::from(home).join(".local/share/elysia")),
-                Err(e) => Err(e),
-            }
-        })
-        .or_else(|e| {
-            let cwd = env::current_dir();
-            match cwd {
-                Ok(path) => Ok(path.join("elysia")),
-                Err(_) => Err(e),
-            }
-        });
-
-    match data_dir {
-        Ok(data_dir) => match fs::exists(&data_dir) {
-            Ok(exists) => {
-                if !exists && let Err(e) = fs::create_dir(&data_dir) {
-                    panic!("Cannot create data directory {data_dir:?}: {e}");
-                }
-
-                data_dir
-            }
-            Err(e) => panic!("Cannot check if data directory {data_dir:?} exists: {e}"),
-        },
-        Err(e) => {
-            panic!("Cannot pick a data directory, last error: {e}")
-        }
-    }
 }
