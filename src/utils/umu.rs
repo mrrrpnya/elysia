@@ -11,23 +11,26 @@ pub async fn setup_umu() -> Result<PathBuf, String> {
     let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
     let settings = &ctx.read();
 
-    let umu_dir = settings.components_directory.join("umu-launcher");
+    let umu_dir = settings.components_directory.join("umu");
     let umu_run = umu_dir.join("umu-run");
 
     if umu_run.exists() {
+        println!("umu-launcher found, skipping..");
         return Ok(umu_run);
     }
 
-    ensure_dir(&umu_dir)?;
+    println!("umu-launcher not found, downloading..");
     ensure_dir(&settings.temp_directory)?;
 
     let archive_path = download_umu(&settings.temp_directory).await?;
-    extract_umu(&archive_path, &umu_dir)?;
+    extract_umu(&archive_path, &settings.components_directory)?;
     let _ = fs::remove_file(&archive_path);
 
     if !umu_run.exists() {
         return Err(format!("umu-run not found at {umu_run:?} after extraction"));
     }
+
+    println!("umu-launcher download complete.");
 
     Ok(umu_run)
 }

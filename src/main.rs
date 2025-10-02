@@ -23,6 +23,7 @@ use crate::{
     game_providers::hoyoplay::{get_game_content, get_games},
     runners::{Runner, Wine},
     settings::{GlobalSettings, InstalledGame, RuntimeComponent},
+    utils::umu::setup_umu,
 };
 
 fn main() {
@@ -77,6 +78,12 @@ fn app() -> Element {
     use_context_provider(move || settings);
 
     use_init_theme(|| DARK_THEME);
+
+    let _umu_handle = use_resource(|| async {
+        if let Err(e) = setup_umu().await {
+            println!("Failed to set up umu-launcher: {e}");
+        }
+    });
 
     let ctx = use_resource(move || async move {
         let api_games = get_games()
