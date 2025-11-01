@@ -11,7 +11,7 @@ use crate::{
 pub fn MyNewsWidget(game_id: String) -> Element {
     let ctx = &use_context::<Context>();
     let Some(content) = ctx.api_news.get(&game_id) else {
-        return rsx! {};
+        return rsx!({});
     };
 
     let mut selected = use_signal(|| 0);
