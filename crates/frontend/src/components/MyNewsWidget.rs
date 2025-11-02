@@ -1,10 +1,10 @@
 use freya::prelude::*;
 use reqwest::Url;
 
+use backend::game_providers::hoyoplay::get_game_content;
 use crate::{
     components::{MyAnimatedCarousel, MyNetworkImage},
     context::Context,
-    game_providers::hoyoplay::get_game_content,
 };
 
 #[component]

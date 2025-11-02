@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::game_providers::hoyoplay::api::{Content, Game};
+use backend::game_providers::hoyoplay::proto::{Content, Game};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]

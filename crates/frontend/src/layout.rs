@@ -5,10 +5,10 @@ use freya::{
 use freya_router::prelude::*;
 use reqwest::Url;
 
+use backend::game_providers::hoyoplay::proto::Game;
 use crate::{
     Context,
     components::{Expand, MyNetworkImage, MySidebarItem},
-    game_providers::hoyoplay::api::Game,
     pages::{ErrorPage, Game, Home},
 };
 

@@ -5,25 +5,20 @@
 
 mod components;
 mod context;
-mod game_providers;
-mod globals;
 mod layout;
 mod pages;
-mod runners;
-mod settings;
-mod utils;
 
-use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::RwLock;
+use std::{collections::HashMap, sync::Arc};
 
 use freya::prelude::*;
 
-use crate::{
-    context::Context,
+use crate::context::Context;
+use backend::{
     game_providers::hoyoplay::{get_game_content, get_games},
-    runners::{Runner, Wine},
-    settings::{GlobalSettings, InstalledGame, RuntimeComponent},
-    utils::umu::setup_umu,
+    runners::{Runners, Wine},
+    settings::{GlobalSettings, InstalledGame, RuntimeComponents},
 };
 
 fn main() {
@@ -40,53 +35,66 @@ fn main() {
 }
 
 fn app() -> Element {
-    let mut settings = use_signal(|| match GlobalSettings::load() {
-        Ok(mut settings) => {
-            settings.validate();
-            settings
-        }
-        Err(_) => {
-            let mut settings = GlobalSettings::default();
-            settings.validate();
-            settings.save();
-            settings
-        }
+    let mut settings = use_signal(|| {
+        Arc::new(RwLock::new(match GlobalSettings::load() {
+            Ok(mut settings) => {
+                settings.validate();
+                settings
+            }
+            Err(_) => {
+                let mut settings = GlobalSettings::default();
+                settings.validate();
+                settings.save();
+                settings
+            }
+        }))
     });
 
-    settings.write().installed_games.insert(
-        "U5hbdsT9W7".to_string(),
-        InstalledGame {
-            id: "U5hbdsT9W7".to_string(),
-            biz_name: "nap_global".to_string(),
-            command_arguments: None,
-            command_wrapper: None,
-            environment: HashMap::new(),
-            executable_path: PathBuf::from("ZenlessZoneZero.exe"),
-            install_path: PathBuf::from("/path/to/Zenless Zone Zero/"),
-            runner: Runner::Wine(Wine {
-                version: "Spritz-Wine-TkG-10.15-3".to_string(),
-            }),
-            runtime_components: vec![RuntimeComponent::Dxvk("2.7.1".to_string())],
-        },
-    );
+    {
+        let settings = settings.write();
+        if let Ok(mut _settings) = settings.clone().write() {
+            _settings.installed_games.insert(
+                "U5hbdsT9W7".to_string(),
+                InstalledGame {
+                    settings: Arc::downgrade(&settings),
+                    id: "U5hbdsT9W7".to_string(),
+                    biz_name: "nap_global".to_string(),
+                    command_arguments: None,
+                    command_wrapper: None,
+                    environment: HashMap::new(),
+                    executable_path: PathBuf::from("ZenlessZoneZero.exe"),
+                    install_path: PathBuf::from("/path/to/Zenless Zone Zero/"),
+                    runner: Runners::Wine(Wine {
+                        version: "Spritz-Wine-TkG-10.15-3".to_string(),
+                    }),
+                    runtime_components: vec![RuntimeComponents::Dxvk("2.7.1".to_string())],
+                },
+            );
+        }
+    }
 
-    to_owned![settings];
-    use_drop(move || {
-        settings().save();
-    });
-
-    use_context_provider(move || settings);
+    {
+        to_owned![settings];
+        use_drop(move || {
+            if let Ok(settings) = settings().read() {
+                settings.save();
+                println!("Settings saved successfully");
+            } else {
+                println!("Failed to save settings");
+            }
+        });
+    }
+    {
+        to_owned![settings];
+        use_context_provider(move || settings);
+    }
 
     use_init_theme(|| DARK_THEME);
 
-    let _umu_handle = use_resource(|| async {
-        if let Err(e) = setup_umu().await {
-            println!("Failed to set up umu-launcher: {e}");
-        }
-    });
-
     let ctx = use_resource(move || async move {
-        let api_games = get_games()
+        let settings = settings.read();
+        let settings = settings.read().unwrap().clone();
+        let api_games = get_games(&settings)
             .await
             .map_err(|e| e.to_string())
             .map(|v| v.games)
@@ -99,7 +107,7 @@ fn app() -> Element {
 
         for game in &api_games {
             let id = game.id.to_owned();
-            let response = get_game_content(&id).await;
+            let response = get_game_content(&settings, &id).await;
 
             match response {
                 Ok(response) => {
@@ -116,6 +124,7 @@ fn app() -> Element {
             api_news,
         }
     });
+
     use_context_provider(move || ctx);
     layout::app()
 }

@@ -1,16 +1,12 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use freya::prelude::{Readable, Signal};
+use common::utils::filesystem::ensure_dir;
 use crate::settings::GlobalSettings;
-use crate::utils::filesystem::ensure_dir;
 
 const UMU_VERSION: &str = "1.2.9";
 
-pub async fn setup_umu() -> Result<PathBuf, String> {
-    let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
-    let settings = &ctx.read();
-
+pub async fn setup_umu(settings: &GlobalSettings) -> Result<PathBuf, String> {
     let umu_dir = settings.components_directory.join("umu");
     let umu_run = umu_dir.join("umu-run");
 

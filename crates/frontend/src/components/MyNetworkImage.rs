@@ -1,9 +1,11 @@
+use std::sync::{Arc, RwLock};
+
 use bytes::Bytes;
 use freya::prelude::*;
 use libwebp::WebPDecodeRGBA;
 use reqwest::{Url, header::CONTENT_TYPE};
 
-use crate::settings::GlobalSettings;
+use backend::settings::GlobalSettings;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct MyNetworkImageProps {
@@ -53,9 +55,10 @@ pub fn MyNetworkImage(
     let mut status = use_signal(|| ImageState::Loading);
     let mut assets_tasks = use_signal::<Vec<Task>>(Vec::new);
 
-    let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
-    let settings = &ctx.read();
-    let cache_path = &settings.cache_directory;
+    let ctx = &dioxus::hooks::use_context::<Signal<Arc<RwLock<GlobalSettings>>>>();
+
+    let settings = ctx.read();
+    let cache_path = &settings.read().unwrap().cache_directory;
 
     let a11y_id = focus.attribute();
     let key = url.to_string();

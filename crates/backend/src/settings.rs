@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{collections::HashMap, fs, path::PathBuf, sync::{RwLock, Weak}};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use common::{
     globals::{CONFIG_PATH, DATA_PATH},
-    runners::Runner,
     utils::filesystem::ensure_or_default,
 };
+use crate::runners::Runners;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -97,6 +97,9 @@ impl GlobalSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstalledGame {
+    #[serde(skip)]
+    pub settings: Weak<RwLock<GlobalSettings>>,
+
     pub id: String,
     pub biz_name: String,
     pub install_path: PathBuf,
@@ -104,12 +107,13 @@ pub struct InstalledGame {
     pub command_wrapper: Option<String>,
     pub command_arguments: Option<String>,
     pub environment: HashMap<String, String>,
-    pub runner: Runner,
-    pub runtime_components: Vec<RuntimeComponent>,
+    pub runner: Runners,
+    pub runtime_components: Vec<RuntimeComponents>,
+
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum RuntimeComponent {
+pub enum RuntimeComponents {
     Dxvk(ComponentVersion),
     Vkd3dProton(ComponentVersion),
     DxvkNvApi(ComponentVersion),

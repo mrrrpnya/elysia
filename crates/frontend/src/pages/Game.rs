@@ -1,11 +1,13 @@
+use std::sync::{Arc, RwLock};
+
 use freya::prelude::*;
 use reqwest::Url;
 
 use crate::{
     components::{MyButton, MyNetworkImage, MyNewsWidget},
     context::Context,
-    settings::GlobalSettings,
 };
+use backend::{runners::Runner, settings::GlobalSettings};
 
 #[component]
 pub fn Game(game_id: String) -> Element {
@@ -34,13 +36,16 @@ pub fn Game(game_id: String) -> Element {
 
     let onpress = move |_| {
         println!("Button Pressed!");
-        let ctx = &dioxus::hooks::use_context::<Signal<GlobalSettings>>();
-        let settings = &ctx.read();
-        let installed_games = &settings.installed_games;
-        if installed_games.contains_key(&game_id) {
-            let game = &installed_games[&game_id];
+        let ctx = &dioxus::hooks::use_context::<Signal<Arc<RwLock<GlobalSettings>>>>();
+        if let Ok(settings) = &ctx.read().read() {
+            let installed_games = &settings.installed_games;
+            if installed_games.contains_key(&game_id) {
+                let game = &installed_games[&game_id];
 
-            game.runner.run_game(game);
+                if let Err(e) = game.runner.run_game(game) {
+                    println!("Error: {e}");
+                }
+            }
         }
     };
 
