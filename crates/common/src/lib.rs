@@ -2,9 +2,8 @@ use std::sync::LazyLock;
 
 use reqwest::Client;
 
-pub mod utils;
-pub mod globals;
 pub mod github;
+pub mod utils;
 
 pub static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
     Client::builder()

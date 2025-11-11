@@ -1,6 +1,6 @@
 use std::{env, path::PathBuf, sync::LazyLock};
 
-use crate::utils::filesystem::{ensure_dir, ensure_writable};
+use common::utils::filesystem::{ensure_dir, ensure_writable};
 
 pub static DATA_PATH: LazyLock<PathBuf> = LazyLock::new(init_data_path);
 pub static CONFIG_PATH: LazyLock<PathBuf> = LazyLock::new(|| DATA_PATH.join("./config.json"));

@@ -1,14 +1,19 @@
 #![allow(dead_code)]
 
-use std::{collections::HashMap, fs, path::PathBuf, sync::{RwLock, Weak}};
+use std::{
+    collections::HashMap,
+    fs,
+    path::PathBuf,
+    sync::{RwLock, Weak},
+};
 
 use serde::{Deserialize, Serialize};
 
-use common::{
+use crate::{
     globals::{CONFIG_PATH, DATA_PATH},
-    utils::filesystem::ensure_or_default,
+    runners::Runners,
 };
-use crate::runners::Runners;
+use common::utils::filesystem::ensure_or_default;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -109,7 +114,6 @@ pub struct InstalledGame {
     pub environment: HashMap<String, String>,
     pub runner: Runners,
     pub runtime_components: Vec<RuntimeComponents>,
-
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
