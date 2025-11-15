@@ -8,6 +8,16 @@ pub struct ApiResponse<DataType> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetGameConfigs {
+    pub launch_configs: Vec<LaunchConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetGameScanInfo {
+    pub game_scan_info: Vec<GameScanInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetGames {
     pub games: Vec<Game>,
 }
@@ -15,6 +25,66 @@ pub struct GetGames {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetGameContent {
     pub content: Content,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LaunchConfig {
+    pub game: GameInfo,
+    pub exe_file_name: String,
+    pub installation_dir: String,
+    pub audio_pkg_scan_dir: String,
+    pub audio_pkg_res_dir: String,
+    pub audio_pkg_cache_dir: String,
+    pub game_cached_res_dir: String,
+    pub game_screenshot_dir: String,
+    pub game_log_gen_dir: String,
+    pub game_crash_file_gen_dir: String,
+    pub default_download_mode: String,
+    pub enable_customer_service: bool,
+    pub local_res_dir: String,
+    pub local_res_cache_dir: String,
+    pub res_category_dir: String,
+    pub game_res_cut_dir: String,
+    pub enable_game_log_export: bool,
+    pub game_log_export_config: Option<GameLogExportConfig>,
+    pub blacklist_dir: String,
+    pub wpf_exe_dir: String,
+    pub wpf_pkg_version_dir: String,
+    pub enable_audio_pkg_mgmt: bool,
+    pub audio_pkg_config_dir: String,
+    pub enable_resource_deletion_adapter: bool,
+    pub enable_resource_blacklist: bool,
+    pub enable_redundant_file_cleanup: bool,
+    pub redundant_file_cleanup_paths: Vec<String>,
+    pub enable_v2_game_detection: bool,
+    pub related_processes: Vec<String>,
+    pub enable_ldiff: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameLogExportConfig {
+    pub file_size_filter: String,
+    pub export_timeout: String,
+    pub export_files: Vec<ExportFile>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExportFile {
+    pub file_type: String,
+    pub method: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameScanInfo {
+    pub game_id: String,
+    pub game_exe_list: Vec<GameExe>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameExe {
+    pub version: String,
+    pub md5: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
