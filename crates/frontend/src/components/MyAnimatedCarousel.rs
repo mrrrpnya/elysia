@@ -76,33 +76,49 @@ fn Carousel(
             corner_radius: "16",
             direction: "horizontal",
 
-            match *state.read() {
-                CarouselState::Stopped(index) => {
-                    let index = if index >= items.len() {0} else {index};
-                    rsx! {
+            {
+                if items.is_empty() {
+                    rsx!(
                         rect {
                             width: "100%",
-                            {&items[index]}
+                            height: "200",
+                            main_align: "center",
+                            cross_align: "center",
+                            label {
+                                "No content available"
+                            }
                         }
-                    }
-                }
-                CarouselState::Running(from, to) => {
-                    let direction = to as f32 - from as f32;
-                    let offset_x = (offset * width) * direction.signum() - width;
-                    let from = if from >= items.len() {0} else {from};
-                    let to = if to >= items.len() {0} else {to};
-
-                    rsx! {
-                        rect {
-                            width: "100%",
-                            {&items[from]}
+                    )
+                } else {
+                    match *state.read() {
+                        CarouselState::Stopped(index) => {
+                            let index = if index >= items.len() {0} else {index};
+                            rsx! {
+                                rect {
+                                    width: "100%",
+                                    {&items[index]}
+                                }
+                            }
                         }
+                        CarouselState::Running(from, to) => {
+                            let direction = to as f32 - from as f32;
+                            let offset_x = (offset * width) * direction.signum() - width;
+                            let from = if from >= items.len() {0} else {from};
+                            let to = if to >= items.len() {0} else {to};
 
-                        rect {
-                            width: "100%",
-                            offset_x: "{offset_x}",
+                            rsx! {
+                                rect {
+                                    width: "100%",
+                                    {&items[from]}
+                                }
 
-                            {&items[to]}
+                                rect {
+                                    width: "100%",
+                                    offset_x: "{offset_x}",
+
+                                    {&items[to]}
+                                }
+                            }
                         }
                     }
                 }

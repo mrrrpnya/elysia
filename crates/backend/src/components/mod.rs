@@ -6,6 +6,7 @@ use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
 mod dxvk;
+pub mod tweaks;
 
 use crate::components::dxvk::Dxvk;
 

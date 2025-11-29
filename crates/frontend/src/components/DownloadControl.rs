@@ -1,0 +1,204 @@
+use freya::prelude::*;
+use std::rc::Rc;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DownloadProgress {
+    pub downloaded: u64,
+    pub total: u64,
+    pub mb_s: f32,
+    pub part_index: usize,
+    pub parts_total: usize,
+    pub status: String,
+    pub is_busy: bool,
+}
+
+#[derive(Props, Clone)]
+pub struct DownloadControlProps {
+    pub game_id: String,
+    pub progress_key: String,
+    pub installed: bool,
+    pub get_progress: Rc<dyn Fn(&str) -> Option<DownloadProgress>>,
+    #[props(default = "#ff9500".to_string())]
+    pub accent_color: String,
+    #[props(default)]
+    pub onpress: Option<EventHandler<PressEvent>>,
+}
+
+impl PartialEq for DownloadControlProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.game_id == other.game_id
+            && self.progress_key == other.progress_key
+            && self.installed == other.installed
+            && self.accent_color == other.accent_color
+            && Rc::ptr_eq(&self.get_progress, &other.get_progress)
+    }
+}
+
+#[component]
+pub fn DownloadControl(props: DownloadControlProps) -> Element {
+    let DownloadControlProps {
+        game_id: _, 
+        progress_key,
+        installed,
+        get_progress,
+        accent_color,
+        onpress,
+    } = props;
+
+    let ButtonTheme {
+        background: _,
+        hover_background: _,
+        disabled_background: _,
+        border_fill,
+        focus_border_fill: _,
+        padding: _,
+        margin: _,
+        corner_radius: _,
+        width: _,
+        height: _,
+        font_theme,
+        shadow: _,
+    } = use_applied_theme!(&None, filled_button);
+
+    let progress_sig = use_signal(|| None::<DownloadProgress>);
+
+    {
+        let sig = progress_sig.clone();
+        let key = progress_key.clone();
+        let get_progress = get_progress.clone();
+        let _ = use_resource(move || {
+            let key = key.clone();
+            let mut sig = sig.clone();
+            let get_progress = get_progress.clone();
+            async move {
+                loop {
+                    let p = get_progress(&key);
+                    *sig.write() = p;
+                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                }
+                #[allow(unreachable_code)]
+                ()
+            }
+        });
+    }
+
+    let progress_opt = progress_sig.read().clone();
+
+    let progress_element: Element = if let Some(p) = &progress_opt {
+        if !p.is_busy {
+            rsx!()
+        } else {
+            let pct = if p.total > 0 {
+                (p.downloaded as f64 / p.total as f64) * 100.0
+            } else {
+                0.0
+            };
+            let bar_width = format!("{:.0}%", pct);
+            
+            let label_text = if p.total > 0 && (p.status.starts_with("Downloading") || p.status.starts_with("Extracting")) {
+                let downloaded_gb = (p.downloaded as f64) / 1_000_000_000.0;
+                let total_gb = (p.total as f64) / 1_000_000_000.0;
+                
+                if p.mb_s > 0.0 {
+                    format!("{} - {:.2} GB / {:.2} GB - {:.2} MB/s",
+                        p.status, downloaded_gb, total_gb, p.mb_s)
+                } else {
+                    format!("{} - {:.2} GB / {:.2} GB",
+                        p.status, downloaded_gb, total_gb)
+                }
+            } else {
+                format!("{}", p.status)
+            };
+
+            let pct_text = format!("{:.1}%", pct);
+
+            rsx!(
+                rect {
+                    width: "100%",
+                    padding: "12",
+                    corner_radius: "8",
+                    background: "#00000058",
+                    border: "1 inner {border_fill}",
+                    direction: "vertical",
+                    spacing: "6",
+                    
+                    // Progress bar
+                    rect {
+                        width: "100%",
+                        height: "24",
+                        background: "{border_fill}",
+                        corner_radius: "4",
+                        rect {
+                            width: "{bar_width}",
+                            height: "24",
+                            background: "{accent_color}",
+                            corner_radius: "4",
+                        }
+                    }
+                    
+                    // Status text with percentage
+                    rect {
+                        width: "100%",
+                        direction: "horizontal",
+                        main_align: "space-between",
+                        cross_align: "center",
+                        label {
+                            color: "{font_theme.color}",
+                            "{label_text}"
+                        }
+                        label {
+                            color: "{font_theme.color}",
+                            font_size: "12",
+                            "{pct_text}"
+                        }
+                    }
+                }
+            )
+        }
+    } else {
+        rsx!()
+    };
+
+    let button_label = if installed {
+        "Start Game"
+    } else {
+        "Download Game"
+    };
+
+    let is_busy = progress_opt
+        .as_ref()
+        .map(|p| p.is_busy)
+        .unwrap_or(false);
+
+    rsx! {
+        rect {
+            width: "100%",
+            direction: "vertical",
+            spacing: "8",
+            { progress_element }
+
+            {
+                if !is_busy {
+                    rsx!(
+                        crate::components::MyButton {
+                            onpress: onpress,
+                            rect {
+                                font_size: "24",
+                                width: "100%",
+                                direction: "horizontal",
+                                cross_align: "center",
+                                main_align: "start",
+                                padding: "4",
+                                label {
+                                    "{button_label}"
+                                }
+                            }
+                        }
+                    )
+                } else {
+                    rsx!()
+                }
+            }
+        }
+    }
+}

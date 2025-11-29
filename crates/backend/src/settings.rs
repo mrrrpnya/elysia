@@ -1,14 +1,11 @@
 #![allow(dead_code)]
-
 use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
     sync::{RwLock, Weak},
 };
-
 use serde::{Deserialize, Serialize};
-
 use crate::{
     globals::{CONFIG_PATH, DATA_PATH},
     runners::Runners,
@@ -22,7 +19,6 @@ pub struct GlobalSettings {
     pub components_directory: PathBuf,
     pub temp_directory: PathBuf,
     pub cache_directory: PathBuf,
-
     pub installed_games: HashMap<String, InstalledGame>,
 }
 
@@ -33,7 +29,6 @@ impl Default for GlobalSettings {
         let components_directory = data_path.join("components/");
         let temp_directory = data_path.join("temp/");
         let cache_directory = data_path.join("cache/");
-
         Self {
             wineprefixes_directory,
             components_directory,
@@ -52,28 +47,19 @@ impl GlobalSettings {
         if !exists {
             return Err("Config does not exist".to_string());
         }
-
         let data = fs::read(config_path).map_err(|e| format!("Cannot read config file: {e}"))?;
         let mut settings = serde_json::from_slice::<GlobalSettings>(&data)
             .map_err(|e| format!("Cannot deserialize saved config: {e}"))?;
-
         settings.validate();
-
         Ok(settings)
     }
 
-    pub fn save(&self) {
-        let data = serde_json::to_vec_pretty(self);
-        match data {
-            Ok(data) => {
-                if let Err(e) = fs::write(&*CONFIG_PATH, data) {
-                    println!("Error when writing config file: {e}");
-                }
-            }
-            Err(e) => {
-                println!("Error when serializing config: {e}");
-            }
-        }
+    pub fn save(&self) -> Result<(), String> {
+        let data = serde_json::to_vec_pretty(self)
+            .map_err(|e| format!("Failed to serialize settings: {}", e))?;
+        fs::write(&*CONFIG_PATH, data)
+            .map_err(|e| format!("Failed to write settings file: {}", e))?;
+        Ok(())
     }
 
     pub fn validate(&mut self) {
@@ -90,10 +76,8 @@ impl GlobalSettings {
                 ensure_or_default(&self.temp_directory, &DATA_PATH.join("temp"))?.to_path_buf();
             self.cache_directory =
                 ensure_or_default(&self.cache_directory, &DATA_PATH.join("cache"))?.to_path_buf();
-
             Ok(())
         };
-
         if let Err(e) = check_fn() {
             panic!("Cannot use current or default path: {e}");
         }
@@ -104,13 +88,12 @@ impl GlobalSettings {
 pub struct InstalledGame {
     #[serde(skip)]
     pub settings: Weak<RwLock<GlobalSettings>>,
-
     pub id: String,
     pub biz_name: String,
     pub install_path: PathBuf,
     pub executable_path: PathBuf,
     pub command_wrapper: Option<String>,
-    pub command_arguments: Option<String>,
+    pub command_arguments: Option<Vec<String>>,
     pub environment: HashMap<String, String>,
     pub runner: Runners,
     pub runtime_components: Vec<RuntimeComponents>,

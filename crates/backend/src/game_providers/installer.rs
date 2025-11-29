@@ -1,0 +1,127 @@
+use crate::settings::{GlobalSettings, InstalledGame};
+use async_trait::async_trait;
+use std::path::{Path, PathBuf};
+use crate::game_providers::Progress;
+use serde::{Deserialize, Serialize};
+
+#[async_trait]
+pub trait GameInstaller: Send + Sync {
+    fn progress_key(&self) -> String;
+    fn clear_progress(&self);
+    fn get_progress(&self, key: &str) -> Option<Progress>;
+    fn get_install_path(&self) -> PathBuf;
+    async fn install(&self) -> Result<InstalledGame, String>;
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct InstallationManifest {
+    pub game_id: String
+}
+
+pub struct InstallerManager;
+
+impl InstallerManager {
+    pub fn create_installer(
+        game_id: &str,
+        biz: &str,
+        temp_dir: PathBuf,
+        components_dir: PathBuf,
+    ) -> Option<Box<dyn GameInstaller>> {
+        let games_dir = components_dir.parent()
+            .unwrap_or(components_dir.as_path())
+            .join("games");
+        
+        match biz {
+            "endfield" => {
+                use crate::game_providers::endfield::EndfieldInstaller;
+                
+                let appcode = game_id;
+                let generated_game_id = format!("endfield_{}", appcode);
+                
+                Some(Box::new(EndfieldInstaller::new(
+                    appcode.to_string(),
+                    generated_game_id,
+                    temp_dir,
+                    games_dir,
+                    biz.to_string(),
+                )))
+            }
+            _ => None,
+        }
+    }
+
+    pub fn spawn_install(installer: Box<dyn GameInstaller>, game_id: String) {
+        tokio::spawn(async move {
+            match installer.install().await {
+                Ok(installed_game) => {
+                    if let Err(e) = Self::persist_installation(game_id, installed_game) {
+                        eprintln!("Failed to persist installation: {}", e);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Installation failed: {}", e);
+                }
+            }
+        });
+    }
+
+    pub fn is_game_installed(
+        game_id: &str,
+        biz: &str,
+        temp_dir: PathBuf,
+        components_dir: PathBuf,
+    ) -> bool {
+        let settings = match std::fs::read_to_string(&*crate::globals::CONFIG_PATH) {
+            Ok(s) => serde_json::from_str::<GlobalSettings>(&s).ok(),
+            Err(_) => None,
+        };
+
+        if let Some(settings) = settings {
+            if !settings.installed_games.contains_key(game_id) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        if let Some(installer) = Self::create_installer(game_id, biz, temp_dir, components_dir) {
+            let install_path = installer.get_install_path();
+            Self::check_marker_file(&install_path, game_id)
+        } else {
+            false
+        }
+    }
+
+    fn check_marker_file(install_dir: &Path, game_id: &str) -> bool {
+        let marker_path = install_dir.join(".elysia_installed");
+        
+        if !marker_path.exists() {
+            return false;
+        }
+        
+        if let Ok(data) = std::fs::read_to_string(&marker_path) {
+            if let Ok(manifest) = serde_json::from_str::<InstallationManifest>(&data) {
+                return manifest.game_id == game_id;
+            }
+        }
+        
+        false
+    }
+
+    pub fn persist_installation(game_id: String, installed_game: InstalledGame) -> Result<(), String> {
+        let settings_on_disk: GlobalSettings =
+            match std::fs::read_to_string(&*crate::globals::CONFIG_PATH) {
+                Ok(s) => serde_json::from_str(&s)
+                    .unwrap_or_else(|_| GlobalSettings::default()),
+                Err(_) => GlobalSettings::default(),
+            };
+        
+        let mut new_settings = settings_on_disk;
+        new_settings.installed_games.insert(game_id, installed_game);
+        
+        new_settings.save()
+            .map_err(|e| format!("Failed to save settings: {}", e))?;
+        
+        Ok(())
+    }
+}

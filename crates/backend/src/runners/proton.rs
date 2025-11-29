@@ -1,6 +1,6 @@
+use std::process::Command;
 use serde::{Deserialize, Serialize};
-
-use crate::{runners::Runner, settings::InstalledGame};
+use crate::{runners::Runner, settings::InstalledGame, components::tweaks::TweakManifest};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Proton {
@@ -9,29 +9,72 @@ pub struct Proton {
 
 impl Runner for Proton {
     fn run_game(&self, game: &InstalledGame) -> Result<(), String> {
-        let settings = game.settings.upgrade().ok_or_else(|| "No reference to global settings".to_string())?;
-        let settings = &settings.read().map_err(|e| format!("Error reading settings: {}", e))?;
-
+        let settings = game.settings.upgrade()
+            .ok_or_else(|| "No reference to global settings".to_string())?;
+        let settings = settings.read()
+            .map_err(|e| format!("Error reading settings: {}", e))?;
+        
         let components_path = settings.components_directory.join("proton");
         let proton_path = components_path.join(&self.version);
-
         let umu_dir = settings.components_directory.join("umu-launcher");
         let umu_run = umu_dir.join("umu-run");
-
+        
         let prefix = settings
             .wineprefixes_directory
             .join(&game.biz_name)
             .to_string_lossy()
             .into_owned();
+        
+        let game_executable = game.install_path.join(&game.executable_path);
+        let manifest = TweakManifest::new();
 
-        println!(
-            "PROTONPATH=\"{}\" PREFIX=\"{}\" {:?} {:?}",
-            proton_path.display(),
-            prefix,
-            umu_run,
-            game.install_path.join(&game.executable_path)
-        );
-
+        let needs_jade = manifest.needs_jade(&game.id);
+        
+        let mut cmd = Command::new(&umu_run);
+        cmd.env("PROTONPATH", &proton_path)
+           .env("WINEPREFIX", &prefix)
+           .env("PROTONFIXES_DISABLE", "1")
+           .env("WINEDEBUG", "");
+        
+        if needs_jade {
+            let jade = settings.components_directory
+                .join("tweaks")
+                .join("jadeite")
+                .join("jadeite.exe");
+            
+            println!(
+                "Running with Jadeite: PROTONPATH=\"{}\" WINEPREFIX=\"{}\" {} {} {}",
+                proton_path.display(),
+                prefix,
+                umu_run.display(),
+                jade.display(),
+                game_executable.display()
+            );
+            
+            cmd.arg(&jade);
+        } else {
+            println!(
+                "Running: PROTONPATH=\"{}\" WINEPREFIX=\"{}\" {} {}",
+                proton_path.display(),
+                prefix,
+                umu_run.display(),
+                game_executable.display()
+            );
+        }
+        
+        cmd.arg(&game_executable);
+        
+        if let Some(ref args) = game.command_arguments {
+            cmd.args(args);
+        }
+        
+        for (key, value) in &game.environment {
+            cmd.env(key, value);
+        }
+        
+        cmd.spawn()
+            .map_err(|e| format!("Failed to launch game: {}", e))?;
+        
         Ok(())
     }
 }

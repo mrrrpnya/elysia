@@ -94,7 +94,9 @@ fn app() -> Element {
     let ctx = use_resource(move || async move {
         let settings = settings.read();
         let settings = settings.read().unwrap().clone();
-        let api_games = get_games(&settings)
+        
+        // Get hoyoplay games
+        let mut api_games = get_games(&settings)
             .await
             .map_err(|e| e.to_string())
             .map(|v| v.games)
@@ -103,11 +105,29 @@ fn app() -> Element {
                 Vec::new()
             });
 
+        // Get endfield games
+        let endfield_games = backend::game_providers::endfield::get_games()
+            .await
+            .map(|v| v.games)
+            .unwrap_or_else(|e| {
+                println!("Failed to load endfield games: {e}");
+                Vec::new()
+            });
+        
+        // Merge games lists
+        api_games.extend(endfield_games);
+
         let mut api_news = HashMap::new();
 
         for game in &api_games {
             let id = game.id.to_owned();
-            let response = get_game_content(&settings, &id).await;
+            let biz = game.biz.to_owned();
+            
+            let response = if biz == "endfield" {
+                backend::game_providers::endfield::get_game_content(&id).await
+            } else {
+                get_game_content(&settings, &id).await
+            };
 
             match response {
                 Ok(response) => {
