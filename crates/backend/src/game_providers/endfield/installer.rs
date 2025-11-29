@@ -97,7 +97,6 @@ impl GameInstaller for EndfieldInstaller {
         self.clear_progress();
 
         Ok(InstalledGame {
-            settings: Weak::new(),
             id: self.game_id.clone(),
             biz_name: self.biz_name.clone(),
             command_arguments: None,

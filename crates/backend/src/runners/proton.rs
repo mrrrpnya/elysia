@@ -1,6 +1,6 @@
 use std::process::Command;
 use serde::{Deserialize, Serialize};
-use crate::{runners::Runner, settings::InstalledGame, components::tweaks::TweakManifest};
+use crate::{components::tweaks::TweakManifest, runners::Runner, settings::{GlobalSettings, InstalledGame}};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Proton {
@@ -8,12 +8,7 @@ pub struct Proton {
 }
 
 impl Runner for Proton {
-    fn run_game(&self, game: &InstalledGame) -> Result<(), String> {
-        let settings = game.settings.upgrade()
-            .ok_or_else(|| "No reference to global settings".to_string())?;
-        let settings = settings.read()
-            .map_err(|e| format!("Error reading settings: {}", e))?;
-        
+    fn run_game(&self, settings: &GlobalSettings, game: &InstalledGame) -> Result<(), String> {
         let components_path = settings.components_directory.join("proton");
         let proton_path = components_path.join(&self.version);
         let umu_dir = settings.components_directory.join("umu-launcher");

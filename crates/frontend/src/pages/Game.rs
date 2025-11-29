@@ -92,7 +92,7 @@ pub fn Game(game_id: String) -> Element {
             let settings_result = binding.read();
             if let Ok(settings) = settings_result {
                 if let Some(installed_game) = settings.installed_games.get(&game_id_clone) {
-                    if let Err(e) = installed_game.runner.run_game(installed_game) {
+                    if let Err(e) = installed_game.runner.run_game(&settings, installed_game) {
                         eprintln!("Error running game: {}", e);
                     }
                     return;

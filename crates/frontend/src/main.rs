@@ -56,7 +56,6 @@ fn app() -> Element {
             _settings.installed_games.insert(
                 "U5hbdsT9W7".to_string(),
                 InstalledGame {
-                    settings: Arc::downgrade(&settings),
                     id: "U5hbdsT9W7".to_string(),
                     biz_name: "nap_global".to_string(),
                     command_arguments: None,

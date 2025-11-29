@@ -86,8 +86,6 @@ impl GlobalSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InstalledGame {
-    #[serde(skip)]
-    pub settings: Weak<RwLock<GlobalSettings>>,
     pub id: String,
     pub biz_name: String,
     pub install_path: PathBuf,
