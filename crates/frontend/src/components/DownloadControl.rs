@@ -63,12 +63,12 @@ pub fn DownloadControl(props: DownloadControlProps) -> Element {
     let progress_sig = use_signal(|| None::<DownloadProgress>);
 
     {
-        let sig = progress_sig.clone();
+        let sig = progress_sig;
         let key = progress_key.clone();
         let get_progress = get_progress.clone();
         let _ = use_resource(move || {
             let key = key.clone();
-            let mut sig = sig.clone();
+            let mut sig = sig;
             let get_progress = get_progress.clone();
             async move {
                 loop {
@@ -86,7 +86,7 @@ pub fn DownloadControl(props: DownloadControlProps) -> Element {
 
     let progress_element: Element = if let Some(p) = &progress_opt {
         if !p.is_busy {
-            rsx!()
+            rsx!({})
         } else {
             let pct = if p.total > 0 {
                 (p.downloaded as f64 / p.total as f64) * 100.0
@@ -107,7 +107,7 @@ pub fn DownloadControl(props: DownloadControlProps) -> Element {
                         p.status, downloaded_gb, total_gb)
                 }
             } else {
-                format!("{}", p.status)
+                p.status.to_string()
             };
 
             let pct_text = format!("{:.1}%", pct);
@@ -156,7 +156,7 @@ pub fn DownloadControl(props: DownloadControlProps) -> Element {
             )
         }
     } else {
-        rsx!()
+        rsx!({})
     };
 
     let button_label = if installed {
@@ -196,7 +196,7 @@ pub fn DownloadControl(props: DownloadControlProps) -> Element {
                         }
                     )
                 } else {
-                    rsx!()
+                    rsx!({})
                 }
             }
         }

@@ -44,7 +44,9 @@ fn app() -> Element {
             Err(_) => {
                 let mut settings = GlobalSettings::default();
                 settings.validate();
-                settings.save();
+                if let Err(err) = settings.save() {
+                    eprintln!("Failed to save settings: {}", err);
+                }
                 settings
             }
         }))
@@ -76,7 +78,9 @@ fn app() -> Element {
         to_owned![settings];
         use_drop(move || {
             if let Ok(settings) = settings().read() {
-                settings.save();
+                if let Err(err) = settings.save() {
+                    eprintln!("Failed to save settings: {}", err);
+                }
                 println!("Settings saved successfully");
             } else {
                 println!("Failed to save settings");
@@ -93,7 +97,7 @@ fn app() -> Element {
     let ctx = use_resource(move || async move {
         let settings = settings.read();
         let settings = settings.read().unwrap().clone();
-        
+
         // Get hoyoplay games
         let mut api_games = get_games(&settings)
             .await
@@ -112,7 +116,7 @@ fn app() -> Element {
                 println!("Failed to load endfield games: {e}");
                 Vec::new()
             });
-        
+
         // Merge games lists
         api_games.extend(endfield_games);
 
@@ -121,7 +125,7 @@ fn app() -> Element {
         for game in &api_games {
             let id = game.id.to_owned();
             let biz = game.biz.to_owned();
-            
+
             let response = if biz == "endfield" {
                 backend::game_providers::endfield::get_game_content(&id).await
             } else {

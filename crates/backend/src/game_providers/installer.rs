@@ -99,11 +99,10 @@ impl InstallerManager {
             return false;
         }
         
-        if let Ok(data) = std::fs::read_to_string(&marker_path) {
-            if let Ok(manifest) = serde_json::from_str::<InstallationManifest>(&data) {
+        if let Ok(data) = std::fs::read_to_string(&marker_path)
+            && let Ok(manifest) = serde_json::from_str::<InstallationManifest>(&data) {
                 return manifest.game_id == game_id;
             }
-        }
         
         false
     }

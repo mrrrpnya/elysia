@@ -3,7 +3,6 @@ use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    sync::{RwLock, Weak},
 };
 use serde::{Deserialize, Serialize};
 use crate::{

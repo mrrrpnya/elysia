@@ -83,12 +83,12 @@ pub fn Game(game_id: String) -> Element {
     });
 
     let onpress = {
-        let settings_sig = settings_sig.clone();
+        let settings_sig_copy = settings_sig;
         let game_id_clone = game.id.clone();
         let biz = game.biz.clone();
 
         move |_| {
-            let binding = settings_sig.read();
+            let binding = settings_sig_copy.read();
             let settings_result = binding.read();
             if let Ok(settings) = settings_result {
                 if let Some(installed_game) = settings.installed_games.get(&game_id_clone) {

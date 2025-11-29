@@ -125,7 +125,7 @@ impl StreamArchive {
 
     fn create_range_provider(&self) -> impl Fn(ZipPosition, usize) -> Result<Vec<u8>> + '_ {
         move |pos: ZipPosition, len: usize| -> Result<Vec<u8>> {
-            let disk = pos.disk as usize;
+            let disk = pos.disk;
             if disk >= self.packs.len() {
                 return Err(anyhow!("invalid disk index: {}", disk));
             }
@@ -134,7 +134,7 @@ impl StreamArchive {
             let range = format!("bytes={}-{}", pos.offset, pos.offset + len - 1);
 
             tokio::task::block_in_place(|| {
-                tokio::runtime::Handle::current().block_on(async || -> Result<Vec<u8>> {
+                tokio::runtime::Handle::current().block_on(async {
                     let resp = self.client
                         .get(url)
                         .header(RANGE, &range)
@@ -147,7 +147,7 @@ impl StreamArchive {
                     }
 
                     Ok(resp.bytes().await?.to_vec())
-                }())
+                })
             })
         }
     }
@@ -432,13 +432,12 @@ impl StreamArchive {
                     );
                 }
 
-                if buffer.len() >= 65536 {
-                    if Self::process_buffer(&mut unpacker, &mut buffer)? {
+                if buffer.len() >= 65536
+                    && Self::process_buffer(&mut unpacker, &mut buffer)? {
                         let _ = tokio::fs::remove_file(&status_file_path).await;
                         self.update_progress(total, 0.0, 0, "Complete".to_string());
                         return Ok(());
                     }
-                }
             }
             
             if !pack.md5.is_empty() {

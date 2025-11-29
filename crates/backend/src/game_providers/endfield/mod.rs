@@ -207,11 +207,10 @@ pub async fn get_main_bg_image(app_code: &str) -> Result<String, String> {
         .map_err(|e| format!("Failed to deserialize batch response: {}", e))?;
 
     for proxy in typed.proxy_rsps {
-        if let Some(bg_rsp) = proxy.get_main_bg_image_rsp {
-            if let Some(bg_image) = bg_rsp.main_bg_image {
+        if let Some(bg_rsp) = proxy.get_main_bg_image_rsp
+            && let Some(bg_image) = bg_rsp.main_bg_image {
                 return Ok(bg_image.url);
             }
-        }
     }
 
     Err("No background image found in response".to_string())
