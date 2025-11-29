@@ -10,7 +10,7 @@ impl TweakManifest {
 
         game_tweaks.insert(
             // Endfield
-            "endfield_zePXHT2t4L2tKR4m".to_string(),
+            "zePXHT2t4L2tKR4m".to_string(),
             vec!["jade".to_string()],
         );
         
