@@ -37,6 +37,8 @@ impl Runner for Proton {
                 .join("jadeite")
                 .join("jadeite.exe");
             
+            cmd.env("JADEITE_ALLOW_UNKNOWN", "1");
+
             println!(
                 "Running with Jadeite: PROTONPATH=\"{}\" WINEPREFIX=\"{}\" {} {} {}",
                 proton_path.display(),
