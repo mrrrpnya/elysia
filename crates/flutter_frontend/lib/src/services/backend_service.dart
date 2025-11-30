@@ -30,6 +30,7 @@ class BackendFactory {
   static BackendService _createBackend() {
     // Try to use the real Rust backend, fall back to mock if unavailable
     try {
+      debugPrint('[BackendFactory] Attempting to use Rust backend...');
       return RustBackendService();
     } catch (e) {
       debugPrint('[BackendFactory] Rust backend unavailable, using mock: $e');

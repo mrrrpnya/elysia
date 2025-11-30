@@ -65,28 +65,28 @@ jobs:
       
       - name: Install flutter_rust_bridge_codegen
         run: |
-          if ! command -v flutter_rust_bridge_codegen &> /dev/null; then
-            cargo install flutter_rust_bridge_codegen
-          fi
+          cargo install flutter_rust_bridge_codegen || true
       
       - name: Build Rust backend (release)
         run: |
           cargo build --release -p rust_bridge
           echo "Rust backend built successfully"
-          ls -la target/release/librust_bridge.so || echo "Library not found at expected location"
+          ls -la target/release/librust_bridge.so || echo "Library not found"
+      
+      - name: Get Flutter dependencies
+        working-directory: crates/flutter_frontend
+        run: flutter pub get
       
       - name: Generate flutter_rust_bridge bindings
         working-directory: crates/flutter_frontend
         run: |
           echo "Generating FFI bindings..."
-          flutter_rust_bridge_codegen generate || {
-            echo "Warning: Codegen failed, using placeholder bindings"
-            echo "The app will fall back to mock backend if FFI fails"
+          flutter_rust_bridge_codegen generate 2>&1 || {
+            echo "Warning: Codegen had issues, checking if build can continue..."
           }
-      
-      - name: Get Flutter dependencies
-        working-directory: crates/flutter_frontend
-        run: flutter pub get
+          # List generated files
+          echo "Generated files in lib/src/rust/:"
+          ls -la lib/src/rust/ || echo "No files generated"
       
       - name: Analyze Flutter code
         working-directory: crates/flutter_frontend
@@ -98,10 +98,7 @@ jobs:
       
       - name: Prepare Rust library for Flutter build
         run: |
-          # Create libs directory for native library
           mkdir -p crates/flutter_frontend/linux/libs
-          
-          # Copy the compiled Rust library
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so crates/flutter_frontend/linux/libs/
             echo "Rust library copied to Flutter linux/libs/"
@@ -120,13 +117,11 @@ jobs:
           BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
           mkdir -p "$BUNDLE_DIR"
           
-          # Copy the Rust bridge library to the bundle
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so "$BUNDLE_DIR/"
             echo "Rust library bundled with app"
           fi
           
-          # List bundled libraries
           echo "Bundled libraries:"
           ls -la "$BUNDLE_DIR"
       
