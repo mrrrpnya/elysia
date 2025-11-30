@@ -44,6 +44,7 @@ pub fn Game(game_id: String) -> Element {
         let settings = settings_sig.read();
         if let Ok(s) = settings.read() {
             InstallerManager::is_game_installed(
+                &s,
                 &game_id,
                 &game.biz,
                 s.temp_directory.clone(),
@@ -83,31 +84,30 @@ pub fn Game(game_id: String) -> Element {
     });
 
     let onpress = {
-        let settings_sig_copy = settings_sig;
+        let mut settings_sig_copy = settings_sig;
         let game_id_clone = game.id.clone();
         let biz = game.biz.clone();
 
         move |_| {
-            let binding = settings_sig_copy.read();
-            let settings_result = binding.read();
-            if let Ok(settings) = settings_result {
-                if let Some(installed_game) = settings.installed_games.get(&game_id_clone) {
-                    if let Err(e) = installed_game.runner.run_game(&settings, installed_game) {
+            let binding = settings_sig_copy.write();
+            let installer = binding.write().map(|settings| {
+                if let Some(installed_game) = settings.installed_games.get(&game_id_clone)
+                    && let Err(e) = installed_game.runner.run_game(&settings, installed_game) {
                         eprintln!("Error running game: {}", e);
+                        return None;
                     }
-                    return;
-                }
                 
-                let installer = InstallerManager::create_installer(
+                Some(InstallerManager::create_installer(
                     &game_id_clone,
                     &biz,
                     settings.temp_directory.clone(),
                     settings.components_directory.clone(),
-                );
-                
-                if let Some(inst) = installer {
-                    InstallerManager::spawn_install(inst, game_id_clone.clone());
-                }
+                ))
+            }).ok().flatten().flatten();
+            
+            if let Some(inst) = installer {
+                let arc : &Arc<RwLock<GlobalSettings>> = &binding;
+                InstallerManager::spawn_install(arc.clone(), inst, game_id_clone.clone());
             }
         }
     };

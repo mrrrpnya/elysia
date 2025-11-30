@@ -1,8 +1,10 @@
-use crate::settings::{GlobalSettings, InstalledGame};
-use async_trait::async_trait;
-use std::path::{Path, PathBuf};
+use std::{path::{Path, PathBuf}, sync::{Arc, RwLock}};
+
 use crate::game_providers::Progress;
 use serde::{Deserialize, Serialize};
+
+use async_trait::async_trait;
+use crate::settings::{GlobalSettings, InstalledGame};
 
 #[async_trait]
 pub trait GameInstaller: Send + Sync {
@@ -50,37 +52,31 @@ impl InstallerManager {
         }
     }
 
-    pub fn spawn_install(installer: Box<dyn GameInstaller>, game_id: String) {
+    pub fn spawn_install(settings: Arc<RwLock<GlobalSettings>>, installer: Box<dyn GameInstaller>, game_id: String) {
         tokio::spawn(async move {
-            match installer.install().await {
-                Ok(installed_game) => {
-                    if let Err(e) = Self::persist_installation(game_id, installed_game) {
+        match installer.install().await {
+            Ok(installed_game) => {
+                let settings = settings.write();
+                if let Ok(mut settings) = settings
+                    && let Err(e) = Self::persist_installation(&mut settings, game_id, installed_game) {
                         eprintln!("Failed to persist installation: {}", e);
                     }
-                }
-                Err(e) => {
-                    eprintln!("Installation failed: {}", e);
-                }
             }
+            Err(e) => {
+                eprintln!("Failed to install game: {}", e);
+            }
+        }
         });
     }
 
     pub fn is_game_installed(
+        settings: &GlobalSettings,
         game_id: &str,
         biz: &str,
         temp_dir: PathBuf,
         components_dir: PathBuf,
     ) -> bool {
-        let settings = match std::fs::read_to_string(&*crate::globals::CONFIG_PATH) {
-            Ok(s) => serde_json::from_str::<GlobalSettings>(&s).ok(),
-            Err(_) => None,
-        };
-
-        if let Some(settings) = settings {
-            if !settings.installed_games.contains_key(game_id) {
-                return false;
-            }
-        } else {
+        if !settings.installed_games.contains_key(game_id) {
             return false;
         }
 
@@ -107,18 +103,10 @@ impl InstallerManager {
         false
     }
 
-    pub fn persist_installation(game_id: String, installed_game: InstalledGame) -> Result<(), String> {
-        let settings_on_disk: GlobalSettings =
-            match std::fs::read_to_string(&*crate::globals::CONFIG_PATH) {
-                Ok(s) => serde_json::from_str(&s)
-                    .unwrap_or_else(|_| GlobalSettings::default()),
-                Err(_) => GlobalSettings::default(),
-            };
+    pub fn persist_installation(settings: &mut GlobalSettings, game_id: String, installed_game: InstalledGame) -> Result<(), String> {
+        settings.installed_games.insert(game_id, installed_game);
         
-        let mut new_settings = settings_on_disk;
-        new_settings.installed_games.insert(game_id, installed_game);
-        
-        new_settings.save()
+        settings.save()
             .map_err(|e| format!("Failed to save settings: {}", e))?;
         
         Ok(())
