@@ -78,7 +78,7 @@ class ElysiaTheme {
       ),
       
       // Cards
-      cardTheme: const CardTheme(
+      cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
