@@ -1,0 +1,15 @@
+[package]
+name = "rust_bridge"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+flutter_rust_bridge = "2.11.1"
+backend = { workspace = true }
+common = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

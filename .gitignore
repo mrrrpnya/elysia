@@ -1,1 +1,27 @@
 /target
+
+# Flutter
+crates/flutter_frontend/.dart_tool/
+crates/flutter_frontend/build/
+crates/flutter_frontend/.packages
+crates/flutter_frontend/.pub/
+*.dart_tool/
+*.flutter-plugins
+*.flutter-plugins-dependencies
+
+# Generated Rust Bridge code (can be regenerated)
+crates/flutter_frontend/lib/src/rust/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# Compiled native libraries  
+*.so
+*.dylib
+*.dll

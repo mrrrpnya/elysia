@@ -1,0 +1,128 @@
+name: Build Elysia Linux x64
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/build-linux.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/build-linux.yml'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libgtk-3-dev \
+            liblzma-dev \
+            libstdc++-12-dev \
+            libssl-dev \
+            llvm-dev \
+            libclang-dev
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.3'
+          channel: 'stable'
+          cache: true
+      
+      - name: Set up Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+      
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      
+      - name: Install flutter_rust_bridge_codegen
+        run: |
+          if ! command -v flutter_rust_bridge_codegen &> /dev/null; then
+            cargo install flutter_rust_bridge_codegen
+          fi
+      
+      - name: Build Rust backend library
+        run: |
+          cargo build --release -p rust_bridge
+      
+      - name: Generate flutter_rust_bridge bindings
+        working-directory: crates/flutter_frontend
+        run: |
+          flutter_rust_bridge_codegen generate \
+            --rust-input ../rust_bridge/src/api.rs \
+            --dart-output lib/src/rust/frb_generated.dart \
+            --rust-output ../rust_bridge/src/frb_generated.rs \
+            || echo "Codegen skipped - using mock backend for now"
+      
+      - name: Get Flutter dependencies
+        working-directory: crates/flutter_frontend
+        run: flutter pub get
+      
+      - name: Analyze Flutter code
+        working-directory: crates/flutter_frontend
+        run: flutter analyze
+      
+      - name: Run Flutter tests
+        working-directory: crates/flutter_frontend
+        run: flutter test
+      
+      - name: Build Rust bridge as shared library
+        run: |
+          cargo build --release -p rust_bridge
+          mkdir -p crates/flutter_frontend/linux/libs
+          cp target/release/librust_bridge.so crates/flutter_frontend/linux/libs/ 2>/dev/null || true
+      
+      - name: Build Flutter Linux release
+        working-directory: crates/flutter_frontend
+        run: flutter build linux --release
+      
+      - name: Copy Rust libraries to bundle
+        run: |
+          BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
+          mkdir -p "$BUNDLE_DIR"
+          # Copy the rust bridge library if it exists
+          if [ -f "target/release/librust_bridge.so" ]; then
+            cp target/release/librust_bridge.so "$BUNDLE_DIR/"
+          fi
+      
+      - name: Create release archive
+        run: |
+          cd crates/flutter_frontend/build/linux/x64/release/bundle
+          tar -czvf ../../../../../elysia-linux-x64.tar.gz .
+      
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: elysia-linux-x64
+          path: crates/flutter_frontend/elysia-linux-x64.tar.gz
+          retention-days: 7
