@@ -7,6 +7,7 @@ import '../models/models.dart';
 import 'backend_service.dart';
 
 // Import the generated FFI bindings
+import '../rust/api.dart' as rust_api;
 import '../rust/frb_generated.dart';
 
 /// Rust backend service implementation using JSON serialization
@@ -23,7 +24,7 @@ class RustBackendService implements BackendService {
       await RustLib.init();
       
       // Call init function
-      final result = initBackend();
+      final result = rust_api.initBackend();
       debugPrint('[RustBackend] Init result: $result');
       
       _initialized = true;
@@ -43,7 +44,7 @@ class RustBackendService implements BackendService {
       debugPrint('[RustBackend] Fetching games...');
       
       // Call Rust API to get all games as JSON
-      final jsonStr = await getAllGamesJson();
+      final jsonStr = await rust_api.getAllGamesJson();
       
       // Parse JSON
       final List<dynamic> jsonList = json.decode(jsonStr);
@@ -67,7 +68,7 @@ class RustBackendService implements BackendService {
     try {
       debugPrint('[RustBackend] Fetching content for game: $gameId');
       
-      final jsonStr = await getGameContentJson(gameId: gameId, biz: biz);
+      final jsonStr = await rust_api.getGameContentJson(gameId: gameId, biz: biz);
       
       if (jsonStr == 'null') {
         return null;
@@ -87,7 +88,7 @@ class RustBackendService implements BackendService {
     if (!_initialized) return false;
     
     try {
-      return isGameInstalledSync(gameId: gameId, biz: biz);
+      return rust_api.isGameInstalled(gameId: gameId, biz: biz);
     } catch (e) {
       debugPrint('[RustBackend] Error checking installation: $e');
       return false;
@@ -100,7 +101,7 @@ class RustBackendService implements BackendService {
     if (!_initialized) return null;
     
     try {
-      final jsonStr = getDownloadProgressJson(gameId: gameId);
+      final jsonStr = rust_api.getDownloadProgressJson(gameId: gameId);
       
       if (jsonStr == 'null') {
         return null;
