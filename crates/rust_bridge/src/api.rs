@@ -85,10 +85,21 @@ pub async fn get_endfield_background_image(app_code: String) -> Result<String, S
 // ============================================================================
 
 /// Get all games (HoYoPlay + Endfield combined)
+/// Note: Errors from individual providers are logged but don't fail the entire operation
 pub async fn get_all_games(settings: &GlobalSettings) -> Result<Vec<Game>, String> {
-    let mut games = get_hoyoplay_games(settings).await.unwrap_or_default();
-    let endfield_games = get_endfield_games().await.unwrap_or_default();
-    games.extend(endfield_games);
+    let mut games = match get_hoyoplay_games(settings).await {
+        Ok(g) => g,
+        Err(e) => {
+            eprintln!("[WARN] Failed to load HoYoPlay games: {}", e);
+            Vec::new()
+        }
+    };
+    
+    match get_endfield_games().await {
+        Ok(endfield_games) => games.extend(endfield_games),
+        Err(e) => eprintln!("[WARN] Failed to load Endfield games: {}", e),
+    }
+    
     Ok(games)
 }
 
@@ -204,13 +215,23 @@ pub struct AppContext {
 
 /// Load initial app context (games and news)
 pub async fn load_app_context(settings: &GlobalSettings) -> AppContext {
-    let games = get_all_games(settings).await.unwrap_or_default();
+    let games = match get_all_games(settings).await {
+        Ok(g) => g,
+        Err(e) => {
+            eprintln!("[WARN] Failed to load games for app context: {}", e);
+            Vec::new()
+        }
+    };
     let mut news = HashMap::new();
 
     for game in &games {
-        let content = get_game_content(settings, game.id.clone(), game.biz.clone()).await;
-        if let Ok(content) = content {
-            news.insert(game.id.clone(), content);
+        match get_game_content(settings, game.id.clone(), game.biz.clone()).await {
+            Ok(content) => {
+                news.insert(game.id.clone(), content);
+            }
+            Err(e) => {
+                eprintln!("[WARN] Failed to load content for game {}: {}", game.id, e);
+            }
         }
     }
 
