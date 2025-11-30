@@ -91,11 +91,12 @@ pub fn Game(game_id: String) -> Element {
         move |_| {
             let binding = settings_sig_copy.write();
             let installer = binding.write().map(|settings| {
-                if let Some(installed_game) = settings.installed_games.get(&game_id_clone)
-                    && let Err(e) = installed_game.runner.run_game(&settings, installed_game) {
+                if let Some(installed_game) = settings.installed_games.get(&game_id_clone) {
+                    if let Err(e) = installed_game.runner.run_game(&settings, installed_game) {
                         eprintln!("Error running game: {}", e);
-                        return None;
                     }
+                    return None;
+                }
                 
                 Some(InstallerManager::create_installer(
                     &game_id_clone,
