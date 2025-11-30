@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -40,7 +40,7 @@ pub struct VersionCache {
 
 pub struct ComponentManager {
     pub cache: VersionCache,
-    pub components: EnumTable<ComponentType, Arc<dyn Component>, { ComponentType::COUNT }>,
+    pub components: EnumTable<ComponentType, &'static dyn Component, { ComponentType::COUNT }>,
 }
 
 impl ComponentManager {
@@ -48,10 +48,10 @@ impl ComponentManager {
         // TODO: save/load cache from file
 
         let components =
-            EnumTable::<ComponentType, Arc<dyn Component>, { ComponentType::COUNT }>::new_with_fn(
+            EnumTable::<ComponentType, &'static dyn Component, { ComponentType::COUNT }>::new_with_fn(
                 |t| match t {
-                    ComponentType::Dxvk => Arc::new(Dxvk {}),
-                    ComponentType::Jadeite => Arc::new(Jadeite {}),
+                    ComponentType::Dxvk => &(Dxvk {}),
+                    ComponentType::Jadeite => &(Jadeite {}),
                 },
             );
 
@@ -66,8 +66,8 @@ impl ComponentManager {
             .components
             .iter()
             .map(|(name, component)| {
-                let component = Arc::clone(component);
                 let name = *name;
+                let component = *component;
                 tokio::spawn(async move { (name, component.fetch_versions().await) })
             })
             .collect::<Vec<_>>();
