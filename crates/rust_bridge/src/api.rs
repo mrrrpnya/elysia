@@ -277,3 +277,81 @@ pub fn get_data_path() -> String {
 pub fn get_config_path() -> String {
     backend::globals::CONFIG_PATH.to_string_lossy().to_string()
 }
+
+/// Install/download a game
+/// Returns "ok" if installation started, or an error message
+pub async fn install_game(game_id: String, biz: String) -> String {
+    use std::sync::{Arc, RwLock};
+    use backend::game_providers::installer::InstallerManager;
+    
+    let settings = match backend::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(_) => {
+            let mut s = backend::settings::GlobalSettings::default();
+            s.validate();
+            s
+        }
+    };
+    
+    let temp_dir = settings.temp_directory.clone();
+    let components_dir = settings.components_directory.clone();
+    
+    // Create installer for this game
+    match InstallerManager::create_installer(&game_id, &biz, temp_dir, components_dir) {
+        Some(installer) => {
+            // Wrap settings in Arc<RwLock> for the async task
+            let settings_arc = Arc::new(RwLock::new(settings));
+            
+            // Spawn the installation task
+            InstallerManager::spawn_install(settings_arc, installer, game_id.clone());
+            
+            eprintln!("[INFO] Installation started for game: {}", game_id);
+            "ok".to_string()
+        }
+        None => {
+            let err = format!("No installer available for game {} with biz {}", game_id, biz);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}
+
+/// Launch an installed game
+/// Returns "ok" if launch started, or an error message
+pub async fn launch_game(game_id: String) -> String {
+    use backend::runners::{Runner, Runners};
+    
+    let settings = match backend::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(_) => {
+            let mut s = backend::settings::GlobalSettings::default();
+            s.validate();
+            s
+        }
+    };
+    
+    // Get the installed game info
+    match settings.installed_games.get(&game_id) {
+        Some(installed_game) => {
+            // Use native runner for now (Linux native games)
+            let runner = Runners::Native;
+            
+            match runner.run_game(&settings, installed_game) {
+                Ok(_) => {
+                    eprintln!("[INFO] Game launched: {}", game_id);
+                    "ok".to_string()
+                }
+                Err(e) => {
+                    let err = format!("Failed to launch game: {}", e);
+                    eprintln!("[ERROR] {}", err);
+                    err
+                }
+            }
+        }
+        None => {
+            let err = format!("Game {} is not installed", game_id);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}

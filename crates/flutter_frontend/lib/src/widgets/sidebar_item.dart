@@ -24,8 +24,8 @@ class _SidebarItemState extends State<SidebarItem> {
   @override
   Widget build(BuildContext context) {
     final backgroundColor = widget.isActive || _isHovering
-        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.4)
-        : ElysiaTheme.surfaceColor.withValues(alpha: 0.1);
+        ? ElysiaTheme.surfaceColor.withOpacity(0.4)
+        : ElysiaTheme.surfaceColor.withOpacity(0.1);
     
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),

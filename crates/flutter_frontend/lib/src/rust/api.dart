@@ -21,10 +21,9 @@ Future<String> getAllGamesJson() =>
     RustLib.instance.api.crateApiGetAllGamesJson();
 
 /// Get game content as JSON
-Future<String> getGameContentJson({
-  required String gameId,
-  required String biz,
-}) => RustLib.instance.api.crateApiGetGameContentJson(gameId: gameId, biz: biz);
+Future<String> getGameContentJson(
+        {required String gameId, required String biz}) =>
+    RustLib.instance.api.crateApiGetGameContentJson(gameId: gameId, biz: biz);
 
 /// Check if a game is installed
 bool isGameInstalled({required String gameId, required String biz}) =>
@@ -39,3 +38,13 @@ String getDataPath() => RustLib.instance.api.crateApiGetDataPath();
 
 /// Get config file path
 String getConfigPath() => RustLib.instance.api.crateApiGetConfigPath();
+
+/// Install/download a game
+/// Returns "ok" if installation started, or an error message
+Future<String> installGame({required String gameId, required String biz}) =>
+    RustLib.instance.api.crateApiInstallGame(gameId: gameId, biz: biz);
+
+/// Launch an installed game
+/// Returns "ok" if launch started, or an error message
+Future<String> launchGame({required String gameId}) =>
+    RustLib.instance.api.crateApiLaunchGame(gameId: gameId);

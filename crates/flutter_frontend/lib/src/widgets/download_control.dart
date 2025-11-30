@@ -48,7 +48,7 @@ class DownloadControl extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
+            color: Colors.black.withOpacity(0.35),
             borderRadius: BorderRadius.circular(ElysiaTheme.itemRadius),
             border: Border.all(color: ElysiaTheme.borderColor),
           ),
@@ -162,8 +162,8 @@ class _ActionButtonState extends State<_ActionButton> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                 color: _isHovering
-                    ? ElysiaTheme.primaryColor.withValues(alpha: 0.8)
-                    : ElysiaTheme.primaryColor.withValues(alpha: 0.7),
+                    ? ElysiaTheme.primaryColor.withOpacity(0.8)
+                    : ElysiaTheme.primaryColor.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
                 boxShadow: const [
                   BoxShadow(

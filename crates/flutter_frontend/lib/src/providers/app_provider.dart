@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/services.dart';
@@ -9,6 +10,8 @@ class AppProvider extends ChangeNotifier {
   Game? _selectedGame;
   bool _isLoading = true;
   String? _error;
+  Timer? _progressTimer;
+  final Set<String> _activeDownloads = {};
   
   // Backend service (uses Rust backend or mock)
   final BackendService _backend = BackendFactory.instance;
@@ -82,11 +85,79 @@ class AppProvider extends ChangeNotifier {
       debugPrint('Game not found: $gameId');
       return;
     }
-    await _backend.installGame(gameId, game.biz);
+    
+    try {
+      await _backend.installGame(gameId, game.biz);
+      
+      // Track this download and start polling for progress
+      _activeDownloads.add(gameId);
+      _startProgressPolling();
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to start download: $e');
+    }
   }
   
   /// Launch a game
   Future<void> launchGame(String gameId) async {
     await _backend.launchGame(gameId);
+  }
+  
+  /// Start polling for download progress
+  void _startProgressPolling() {
+    // Cancel any existing timer
+    _progressTimer?.cancel();
+    
+    // Poll every 500ms
+    _progressTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      _pollProgress();
+    });
+  }
+  
+  /// Stop polling for download progress
+  void _stopProgressPolling() {
+    _progressTimer?.cancel();
+    _progressTimer = null;
+  }
+  
+  /// Poll for download progress and notify listeners
+  void _pollProgress() {
+    if (_activeDownloads.isEmpty) {
+      _stopProgressPolling();
+      return;
+    }
+    
+    // Check progress for all active downloads
+    final completed = <String>[];
+    
+    for (final gameId in _activeDownloads) {
+      final progress = _backend.getDownloadProgress(gameId);
+      
+      // Check if download is complete (no progress or not busy)
+      if (progress == null || !progress.isBusy) {
+        completed.add(gameId);
+      }
+    }
+    
+    // Remove completed downloads
+    for (final gameId in completed) {
+      _activeDownloads.remove(gameId);
+      debugPrint('Download completed for game: $gameId');
+    }
+    
+    // Stop polling if no more active downloads
+    if (_activeDownloads.isEmpty) {
+      _stopProgressPolling();
+    }
+    
+    // Always notify to update UI
+    notifyListeners();
+  }
+  
+  @override
+  void dispose() {
+    _stopProgressPolling();
+    super.dispose();
   }
 }

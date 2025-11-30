@@ -181,7 +181,7 @@ class _SettingsSection extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: ElysiaTheme.surfaceColor.withValues(alpha: 0.5),
+            color: ElysiaTheme.surfaceColor.withOpacity(0.5),
             borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
             border: Border.all(color: ElysiaTheme.borderColor),
           ),
@@ -229,7 +229,7 @@ class _SettingsItemState extends State<_SettingsItem> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isHovering && widget.onTap != null
-                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.3)
+                ? ElysiaTheme.surfaceColor.withOpacity(0.3)
                 : Colors.transparent,
           ),
           child: Row(

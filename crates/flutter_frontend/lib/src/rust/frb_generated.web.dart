@@ -82,9 +82,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  );
+      Uint8List self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
@@ -105,34 +103,39 @@ class RustLibWire implements BaseWire {
       wasmModule.wire__crate__api__get_all_games_json(port_);
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_config_path() =>
-      wasmModule.wire__crate__api__get_config_path();
+      wire__crate__api__get_config_path() =>
+          wasmModule.wire__crate__api__get_config_path();
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_data_path() =>
-      wasmModule.wire__crate__api__get_data_path();
+      wire__crate__api__get_data_path() =>
+          wasmModule.wire__crate__api__get_data_path();
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_download_progress_json(String game_id) =>
-      wasmModule.wire__crate__api__get_download_progress_json(game_id);
+      wire__crate__api__get_download_progress_json(String game_id) =>
+          wasmModule.wire__crate__api__get_download_progress_json(game_id);
 
   void wire__crate__api__get_game_content_json(
-    NativePortType port_,
-    String game_id,
-    String biz,
-  ) => wasmModule.wire__crate__api__get_game_content_json(port_, game_id, biz);
+          NativePortType port_, String game_id, String biz) =>
+      wasmModule.wire__crate__api__get_game_content_json(port_, game_id, biz);
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_settings_json() =>
-      wasmModule.wire__crate__api__get_settings_json();
+      wire__crate__api__get_settings_json() =>
+          wasmModule.wire__crate__api__get_settings_json();
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__init_backend() =>
-      wasmModule.wire__crate__api__init_backend();
+      wire__crate__api__init_backend() =>
+          wasmModule.wire__crate__api__init_backend();
+
+  void wire__crate__api__install_game(
+          NativePortType port_, String game_id, String biz) =>
+      wasmModule.wire__crate__api__install_game(port_, game_id, biz);
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__is_game_installed(String game_id, String biz) =>
-      wasmModule.wire__crate__api__is_game_installed(game_id, biz);
+      wire__crate__api__is_game_installed(String game_id, String biz) =>
+          wasmModule.wire__crate__api__is_game_installed(game_id, biz);
+
+  void wire__crate__api__launch_game(NativePortType port_, String game_id) =>
+      wasmModule.wire__crate__api__launch_game(port_, game_id);
 }
 
 @JS('wasm_bindgen')
@@ -144,26 +147,29 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
   external void wire__crate__api__get_all_games_json(NativePortType port_);
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_config_path();
+      wire__crate__api__get_config_path();
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_data_path();
+      wire__crate__api__get_data_path();
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_download_progress_json(String game_id);
+      wire__crate__api__get_download_progress_json(String game_id);
 
   external void wire__crate__api__get_game_content_json(
-    NativePortType port_,
-    String game_id,
-    String biz,
-  );
+      NativePortType port_, String game_id, String biz);
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__get_settings_json();
+      wire__crate__api__get_settings_json();
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__init_backend();
+      wire__crate__api__init_backend();
+
+  external void wire__crate__api__install_game(
+      NativePortType port_, String game_id, String biz);
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-  wire__crate__api__is_game_installed(String game_id, String biz);
+      wire__crate__api__is_game_installed(String game_id, String biz);
+
+  external void wire__crate__api__launch_game(
+      NativePortType port_, String game_id);
 }

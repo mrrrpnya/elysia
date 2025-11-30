@@ -66,7 +66,7 @@ class ElysiaTheme {
       // Buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: surfaceColor.withValues(alpha: 0.6),
+          backgroundColor: surfaceColor.withOpacity(0.6),
           foregroundColor: textPrimary,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
@@ -78,12 +78,12 @@ class ElysiaTheme {
       ),
       
       // Cards
-      cardTheme: CardThemeData(
+      cardTheme: const CardTheme(
         color: cardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cardRadius),
-          side: const BorderSide(color: borderColor),
+          borderRadius: BorderRadius.all(Radius.circular(cardRadius)),
+          side: BorderSide(color: borderColor),
         ),
       ),
       
@@ -108,7 +108,7 @@ class GlassDecoration extends BoxDecoration {
     Color? color,
     double borderRadius = ElysiaTheme.cardRadius,
   }) : super(
-    color: color ?? ElysiaTheme.surfaceColor.withValues(alpha: 0.4),
+    color: color ?? ElysiaTheme.surfaceColor.withOpacity(0.4),
     borderRadius: BorderRadius.circular(borderRadius),
     border: Border.all(color: ElysiaTheme.borderColor),
     boxShadow: const [

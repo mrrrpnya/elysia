@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1241706780;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -505066615;
 
 // Section: executor
 
@@ -179,6 +179,34 @@ fn wire__crate__api__init_backend_impl() -> flutter_rust_bridge::for_generated::
         },
     )
 }
+fn wire__crate__api__install_game_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    game_id: impl CstDecode<String>,
+    biz: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "install_game",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_game_id = game_id.cst_decode();
+            let api_biz = biz.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok = Result::<_, ()>::Ok(
+                            crate::api::install_game(api_game_id, api_biz).await,
+                        )?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__is_game_installed_impl(
     game_id: impl CstDecode<String>,
     biz: impl CstDecode<String>,
@@ -197,6 +225,31 @@ fn wire__crate__api__is_game_installed_impl(
                     Result::<_, ()>::Ok(crate::api::is_game_installed(api_game_id, api_biz))?;
                 Ok(output_ok)
             })())
+        },
+    )
+}
+fn wire__crate__api__launch_game_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    game_id: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "launch_game",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_game_id = game_id.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Result::<_, ()>::Ok(crate::api::launch_game(api_game_id).await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
         },
     )
 }
@@ -414,11 +467,28 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__install_game(
+        port_: i64,
+        game_id: *mut wire_cst_list_prim_u_8_strict,
+        biz: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__install_game_impl(port_, game_id, biz)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__is_game_installed(
         game_id: *mut wire_cst_list_prim_u_8_strict,
         biz: *mut wire_cst_list_prim_u_8_strict,
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__is_game_installed_impl(game_id, biz)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__launch_game(
+        port_: i64,
+        game_id: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__launch_game_impl(port_, game_id)
     }
 
     #[unsafe(no_mangle)]
@@ -552,11 +622,28 @@ mod web {
     }
 
     #[wasm_bindgen]
+    pub fn wire__crate__api__install_game(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        game_id: String,
+        biz: String,
+    ) {
+        wire__crate__api__install_game_impl(port_, game_id, biz)
+    }
+
+    #[wasm_bindgen]
     pub fn wire__crate__api__is_game_installed(
         game_id: String,
         biz: String,
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__is_game_installed_impl(game_id, biz)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__launch_game(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        game_id: String,
+    ) {
+        wire__crate__api__launch_game_impl(port_, game_id)
     }
 }
 #[cfg(target_family = "wasm")]

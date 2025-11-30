@@ -35,8 +35,12 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   /// Initialize flutter_rust_bridge in mock mode.
   /// No libraries for FFI are loaded.
-  static void initMock({required RustLibApi api}) {
-    instance.initMockImpl(api: api);
+  static void initMock({
+    required RustLibApi api,
+  }) {
+    instance.initMockImpl(
+      api: api,
+    );
   }
 
   /// Dispose flutter_rust_bridge
@@ -64,14 +68,14 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -1241706780;
+  int get rustContentHash => -505066615;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
-        stem: 'rust_bridge',
-        ioDirectory: '../rust_bridge/target/release/',
-        webPrefix: 'pkg/',
-      );
+    stem: 'rust_bridge',
+    ioDirectory: '../rust_bridge/target/release/',
+    webPrefix: 'pkg/',
+  );
 }
 
 abstract class RustLibApi extends BaseApi {
@@ -83,16 +87,19 @@ abstract class RustLibApi extends BaseApi {
 
   String crateApiGetDownloadProgressJson({required String gameId});
 
-  Future<String> crateApiGetGameContentJson({
-    required String gameId,
-    required String biz,
-  });
+  Future<String> crateApiGetGameContentJson(
+      {required String gameId, required String biz});
 
   String crateApiGetSettingsJson();
 
   String crateApiInitBackend();
 
+  Future<String> crateApiInstallGame(
+      {required String gameId, required String biz});
+
   bool crateApiIsGameInstalled({required String gameId, required String biz});
+
+  Future<String> crateApiLaunchGame({required String gameId});
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -105,84 +112,82 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<String> crateApiGetAllGamesJson() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          return wire.wire__crate__api__get_all_games_json(port_);
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetAllGamesJsonConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire__crate__api__get_all_games_json(port_);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetAllGamesJsonConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiGetAllGamesJsonConstMeta =>
-      const TaskConstMeta(debugName: "get_all_games_json", argNames: []);
+  TaskConstMeta get kCrateApiGetAllGamesJsonConstMeta => const TaskConstMeta(
+        debugName: "get_all_games_json",
+        argNames: [],
+      );
 
   @override
   String crateApiGetConfigPath() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          return wire.wire__crate__api__get_config_path();
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetConfigPathConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__get_config_path();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetConfigPathConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiGetConfigPathConstMeta =>
-      const TaskConstMeta(debugName: "get_config_path", argNames: []);
+  TaskConstMeta get kCrateApiGetConfigPathConstMeta => const TaskConstMeta(
+        debugName: "get_config_path",
+        argNames: [],
+      );
 
   @override
   String crateApiGetDataPath() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          return wire.wire__crate__api__get_data_path();
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetDataPathConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__get_data_path();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetDataPathConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiGetDataPathConstMeta =>
-      const TaskConstMeta(debugName: "get_data_path", argNames: []);
+  TaskConstMeta get kCrateApiGetDataPathConstMeta => const TaskConstMeta(
+        debugName: "get_data_path",
+        argNames: [],
+      );
 
   @override
   String crateApiGetDownloadProgressJson({required String gameId}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          var arg0 = cst_encode_String(gameId);
-          return wire.wire__crate__api__get_download_progress_json(arg0);
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetDownloadProgressJsonConstMeta,
-        argValues: [gameId],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        var arg0 = cst_encode_String(gameId);
+        return wire.wire__crate__api__get_download_progress_json(arg0);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetDownloadProgressJsonConstMeta,
+      argValues: [gameId],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetDownloadProgressJsonConstMeta =>
@@ -192,103 +197,139 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String> crateApiGetGameContentJson({
-    required String gameId,
-    required String biz,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          var arg0 = cst_encode_String(gameId);
-          var arg1 = cst_encode_String(biz);
-          return wire.wire__crate__api__get_game_content_json(
-            port_,
-            arg0,
-            arg1,
-          );
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetGameContentJsonConstMeta,
-        argValues: [gameId, biz],
-        apiImpl: this,
+  Future<String> crateApiGetGameContentJson(
+      {required String gameId, required String biz}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_String(gameId);
+        var arg1 = cst_encode_String(biz);
+        return wire.wire__crate__api__get_game_content_json(port_, arg0, arg1);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetGameContentJsonConstMeta,
+      argValues: [gameId, biz],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiGetGameContentJsonConstMeta => const TaskConstMeta(
-    debugName: "get_game_content_json",
-    argNames: ["gameId", "biz"],
-  );
+        debugName: "get_game_content_json",
+        argNames: ["gameId", "biz"],
+      );
 
   @override
   String crateApiGetSettingsJson() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          return wire.wire__crate__api__get_settings_json();
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGetSettingsJsonConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__get_settings_json();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiGetSettingsJsonConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiGetSettingsJsonConstMeta =>
-      const TaskConstMeta(debugName: "get_settings_json", argNames: []);
+  TaskConstMeta get kCrateApiGetSettingsJsonConstMeta => const TaskConstMeta(
+        debugName: "get_settings_json",
+        argNames: [],
+      );
 
   @override
   String crateApiInitBackend() {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          return wire.wire__crate__api__init_backend();
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiInitBackendConstMeta,
-        argValues: [],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__init_backend();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiInitBackendConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
   }
 
-  TaskConstMeta get kCrateApiInitBackendConstMeta =>
-      const TaskConstMeta(debugName: "init_backend", argNames: []);
+  TaskConstMeta get kCrateApiInitBackendConstMeta => const TaskConstMeta(
+        debugName: "init_backend",
+        argNames: [],
+      );
+
+  @override
+  Future<String> crateApiInstallGame(
+      {required String gameId, required String biz}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_String(gameId);
+        var arg1 = cst_encode_String(biz);
+        return wire.wire__crate__api__install_game(port_, arg0, arg1);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiInstallGameConstMeta,
+      argValues: [gameId, biz],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiInstallGameConstMeta => const TaskConstMeta(
+        debugName: "install_game",
+        argNames: ["gameId", "biz"],
+      );
 
   @override
   bool crateApiIsGameInstalled({required String gameId, required String biz}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          var arg0 = cst_encode_String(gameId);
-          var arg1 = cst_encode_String(biz);
-          return wire.wire__crate__api__is_game_installed(arg0, arg1);
-        },
-        codec: DcoCodec(
-          decodeSuccessData: dco_decode_bool,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiIsGameInstalledConstMeta,
-        argValues: [gameId, biz],
-        apiImpl: this,
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        var arg0 = cst_encode_String(gameId);
+        var arg1 = cst_encode_String(biz);
+        return wire.wire__crate__api__is_game_installed(arg0, arg1);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_bool,
+        decodeErrorData: null,
       ),
-    );
+      constMeta: kCrateApiIsGameInstalledConstMeta,
+      argValues: [gameId, biz],
+      apiImpl: this,
+    ));
   }
 
   TaskConstMeta get kCrateApiIsGameInstalledConstMeta => const TaskConstMeta(
-    debugName: "is_game_installed",
-    argNames: ["gameId", "biz"],
-  );
+        debugName: "is_game_installed",
+        argNames: ["gameId", "biz"],
+      );
+
+  @override
+  Future<String> crateApiLaunchGame({required String gameId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_String(gameId);
+        return wire.wire__crate__api__launch_game(port_, arg0);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiLaunchGameConstMeta,
+      argValues: [gameId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiLaunchGameConstMeta => const TaskConstMeta(
+        debugName: "launch_game",
+        argNames: ["gameId"],
+      );
 
   @protected
   String dco_decode_String(dynamic raw) {
@@ -389,9 +430,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  ) {
+      Uint8List self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);

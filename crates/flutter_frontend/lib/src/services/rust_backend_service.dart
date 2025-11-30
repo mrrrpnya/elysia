@@ -128,8 +128,19 @@ class RustBackendService implements BackendService {
   Future<void> installGame(String gameId, String biz) async {
     await _ensureInitialized();
     
-    debugPrint('[RustBackend] Installing game: $gameId');
-    // TODO: Implement game installation via Rust backend
+    debugPrint('[RustBackend] Installing game: $gameId (biz: $biz)');
+    
+    try {
+      final result = await rust_api.installGame(gameId: gameId, biz: biz);
+      if (result != 'ok') {
+        debugPrint('[RustBackend] Installation error: $result');
+        throw Exception(result);
+      }
+      debugPrint('[RustBackend] Installation started for game: $gameId');
+    } catch (e) {
+      debugPrint('[RustBackend] Failed to start installation: $e');
+      rethrow;
+    }
   }
   
   /// Launch an installed game
@@ -138,7 +149,18 @@ class RustBackendService implements BackendService {
     await _ensureInitialized();
     
     debugPrint('[RustBackend] Launching game: $gameId');
-    // TODO: Implement game launching via Rust backend
+    
+    try {
+      final result = await rust_api.launchGame(gameId: gameId);
+      if (result != 'ok') {
+        debugPrint('[RustBackend] Launch error: $result');
+        throw Exception(result);
+      }
+      debugPrint('[RustBackend] Game launched: $gameId');
+    } catch (e) {
+      debugPrint('[RustBackend] Failed to launch game: $e');
+      rethrow;
+    }
   }
   
   /// Ensure the backend is initialized

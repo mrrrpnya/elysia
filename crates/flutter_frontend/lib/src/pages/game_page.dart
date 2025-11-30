@@ -162,7 +162,7 @@ class _BackgroundImage extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
               child: Container(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
               ),
             ),
           ),
@@ -186,8 +186,8 @@ class _BackgroundImage extends StatelessWidget {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                Colors.black.withValues(alpha: 0.6),
-                Colors.black.withValues(alpha: 0.0),
+                Colors.black.withOpacity(0.6),
+                Colors.black.withOpacity(0.0),
               ],
             ),
           ),
