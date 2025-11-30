@@ -333,10 +333,7 @@ pub async fn launch_game(game_id: String) -> String {
     // Get the installed game info
     match settings.installed_games.get(&game_id) {
         Some(installed_game) => {
-            // Use native runner for now (Linux native games)
-            let runner = Runners::Native;
-            
-            match runner.run_game(&settings, installed_game) {
+            match installed_game.runner.run_game(&settings, installed_game) {
                 Ok(_) => {
                     eprintln!("[INFO] Game launched: {}", game_id);
                     "ok".to_string()
