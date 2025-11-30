@@ -18,14 +18,13 @@ pub struct EndfieldInstaller {
 
 impl EndfieldInstaller {
     pub fn new(
-        appcode: String,
         game_id: String,
         temp_dir: PathBuf,
         games_dir: PathBuf,
         biz_name: String,
     ) -> Self {
         Self {
-            appcode,
+            appcode: game_id.clone(),
             game_id,
             temp_dir,
             games_dir,

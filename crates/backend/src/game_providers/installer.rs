@@ -37,12 +37,8 @@ impl InstallerManager {
             "endfield" => {
                 use crate::game_providers::endfield::EndfieldInstaller;
                 
-                let appcode = game_id;
-                let generated_game_id = format!("endfield_{}", appcode);
-                
                 Some(Box::new(EndfieldInstaller::new(
-                    appcode.to_string(),
-                    generated_game_id,
+                    game_id.to_string(),
                     temp_dir,
                     games_dir,
                     biz.to_string(),
