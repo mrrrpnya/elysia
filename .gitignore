@@ -9,9 +9,6 @@ crates/flutter_frontend/.pub/
 *.flutter-plugins
 *.flutter-plugins-dependencies
 
-# Generated Rust Bridge code (can be regenerated)
-crates/flutter_frontend/lib/src/rust/
-
 # IDE
 .idea/
 *.iml
@@ -21,8 +18,8 @@ crates/flutter_frontend/lib/src/rust/
 .DS_Store
 *.dSYM/
 
-# Compiled native libraries  
-*.so
+# Compiled native libraries (in wrong places)
+crates/flutter_frontend/linux/libs/*.so
 *.dylib
 *.dll
 _codeql_detected_source_root
