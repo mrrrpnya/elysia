@@ -2,17 +2,21 @@ use std::{collections::HashMap, sync::Arc};
 
 use anyhow::Result;
 use async_trait::async_trait;
+use enum_table::{EnumTable, Enumable};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
 mod dxvk;
+mod jadeite;
 pub mod tweaks;
 
-use crate::components::dxvk::Dxvk;
+use crate::components::{dxvk::Dxvk, jadeite::Jadeite};
 
-#[derive(Serialize, PartialEq, Eq, Hash, Deserialize, Debug, Clone)]
+#[derive(Serialize, PartialEq, Eq, Hash, Deserialize, Debug, Clone, Enumable, Copy)]
+#[repr(u8)]
 pub enum ComponentType {
     Dxvk,
+    Jadeite,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -36,16 +40,20 @@ pub struct VersionCache {
 
 pub struct ComponentManager {
     pub cache: VersionCache,
-    pub components: HashMap<ComponentType, Arc<dyn Component>>,
+    pub components: EnumTable<ComponentType, Arc<dyn Component>, { ComponentType::COUNT }>,
 }
 
 impl ComponentManager {
     pub async fn new() -> Self {
         // TODO: save/load cache from file
 
-        let mut components: HashMap<ComponentType, Arc<dyn Component>> = HashMap::new();
-
-        components.insert(ComponentType::Dxvk, Arc::new(Dxvk {}));
+        let components =
+            EnumTable::<ComponentType, Arc<dyn Component>, { ComponentType::COUNT }>::new_with_fn(
+                |t| match t {
+                    ComponentType::Dxvk => Arc::new(Dxvk {}),
+                    ComponentType::Jadeite => Arc::new(Jadeite {}),
+                },
+            );
 
         Self {
             cache: VersionCache::default(),
@@ -59,7 +67,7 @@ impl ComponentManager {
             .iter()
             .map(|(name, component)| {
                 let component = Arc::clone(component);
-                let name = name.clone();
+                let name = *name;
                 tokio::spawn(async move { (name, component.fetch_versions().await) })
             })
             .collect::<Vec<_>>();

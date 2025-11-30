@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 pub type ReleasesResponse = Vec<Release>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct Release {
     pub url: String,
     pub assets_url: String,
@@ -30,7 +31,8 @@ pub struct Release {
     extra: std::collections::HashMap<String, serde_json::Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct User {
     pub login: String,
     pub id: u64,
@@ -57,7 +59,8 @@ pub struct User {
     extra: std::collections::HashMap<String, serde_json::Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct Asset {
     pub url: String,
     pub id: u64,
@@ -68,7 +71,7 @@ pub struct Asset {
     pub content_type: String,
     pub state: String,
     pub size: u64,
-    pub digest: String,
+    pub digest: Option<String>,
     pub download_count: u64,
     pub created_at: String,
     pub updated_at: String,
@@ -78,7 +81,8 @@ pub struct Asset {
     extra: std::collections::HashMap<String, serde_json::Value>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
 pub struct Reactions {
     pub url: String,
     pub total_count: u64,

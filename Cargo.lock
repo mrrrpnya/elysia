@@ -434,6 +434,7 @@ dependencies = [
  "bytes",
  "cacache",
  "common",
+ "enum-table",
  "futures-util",
  "lazy_static",
  "md5",
@@ -1176,6 +1177,27 @@ name = "endi"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3d8a32ae18130a3c84dd492d4215c3d913c3b07c6b63c2eb3eb7ff1101ab7bf"
+
+[[package]]
+name = "enum-table"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c3c23e26e54e2f5663a7e9861de5d6d8f077ec835b46eda0d1b0280ed4c730b"
+dependencies = [
+ "enum-table-derive",
+ "serde",
+]
+
+[[package]]
+name = "enum-table-derive"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1731b84c8a40ea5ad0d40f44cb64aea7cb94ef8195d4dddabdcf6c148000b1b6"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "enumflags2"
