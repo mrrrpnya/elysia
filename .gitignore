@@ -25,3 +25,4 @@ crates/flutter_frontend/lib/src/rust/
 *.so
 *.dylib
 *.dll
+_codeql_detected_source_root
