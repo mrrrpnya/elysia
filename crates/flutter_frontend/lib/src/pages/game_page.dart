@@ -259,13 +259,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       }
     }
     
-    if (videoController != null) {
-      try {
-        await videoController.dispose();
-      } catch (e) {
-        debugPrint('Error disposing video controller: $e');
-      }
-    }
+    // VideoController doesn't need explicit disposal in media_kit
+    // The Player object handles cleanup automatically
   }
   
   @override
@@ -294,13 +289,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
           }
         }
         
-        if (videoController != null) {
-          try {
-            await videoController.dispose();
-          } catch (e) {
-            debugPrint('Error disposing video controller: $e');
-          }
-        }
+        // VideoController doesn't need explicit disposal in media_kit
+        // The Player object handles cleanup automatically
       });
     }
     
