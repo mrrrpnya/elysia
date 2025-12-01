@@ -175,18 +175,7 @@ jobs:
               
               include:
                 - libmpv1
-                - libmpv-dev
                 - ffmpeg
-                - libavcodec59
-                - libavformat59
-                - libavutil57
-                - libswscale6
-                - libswresample4
-                - libass9
-                - libdrm2
-                - libva2
-                - libva-drm2
-                - libvdpau1
               
               exclude:
                 - libgtk-3-0
