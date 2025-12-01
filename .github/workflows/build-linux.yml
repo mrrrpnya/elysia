@@ -180,9 +180,10 @@ jobs:
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
           
-          # Download appimagetool only (linuxdeploy not needed for manual AppDir creation)
+          # Download linuxdeploy and appimagetool
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage appimagetool-x86_64.AppImage
           
           # Create AppDir structure
           mkdir -p AppDir/usr/bin
@@ -208,6 +209,10 @@ jobs:
           # Create a simple icon (placeholder - you should add a real icon)
           convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
             echo "Icon generation skipped (imagemagick not available)"
+          
+          # Use linuxdeploy to deploy dependencies automatically
+          # The --deploy-deps-only flag automatically finds and bundles all shared library dependencies
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --deploy-deps-only=AppDir/usr/bin/elysia
           
           # Create AppRun script
           cat > AppDir/AppRun << 'EOF'
