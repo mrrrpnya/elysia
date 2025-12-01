@@ -205,55 +205,38 @@ jobs:
           cp ../../../../../elysia.png AppDir/elysia.png
           cp ../../../../../elysia.png AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png
           
-          # Manually deploy dependencies using ldd
-          # This is more reliable than linuxdeploy when dealing with custom library paths
-          echo "Deploying dependencies for elysia executable..."
-          export LD_LIBRARY_PATH="$PWD/AppDir/usr/lib:${LD_LIBRARY_PATH}"
+          # Only bundle media_kit dependencies (libmpv and its direct dependencies)
+          # Let the system provide all other libraries to avoid ABI conflicts
+          echo "Bundling libmpv and its dependencies..."
           
-          # Find and copy dependencies of the main executable
-          # Exclude critical system libraries that should come from host
-          # This prevents version mismatches and ABI incompatibilities
-          EXCLUDED_LIBS="libc.so libdl.so libpthread.so libm.so librt.so libresolv.so ld-linux libglib libgobject libgio libgmodule libgtk libgdk libatk libpango libcairo libharfbuzz libpixman libfontconfig"
-          
-          ldd AppDir/usr/bin/elysia | grep "=> /" | awk '{print $3}' | while read dep; do
-            # Check if this library should be excluded
-            should_exclude=0
-            for excluded in $EXCLUDED_LIBS; do
-              if [[ "$(basename $dep)" == $excluded* ]]; then
-                should_exclude=1
-                break
-              fi
-            done
-            
-            if [ $should_exclude -eq 0 ] && [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
-              cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
-              echo "Bundled: $(basename $dep)"
-            fi
-          done
-          
-          # Find and copy dependencies of all libraries in usr/lib
-          echo "Deploying dependencies for libraries in usr/lib..."
-          for lib in AppDir/usr/lib/*.so*; do
-            if [ -f "$lib" ]; then
-              ldd "$lib" 2>/dev/null | grep "=> /" | awk '{print $3}' | while read dep; do
-                # Check if this library should be excluded
-                should_exclude=0
-                for excluded in $EXCLUDED_LIBS; do
-                  if [[ "$(basename $dep)" == $excluded* ]]; then
-                    should_exclude=1
-                    break
+          # Find libmpv and copy it
+          if [ -f "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so" ]; then
+            echo "Found media_kit plugin, checking for libmpv..."
+            ldd AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so | grep libmpv | awk '{print $3}' | while read mpv_lib; do
+              if [ -f "$mpv_lib" ]; then
+                cp -L "$mpv_lib" AppDir/usr/lib/
+                echo "Bundled: $(basename $mpv_lib)"
+                
+                # Now bundle libmpv's dependencies (but exclude system libs)
+                ldd "$mpv_lib" | grep "=> /" | awk '{print $3}' | while read dep; do
+                  dep_name=$(basename "$dep")
+                  # Only bundle media-related libs, not system libs
+                  if [[ "$dep_name" == libavcodec* ]] || [[ "$dep_name" == libavformat* ]] || \
+                     [[ "$dep_name" == libavutil* ]] || [[ "$dep_name" == libswscale* ]] || \
+                     [[ "$dep_name" == libswresample* ]] || [[ "$dep_name" == libass* ]] || \
+                     [[ "$dep_name" == libdrm* ]] || [[ "$dep_name" == libva* ]]; then
+                    if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$dep_name" ]; then
+                      cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
+                      echo "Bundled: $dep_name"
+                    fi
                   fi
                 done
-                
-                if [ $should_exclude -eq 0 ] && [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
-                  cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
-                fi
-              done
-            fi
-          done
+              fi
+            done
+          fi
           
-          echo "Dependency deployment complete"
-          ls -lh AppDir/usr/lib/ | head -20
+          echo "Dependency bundling complete (media_kit only)"
+          ls -lh AppDir/usr/lib/ | grep -E "(libmpv|libav|libass|libdrm|libva)"
           
           # Create AppRun script
           cat > AppDir/AppRun << 'EOF'
