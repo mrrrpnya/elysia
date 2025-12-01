@@ -38,7 +38,8 @@ jobs:
             libstdc++-12-dev \
             libssl-dev \
             llvm-dev \
-            libclang-dev
+            libclang-dev \
+            libasound2-dev
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
