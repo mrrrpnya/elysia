@@ -261,6 +261,8 @@ jobs:
           HERE=${SELF%/*}
           export PATH="${HERE}/usr/bin:${PATH}"
           export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+          # Disable GIO modules from system to avoid warnings about missing modules
+          export GIO_MODULE_DIR="${HERE}/usr/lib/gio/modules"
           exec "${HERE}/usr/bin/elysia" "$@"
           EOF
           chmod +x AppDir/AppRun
