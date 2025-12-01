@@ -175,13 +175,28 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isDisposing) return;
+    
     // Pause video when app is not visible to prevent crashes
     if (state == AppLifecycleState.paused || 
         state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.detached) {
-      _controller?.pause();
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      _pauseVideo();
     } else if (state == AppLifecycleState.resumed && _isInitialized) {
-      _controller?.play();
+      _resumeVideo();
+    }
+  }
+  
+  void _pauseVideo() {
+    if (_controller != null && _controller!.value.isInitialized) {
+      _controller!.pause();
+    }
+  }
+  
+  void _resumeVideo() {
+    if (!_isDisposing && _controller != null && _controller!.value.isInitialized) {
+      _controller!.play();
     }
   }
   
@@ -196,7 +211,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       await _controller!.initialize();
       
       if (_isDisposing || !mounted) {
-        _controller?.dispose();
+        await _disposeController();
         return;
       }
       
@@ -219,13 +234,37 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
   }
   
+  Future<void> _disposeController() async {
+    final controller = _controller;
+    _controller = null;
+    
+    if (controller != null) {
+      try {
+        if (controller.value.isInitialized) {
+          await controller.pause();
+          // Small delay to allow the video to fully pause before dispose
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        await controller.dispose();
+      } catch (e) {
+        debugPrint('Error disposing video controller: $e');
+      }
+    }
+  }
+  
   @override
   void dispose() {
     _isDisposing = true;
+    _isInitialized = false;
     WidgetsBinding.instance.removeObserver(this);
-    // Pause before dispose to prevent SIGSEGV
-    _controller?.pause();
+    // Use synchronous pause, then async dispose
+    try {
+      _controller?.pause();
+    } catch (e) {
+      debugPrint('Error pausing video on dispose: $e');
+    }
     _controller?.dispose();
+    _controller = null;
     super.dispose();
   }
   
@@ -236,46 +275,43 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
+    // Get the video dimensions, or use placeholder dimensions
+    final videoWidth = _controller?.value.size.width ?? 1920;
+    final videoHeight = _controller?.value.size.height ?? 1080;
+    
     return Padding(
       padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Always show fallback image as base layer
-          CachedNetworkImage(
-            imageUrl: widget.fallbackImageUrl,
-            cacheManager: ElysiaCacheManager.instance,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            placeholder: (context, url) => Container(
-              color: ElysiaTheme.backgroundColor,
-            ),
-            errorWidget: (context, url, error) => Container(
-              color: ElysiaTheme.backgroundColor,
-            ),
-          ),
-          
-          // Video player on top when initialized
-          if (_isInitialized && _controller != null)
-            Positioned.fill(
+      child: ColoredBox(
+        color: ElysiaTheme.backgroundColor,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Video player (hidden until initialized)
+            Visibility(
+              visible: _isInitialized && _controller != null,
+              maintainState: true,
+              maintainAnimation: true,
+              maintainSize: true,
               child: IgnorePointer(
                 child: FittedBox(
                   fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
                   child: SizedBox(
-                    width: _controller!.value.size.width,
-                    height: _controller!.value.size.height,
-                    child: VideoPlayer(_controller!),
+                    width: videoWidth,
+                    height: videoHeight,
+                    child: _controller != null 
+                      ? VideoPlayer(_controller!)
+                      : const SizedBox.shrink(),
                   ),
                 ),
               ),
             ),
-          
-          // Theme image overlay on top of video (if available)
-          if (_isInitialized && widget.themeImageUrl.isNotEmpty)
-            IgnorePointer(
+            
+            // Fallback image (shown while video initializes or on error)
+            Visibility(
+              visible: !_isInitialized || _controller == null,
               child: CachedNetworkImage(
-                imageUrl: widget.themeImageUrl,
+                imageUrl: widget.fallbackImageUrl,
                 cacheManager: ElysiaCacheManager.instance,
                 fit: BoxFit.cover,
                 width: double.infinity,
@@ -284,7 +320,24 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
                 errorWidget: (context, url, error) => const SizedBox.shrink(),
               ),
             ),
-        ],
+            
+            // Theme image overlay on top of video (if available and video is playing)
+            Visibility(
+              visible: _isInitialized && widget.themeImageUrl.isNotEmpty,
+              child: IgnorePointer(
+                child: CachedNetworkImage(
+                  imageUrl: widget.themeImageUrl,
+                  cacheManager: ElysiaCacheManager.instance,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  placeholder: (context, url) => const SizedBox.shrink(),
+                  errorWidget: (context, url, error) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
