@@ -208,9 +208,9 @@ jobs:
           # Also copy to standard location
           cp AppDir/elysia.desktop AppDir/usr/share/applications/elysia.desktop
           
-          # Create a simple icon (placeholder - you should add a real icon)
-          convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
-            echo "Icon generation skipped (imagemagick not available)"
+          # Copy icon from source (required by appimagetool)
+          cp ../../../../../elysia.png AppDir/elysia.png
+          cp ../../../../../elysia.png AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png
           
           # Manually deploy dependencies using ldd
           # This is more reliable than linuxdeploy when dealing with custom library paths
