@@ -128,31 +128,52 @@ jobs:
           # Copy Rust library
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so "$BUNDLE_DIR/"
-            echo "Rust library bundled"
+            echo "Bundled: librust_bridge.so"
           fi
           
-          # Find and copy libmpv and its dependencies
+          # Find and copy libmpv.so.1
           echo "Finding libmpv.so.1..."
           MPV_LIB=$(ldconfig -p | grep 'libmpv.so.1 ' | awk '{print $4}' | head -n 1)
           if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
             cp "$MPV_LIB" "$BUNDLE_DIR/"
             echo "Bundled: $MPV_LIB"
-            
-            # Get dependencies of libmpv
-            echo "Finding libmpv dependencies..."
-            ldd "$MPV_LIB" | grep "=> /" | awk '{print $3}' | while read dep; do
-              # Only bundle non-system libraries (ones from /usr/lib, not /lib/x86_64-linux-gnu)
-              if [[ "$dep" == /usr/lib/* ]] || [[ "$dep" == /usr/local/lib/* ]]; then
-                cp "$dep" "$BUNDLE_DIR/" 2>/dev/null || true
-                echo "Bundled dependency: $dep"
-              fi
-            done
           else
             echo "WARNING: libmpv.so.1 not found"
           fi
           
+          # Find and copy libc.so.6 (glibc)
+          echo "Finding libc.so.6..."
+          LIBC_LIB=$(ldconfig -p | grep 'libc.so.6 ' | awk '{print $4}' | head -n 1)
+          if [ -n "$LIBC_LIB" ] && [ -f "$LIBC_LIB" ]; then
+            cp "$LIBC_LIB" "$BUNDLE_DIR/"
+            echo "Bundled: $LIBC_LIB"
+            
+            # Also copy the ld-linux loader that libc depends on
+            LD_LOADER=$(ldd "$LIBC_LIB" | grep 'ld-linux' | awk '{print $1}')
+            if [ -n "$LD_LOADER" ] && [ -f "$LD_LOADER" ]; then
+              cp "$LD_LOADER" "$BUNDLE_DIR/"
+              echo "Bundled: $LD_LOADER"
+            fi
+          else
+            echo "WARNING: libc.so.6 not found"
+          fi
+          
+          # Get dependencies of libmpv and bundle non-system libs
+          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
+            echo "Finding libmpv dependencies..."
+            ldd "$MPV_LIB" | grep "=> /" | awk '{print $3}' | while read dep; do
+              # Only bundle libraries from /usr/lib or /usr/local/lib
+              if [[ "$dep" == /usr/lib/* ]] || [[ "$dep" == /usr/local/lib/* ]]; then
+                if [ -f "$dep" ]; then
+                  cp "$dep" "$BUNDLE_DIR/" 2>/dev/null || true
+                  echo "Bundled dependency: $(basename $dep)"
+                fi
+              fi
+            done
+          fi
+          
           echo ""
-          echo "Bundled libraries:"
+          echo "All bundled libraries:"
           ls -lh "$BUNDLE_DIR"
       
       - name: Create AppImage
