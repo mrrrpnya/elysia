@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,6 +5,7 @@ import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
+import '../services/cache_service.dart';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
@@ -124,75 +124,39 @@ class _BackgroundImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (url.isEmpty) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-              Color(0xFF0F3460),
-            ],
+      return Padding(
+        padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A1A2E),
+                Color(0xFF16213E),
+                Color(0xFF0F3460),
+              ],
+            ),
           ),
         ),
       );
     }
     
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Blurred background (bottom layer)
-        CachedNetworkImage(
-          imageUrl: url,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: ElysiaTheme.backgroundColor,
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: ElysiaTheme.backgroundColor,
-          ),
-          imageBuilder: (context, imageProvider) => Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: imageProvider,
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-              ),
-            ),
-          ),
+    return Padding(
+      padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
+      child: CachedNetworkImage(
+        imageUrl: url,
+        cacheManager: ElysiaCacheManager.instance,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        placeholder: (context, url) => Container(
+          color: ElysiaTheme.backgroundColor,
         ),
-        
-        // Clear background (aligned to end)
-        Align(
-          alignment: Alignment.bottomRight,
-          child: CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const SizedBox.shrink(),
-            errorWidget: (context, url, error) => const SizedBox.shrink(),
-          ),
+        errorWidget: (context, url, error) => Container(
+          color: ElysiaTheme.backgroundColor,
         ),
-        
-        // Gradient overlay
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Colors.black.withOpacity(0.6),
-                Colors.black.withOpacity(0.0),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

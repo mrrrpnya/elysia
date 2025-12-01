@@ -1,4 +1,4 @@
-name: elysia_flutter
+name: elysia
 description: "Elysia Game Launcher - Flutter frontend with Rust backend"
 publish_to: 'none'
 
@@ -17,11 +17,22 @@ dependencies:
   # State management
   provider: ^6.1.2
   
-  # Image handling
+  # Image handling with caching
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+  
+  # File paths
+  path_provider: ^2.1.5
+  path: ^1.9.0
   
   # UI components
   carousel_slider: ^5.0.0
+  
+  # URL launching
+  url_launcher: ^6.3.1
+  
+  # Persistent storage for app preferences
+  shared_preferences: ^2.3.3
   
   # Icons
   cupertino_icons: ^1.0.8

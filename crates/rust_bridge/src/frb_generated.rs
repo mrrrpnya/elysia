@@ -422,31 +422,31 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_all_games_json(port_: i64) {
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_all_games_json(port_: i64) {
         wire__crate__api__get_all_games_json_impl(port_)
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_config_path(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_config_path(
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__get_config_path_impl()
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_data_path(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_data_path(
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__get_data_path_impl()
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_download_progress_json(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_download_progress_json(
         game_id: *mut wire_cst_list_prim_u_8_strict,
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__get_download_progress_json_impl(game_id)
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_game_content_json(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_game_content_json(
         port_: i64,
         game_id: *mut wire_cst_list_prim_u_8_strict,
         biz: *mut wire_cst_list_prim_u_8_strict,
@@ -455,19 +455,19 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__get_settings_json(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_settings_json(
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__get_settings_json_impl()
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__init_backend(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__init_backend(
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
         wire__crate__api__init_backend_impl()
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__install_game(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__install_game(
         port_: i64,
         game_id: *mut wire_cst_list_prim_u_8_strict,
         biz: *mut wire_cst_list_prim_u_8_strict,
@@ -476,7 +476,7 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__is_game_installed(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__is_game_installed(
         game_id: *mut wire_cst_list_prim_u_8_strict,
         biz: *mut wire_cst_list_prim_u_8_strict,
     ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
@@ -484,7 +484,7 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_wire__crate__api__launch_game(
+    pub extern "C" fn frbgen_elysia_wire__crate__api__launch_game(
         port_: i64,
         game_id: *mut wire_cst_list_prim_u_8_strict,
     ) {
@@ -492,7 +492,7 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
-    pub extern "C" fn frbgen_elysia_flutter_cst_new_list_prim_u_8_strict(
+    pub extern "C" fn frbgen_elysia_cst_new_list_prim_u_8_strict(
         len: i32,
     ) -> *mut wire_cst_list_prim_u_8_strict {
         let ans = wire_cst_list_prim_u_8_strict {

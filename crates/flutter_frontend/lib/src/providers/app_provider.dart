@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
 /// Application state provider
 class AppProvider extends ChangeNotifier {
+  static const String _lastSelectedGameKey = 'last_selected_game_id';
+  
   List<Game> _games = [];
   final Map<String, Content> _gameContent = {};
   Game? _selectedGame;
@@ -12,6 +15,7 @@ class AppProvider extends ChangeNotifier {
   String? _error;
   Timer? _progressTimer;
   final Set<String> _activeDownloads = {};
+  SharedPreferences? _prefs;
   
   // Backend service (uses Rust backend or mock)
   final BackendService _backend = BackendFactory.instance;
@@ -32,6 +36,14 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
     
     try {
+      // Initialize shared preferences for persistent storage
+      try {
+        _prefs = await SharedPreferences.getInstance();
+      } catch (e) {
+        debugPrint('Failed to initialize SharedPreferences: $e');
+        _prefs = null;
+      }
+      
       // Initialize the backend
       await _backend.initialize();
       
@@ -46,10 +58,8 @@ class AppProvider extends ChangeNotifier {
         }
       }
       
-      // Select first game by default
-      if (_games.isNotEmpty && _selectedGame == null) {
-        _selectedGame = _games.first;
-      }
+      // Restore last selected game or select first game
+      await _restoreLastSelectedGame();
       
       _isLoading = false;
       notifyListeners();
@@ -60,9 +70,42 @@ class AppProvider extends ChangeNotifier {
     }
   }
   
+  /// Restore the last selected game from preferences
+  Future<void> _restoreLastSelectedGame() async {
+    if (_games.isEmpty) return;
+    
+    try {
+      final lastGameId = _prefs?.getString(_lastSelectedGameKey);
+      if (lastGameId != null) {
+        // Find the game with the saved ID
+        final lastGame = _games.where((g) => g.id == lastGameId).firstOrNull;
+        if (lastGame != null) {
+          _selectedGame = lastGame;
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to restore last selected game: $e');
+    }
+    
+    // Default to first game if no saved selection or game not found
+    _selectedGame = _games.first;
+  }
+  
+  /// Save the selected game ID to preferences
+  Future<void> _saveSelectedGame(String gameId) async {
+    try {
+      await _prefs?.setString(_lastSelectedGameKey, gameId);
+    } catch (e) {
+      debugPrint('Failed to save selected game: $e');
+    }
+  }
+  
   /// Select a game
   void selectGame(Game game) {
     _selectedGame = game;
+    // Fire and forget - don't block UI for persistence
+    _saveSelectedGame(game.id);
     notifyListeners();
   }
   
