@@ -142,6 +142,7 @@ jobs:
           # Download appimage-builder
           wget -q https://github.com/Lord-Kamina/appimage-builder/releases/download/continuous/appimage-builder_x86_64-AppImage.tar
           tar -xvf appimage-builder_x86_64-AppImage.tar --transform='s/.*\///'
+          mv appimage-builder-*-x86_64.AppImage appimage-builder-x86_64.AppImage
           chmod +x appimage-builder-x86_64.AppImage
           
           # Create AppDir structure
