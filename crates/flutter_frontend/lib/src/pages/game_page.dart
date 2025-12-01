@@ -30,85 +30,87 @@ class GamePage extends StatelessWidget {
         // Background - video or image
         _GameBackground(display: game.display),
         
-        // Content overlay
-        Positioned.fill(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: ElysiaTheme.sidebarWidth + 32,
-              top: 32,
-              right: 32,
-              bottom: 32,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Left side - News and Download control
-                SizedBox(
-                  width: 500,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+        // Content overlay - isolated from video rendering
+        RepaintBoundary(
+          child: Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: ElysiaTheme.sidebarWidth + 32,
+                top: 32,
+                right: 32,
+                bottom: 32,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Left side - News and Download control
+                  SizedBox(
+                    width: 500,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // News carousel
+                        NewsWidget(content: content),
+                        const SizedBox(height: 32),
+                        
+                        // Download/Launch control
+                        DownloadControl(
+                          gameId: game.id,
+                          isInstalled: isInstalled,
+                          progress: progress,
+                          onActionPressed: () {
+                            if (isInstalled) {
+                              provider.launchGame(game.id);
+                            } else {
+                              provider.installGame(game.id);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const Spacer(),
+                  
+                  // Right side - Action buttons
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      // News carousel
-                      NewsWidget(content: content),
-                      const SizedBox(height: 32),
-                      
-                      // Download/Launch control
-                      DownloadControl(
-                        gameId: game.id,
-                        isInstalled: isInstalled,
-                        progress: progress,
-                        onActionPressed: () {
-                          if (isInstalled) {
-                            provider.launchGame(game.id);
-                          } else {
-                            provider.installGame(game.id);
-                          }
+                      // Top right button
+                      GlassButton(
+                        onPressed: () {
+                          debugPrint('Explode button pressed!');
                         },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome, size: 24),
+                            SizedBox(width: 8),
+                            Text('Explode', style: TextStyle(fontSize: 20)),
+                          ],
+                        ),
+                      ),
+                      
+                      // Bottom right button
+                      GlassButton(
+                        onPressed: () {
+                          debugPrint('Meow button pressed!');
+                        },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.pets, size: 24),
+                            SizedBox(width: 8),
+                            Text('Meow', style: TextStyle(fontSize: 20)),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-                
-                const Spacer(),
-                
-                // Right side - Action buttons
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // Top right button
-                    GlassButton(
-                      onPressed: () {
-                        debugPrint('Explode button pressed!');
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.auto_awesome, size: 24),
-                          SizedBox(width: 8),
-                          Text('Explode', style: TextStyle(fontSize: 20)),
-                        ],
-                      ),
-                    ),
-                    
-                    // Bottom right button
-                    GlassButton(
-                      onPressed: () {
-                        debugPrint('Meow button pressed!');
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.pets, size: 24),
-                          SizedBox(width: 8),
-                          Text('Meow', style: TextStyle(fontSize: 20)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -127,10 +129,13 @@ class _GameBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     // Use video background if available, otherwise fall back to image
     if (display.hasVideoBackground) {
-      return _VideoBackground(
-        videoUrl: display.videoBackgroundUrl,
-        themeImageUrl: display.themeImageUrl,
-        fallbackImageUrl: display.background.url,
+      return RepaintBoundary(
+        child: _VideoBackground(
+          key: ValueKey(display.videoBackgroundUrl),
+          videoUrl: display.videoBackgroundUrl,
+          themeImageUrl: display.themeImageUrl,
+          fallbackImageUrl: display.background.url,
+        ),
       );
     }
     
@@ -145,6 +150,7 @@ class _VideoBackground extends StatefulWidget {
   final String fallbackImageUrl;
   
   const _VideoBackground({
+    super.key,
     required this.videoUrl,
     required this.themeImageUrl,
     required this.fallbackImageUrl,

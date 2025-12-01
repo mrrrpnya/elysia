@@ -16,7 +16,9 @@ void main() async {
   // Register fvp as video_player backend with decoders for VP9/WebM support
   // VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
   fvp.registerWith(options: {
-    'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg']
+    'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg'],
+    'log': 'warning',  // Reduce console spam (options: off, error, warning, info, debug, all)
+    'lowLatency': 1,   // Reduce latency for smoother playback
   });
   
   // Initialize the image cache manager
