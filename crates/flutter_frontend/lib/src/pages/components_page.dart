@@ -241,43 +241,44 @@ class _ComponentsPageState extends State<ComponentsPage> {
     final wineRunners = _runners.where((r) => r.runnerType == 'wine').toList();
     final protonRunners = _runners.where((r) => r.runnerType == 'proton').toList();
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A1A2E),
-            Color(0xFF16213E),
-            Color(0xFF0F3460),
-          ],
+    return SizedBox.expand(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A2E),
+              Color(0xFF16213E),
+              Color(0xFF0F3460),
+            ],
+          ),
         ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: ElysiaTheme.sidebarWidth + 32,
-          top: 32,
-          right: 32,
-          bottom: 32,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Components',
-                style: TextStyle(
-                  color: ElysiaTheme.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: ElysiaTheme.sidebarWidth + 32,
+            top: 32,
+            right: 32,
+            bottom: 32,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Components',
+                  style: TextStyle(
+                    color: ElysiaTheme.textPrimary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Download and manage Wine/Proton runners and required components',
-                style: TextStyle(
-                  color: ElysiaTheme.textSecondary,
-                  fontSize: 14,
+                const SizedBox(height: 8),
+                const Text(
+                  'Download and manage Wine/Proton runners and required components',
+                  style: TextStyle(
+                    color: ElysiaTheme.textSecondary,
+                    fontSize: 14,
                 ),
               ),
               const SizedBox(height: 32),
@@ -337,6 +338,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
           ),
         ),
       ),
+    ),
     );
   }
 
