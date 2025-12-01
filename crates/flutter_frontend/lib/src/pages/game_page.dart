@@ -30,19 +30,18 @@ class GamePage extends StatelessWidget {
         // Background - video or image
         _GameBackground(display: game.display),
         
-        // Content overlay - wrapped in RepaintBoundary to isolate from video rendering
+        // Content overlay
         Positioned.fill(
-          child: RepaintBoundary(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: ElysiaTheme.sidebarWidth + 32,
-                top: 32,
-                right: 32,
-                bottom: 32,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: ElysiaTheme.sidebarWidth + 32,
+              top: 32,
+              right: 32,
+              bottom: 32,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 // Left side - News and Download control
                 SizedBox(
                   width: 500,
@@ -113,7 +112,6 @@ class GamePage extends StatelessWidget {
             ),
           ),
         ),
-       ),
       ],
     );
   }
@@ -206,6 +204,9 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
         Uri.parse(widget.videoUrl),
       );
       
+      // Listen to controller updates to rebuild when playing state changes
+      _controller!.addListener(_onVideoStateChange);
+      
       await _controller!.initialize();
       
       if (_isDisposing || !mounted) {
@@ -232,12 +233,20 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
   }
   
+  void _onVideoStateChange() {
+    // Rebuild when video playing state changes to update theme overlay visibility
+    if (mounted && !_isDisposing) {
+      setState(() {});
+    }
+  }
+  
   Future<void> _disposeController() async {
     final controller = _controller;
     _controller = null;
     
     if (controller != null) {
       try {
+        controller.removeListener(_onVideoStateChange);
         if (controller.value.isInitialized) {
           await controller.pause();
           // Small delay to allow the video to fully pause before dispose
@@ -260,16 +269,27 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     final controller = _controller;
     _controller = null;
     
-    // Dispose asynchronously to avoid SIGSEGV
+    // Dispose asynchronously using scheduleMicrotask and longer delay
     if (controller != null) {
-      // Use Future.microtask to dispose after all pending UI frames
-      Future.microtask(() async {
+      // Remove listener immediately
+      try {
+        controller.removeListener(_onVideoStateChange);
+      } catch (e) {
+        debugPrint('Error removing listener: $e');
+      }
+      
+      // Schedule disposal after all rendering is complete
+      Future(() async {
         try {
-          if (controller.value.isInitialized) {
+          // First, stop the video completely
+          if (controller.value.isInitialized && controller.value.isPlaying) {
             await controller.pause();
-            // Wait for video to fully stop
-            await Future.delayed(const Duration(milliseconds: 150));
           }
+          
+          // Wait significantly longer to ensure video pipeline is fully stopped
+          await Future.delayed(const Duration(milliseconds: 200));
+          
+          // Now dispose
           await controller.dispose();
         } catch (e) {
           debugPrint('Error disposing video controller: $e');
@@ -301,32 +321,28 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video player in its own RepaintBoundary
-          RepaintBoundary(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: videoWidth,
-                height: videoHeight,
-                child: VideoPlayer(_controller!),
-              ),
+          // Video player
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: videoWidth,
+              height: videoHeight,
+              child: VideoPlayer(_controller!),
             ),
           ),
           
-          // Theme image overlay on top of video (if available and video is playing)
-          if (widget.themeImageUrl.isNotEmpty && _controller!.value.isPlaying)
-            RepaintBoundary(
-              child: CachedNetworkImage(
-                key: ValueKey(widget.themeImageUrl),
-                imageUrl: widget.themeImageUrl,
-                cacheManager: ElysiaCacheManager.instance,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                fadeInDuration: const Duration(milliseconds: 300),
-                placeholder: (context, url) => const SizedBox.shrink(),
-                errorWidget: (context, url, error) => const SizedBox.shrink(),
-              ),
+          // Theme image overlay on top of video (if available)
+          // Show when initialized (video has started playing) and theme URL exists
+          if (widget.themeImageUrl.isNotEmpty && _isInitialized)
+            CachedNetworkImage(
+              imageUrl: widget.themeImageUrl,
+              cacheManager: ElysiaCacheManager.instance,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              fadeInDuration: const Duration(milliseconds: 300),
+              placeholder: (context, url) => const SizedBox.shrink(),
+              errorWidget: (context, url, error) => const SizedBox.shrink(),
             ),
         ],
       ),
