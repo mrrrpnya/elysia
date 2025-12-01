@@ -40,7 +40,7 @@ jobs:
             llvm-dev \
             libclang-dev \
             libasound2-dev \
-            libmpv1
+            libmpv-dev
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
