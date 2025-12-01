@@ -17,6 +17,10 @@ void main() async {
   // VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
   fvp.registerWith(options: {
     'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg'],
+    'lowLatency': 1,  // Reduce latency for smoother playback (1 for vod, 2 for live)
+    'global': {
+      'logLevel': 'Error',  // Suppress frame logging (options: Error, Warning, Info, Debug, All)
+    },
   });
   
   // Initialize the image cache manager
