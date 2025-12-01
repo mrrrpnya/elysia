@@ -136,6 +136,54 @@ class RustLibWire implements BaseWire {
   late final _store_dart_post_cobject = _store_dart_post_cobjectPtr
       .asFunction<void Function(DartPostCObjectFnType)>();
 
+  void wire__crate__api__delete_jadeite(
+    int port_,
+  ) {
+    return _wire__crate__api__delete_jadeite(
+      port_,
+    );
+  }
+
+  late final _wire__crate__api__delete_jadeitePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'frbgen_elysia_wire__crate__api__delete_jadeite');
+  late final _wire__crate__api__delete_jadeite =
+      _wire__crate__api__delete_jadeitePtr.asFunction<void Function(int)>();
+
+  void wire__crate__api__delete_runner(
+    int port_,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> runner_name,
+  ) {
+    return _wire__crate__api__delete_runner(
+      port_,
+      runner_name,
+    );
+  }
+
+  late final _wire__crate__api__delete_runnerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
+      'frbgen_elysia_wire__crate__api__delete_runner');
+  late final _wire__crate__api__delete_runner =
+      _wire__crate__api__delete_runnerPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
+
+  void wire__crate__api__delete_umu_launcher(
+    int port_,
+  ) {
+    return _wire__crate__api__delete_umu_launcher(
+      port_,
+    );
+  }
+
+  late final _wire__crate__api__delete_umu_launcherPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'frbgen_elysia_wire__crate__api__delete_umu_launcher');
+  late final _wire__crate__api__delete_umu_launcher =
+      _wire__crate__api__delete_umu_launcherPtr
+          .asFunction<void Function(int)>();
+
   void wire__crate__api__get_all_games_json(
     int port_,
   ) {
@@ -149,6 +197,28 @@ class RustLibWire implements BaseWire {
           'frbgen_elysia_wire__crate__api__get_all_games_json');
   late final _wire__crate__api__get_all_games_json =
       _wire__crate__api__get_all_games_jsonPtr.asFunction<void Function(int)>();
+
+  WireSyncRust2DartDco wire__crate__api__get_available_components_json() {
+    return _wire__crate__api__get_available_components_json();
+  }
+
+  late final _wire__crate__api__get_available_components_jsonPtr =
+      _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
+          'frbgen_elysia_wire__crate__api__get_available_components_json');
+  late final _wire__crate__api__get_available_components_json =
+      _wire__crate__api__get_available_components_jsonPtr
+          .asFunction<WireSyncRust2DartDco Function()>();
+
+  WireSyncRust2DartDco wire__crate__api__get_available_runners_json() {
+    return _wire__crate__api__get_available_runners_json();
+  }
+
+  late final _wire__crate__api__get_available_runners_jsonPtr =
+      _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
+          'frbgen_elysia_wire__crate__api__get_available_runners_json');
+  late final _wire__crate__api__get_available_runners_json =
+      _wire__crate__api__get_available_runners_jsonPtr
+          .asFunction<WireSyncRust2DartDco Function()>();
 
   WireSyncRust2DartDco wire__crate__api__get_config_path() {
     return _wire__crate__api__get_config_path();
@@ -260,6 +330,54 @@ class RustLibWire implements BaseWire {
           void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>,
               ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
 
+  void wire__crate__api__install_jadeite(
+    int port_,
+  ) {
+    return _wire__crate__api__install_jadeite(
+      port_,
+    );
+  }
+
+  late final _wire__crate__api__install_jadeitePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'frbgen_elysia_wire__crate__api__install_jadeite');
+  late final _wire__crate__api__install_jadeite =
+      _wire__crate__api__install_jadeitePtr.asFunction<void Function(int)>();
+
+  void wire__crate__api__install_runner(
+    int port_,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> runner_name,
+  ) {
+    return _wire__crate__api__install_runner(
+      port_,
+      runner_name,
+    );
+  }
+
+  late final _wire__crate__api__install_runnerPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
+      'frbgen_elysia_wire__crate__api__install_runner');
+  late final _wire__crate__api__install_runner =
+      _wire__crate__api__install_runnerPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
+
+  void wire__crate__api__install_umu_launcher(
+    int port_,
+  ) {
+    return _wire__crate__api__install_umu_launcher(
+      port_,
+    );
+  }
+
+  late final _wire__crate__api__install_umu_launcherPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'frbgen_elysia_wire__crate__api__install_umu_launcher');
+  late final _wire__crate__api__install_umu_launcher =
+      _wire__crate__api__install_umu_launcherPtr
+          .asFunction<void Function(int)>();
+
   WireSyncRust2DartDco wire__crate__api__is_game_installed(
     ffi.Pointer<wire_cst_list_prim_u_8_strict> game_id,
     ffi.Pointer<wire_cst_list_prim_u_8_strict> biz,
@@ -310,9 +428,9 @@ class RustLibWire implements BaseWire {
   }
 
   late final _cst_new_list_prim_u_8_strictPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(ffi.Int32)>>(
-      'frbgen_elysia_cst_new_list_prim_u_8_strict');
+      ffi.NativeFunction<
+          ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(
+              ffi.Int32)>>('frbgen_elysia_cst_new_list_prim_u_8_strict');
   late final _cst_new_list_prim_u_8_strict = _cst_new_list_prim_u_8_strictPtr
       .asFunction<ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(int)>();
 

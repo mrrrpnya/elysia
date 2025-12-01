@@ -99,8 +99,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
 
+  void wire__crate__api__delete_jadeite(NativePortType port_) =>
+      wasmModule.wire__crate__api__delete_jadeite(port_);
+
+  void wire__crate__api__delete_runner(
+          NativePortType port_, String runner_name) =>
+      wasmModule.wire__crate__api__delete_runner(port_, runner_name);
+
+  void wire__crate__api__delete_umu_launcher(NativePortType port_) =>
+      wasmModule.wire__crate__api__delete_umu_launcher(port_);
+
   void wire__crate__api__get_all_games_json(NativePortType port_) =>
       wasmModule.wire__crate__api__get_all_games_json(port_);
+
+  JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire__crate__api__get_available_components_json() =>
+          wasmModule.wire__crate__api__get_available_components_json();
+
+  JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire__crate__api__get_available_runners_json() =>
+          wasmModule.wire__crate__api__get_available_runners_json();
 
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
       wire__crate__api__get_config_path() =>
@@ -130,6 +148,16 @@ class RustLibWire implements BaseWire {
           NativePortType port_, String game_id, String biz) =>
       wasmModule.wire__crate__api__install_game(port_, game_id, biz);
 
+  void wire__crate__api__install_jadeite(NativePortType port_) =>
+      wasmModule.wire__crate__api__install_jadeite(port_);
+
+  void wire__crate__api__install_runner(
+          NativePortType port_, String runner_name) =>
+      wasmModule.wire__crate__api__install_runner(port_, runner_name);
+
+  void wire__crate__api__install_umu_launcher(NativePortType port_) =>
+      wasmModule.wire__crate__api__install_umu_launcher(port_);
+
   JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
       wire__crate__api__is_game_installed(String game_id, String biz) =>
           wasmModule.wire__crate__api__is_game_installed(game_id, biz);
@@ -144,7 +172,20 @@ external RustLibWasmModule get wasmModule;
 @JS()
 @anonymous
 extension type RustLibWasmModule._(JSObject _) implements JSObject {
+  external void wire__crate__api__delete_jadeite(NativePortType port_);
+
+  external void wire__crate__api__delete_runner(
+      NativePortType port_, String runner_name);
+
+  external void wire__crate__api__delete_umu_launcher(NativePortType port_);
+
   external void wire__crate__api__get_all_games_json(NativePortType port_);
+
+  external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire__crate__api__get_available_components_json();
+
+  external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire__crate__api__get_available_runners_json();
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
       wire__crate__api__get_config_path();
@@ -166,6 +207,13 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
 
   external void wire__crate__api__install_game(
       NativePortType port_, String game_id, String biz);
+
+  external void wire__crate__api__install_jadeite(NativePortType port_);
+
+  external void wire__crate__api__install_runner(
+      NativePortType port_, String runner_name);
+
+  external void wire__crate__api__install_umu_launcher(NativePortType port_);
 
   external JSAny? /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
       wire__crate__api__is_game_installed(String game_id, String biz);

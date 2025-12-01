@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -505066615;
+  int get rustContentHash => 1604030145;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -79,7 +79,17 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<String> crateApiDeleteJadeite();
+
+  Future<String> crateApiDeleteRunner({required String runnerName});
+
+  Future<String> crateApiDeleteUmuLauncher();
+
   Future<String> crateApiGetAllGamesJson();
+
+  String crateApiGetAvailableComponentsJson();
+
+  String crateApiGetAvailableRunnersJson();
 
   String crateApiGetConfigPath();
 
@@ -97,6 +107,12 @@ abstract class RustLibApi extends BaseApi {
   Future<String> crateApiInstallGame(
       {required String gameId, required String biz});
 
+  Future<String> crateApiInstallJadeite();
+
+  Future<String> crateApiInstallRunner({required String runnerName});
+
+  Future<String> crateApiInstallUmuLauncher();
+
   bool crateApiIsGameInstalled({required String gameId, required String biz});
 
   Future<String> crateApiLaunchGame({required String gameId});
@@ -109,6 +125,70 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required super.generalizedFrbRustBinding,
     required super.portManager,
   });
+
+  @override
+  Future<String> crateApiDeleteJadeite() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire__crate__api__delete_jadeite(port_);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiDeleteJadeiteConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiDeleteJadeiteConstMeta => const TaskConstMeta(
+        debugName: "delete_jadeite",
+        argNames: [],
+      );
+
+  @override
+  Future<String> crateApiDeleteRunner({required String runnerName}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_String(runnerName);
+        return wire.wire__crate__api__delete_runner(port_, arg0);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiDeleteRunnerConstMeta,
+      argValues: [runnerName],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiDeleteRunnerConstMeta => const TaskConstMeta(
+        debugName: "delete_runner",
+        argNames: ["runnerName"],
+      );
+
+  @override
+  Future<String> crateApiDeleteUmuLauncher() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire__crate__api__delete_umu_launcher(port_);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiDeleteUmuLauncherConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiDeleteUmuLauncherConstMeta => const TaskConstMeta(
+        debugName: "delete_umu_launcher",
+        argNames: [],
+      );
 
   @override
   Future<String> crateApiGetAllGamesJson() {
@@ -128,6 +208,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiGetAllGamesJsonConstMeta => const TaskConstMeta(
         debugName: "get_all_games_json",
+        argNames: [],
+      );
+
+  @override
+  String crateApiGetAvailableComponentsJson() {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__get_available_components_json();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiGetAvailableComponentsJsonConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiGetAvailableComponentsJsonConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_available_components_json",
+        argNames: [],
+      );
+
+  @override
+  String crateApiGetAvailableRunnersJson() {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        return wire.wire__crate__api__get_available_runners_json();
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiGetAvailableRunnersJsonConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiGetAvailableRunnersJsonConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_available_runners_json",
         argNames: [],
       );
 
@@ -284,6 +408,70 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiInstallGameConstMeta => const TaskConstMeta(
         debugName: "install_game",
         argNames: ["gameId", "biz"],
+      );
+
+  @override
+  Future<String> crateApiInstallJadeite() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire__crate__api__install_jadeite(port_);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiInstallJadeiteConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiInstallJadeiteConstMeta => const TaskConstMeta(
+        debugName: "install_jadeite",
+        argNames: [],
+      );
+
+  @override
+  Future<String> crateApiInstallRunner({required String runnerName}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_String(runnerName);
+        return wire.wire__crate__api__install_runner(port_, arg0);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiInstallRunnerConstMeta,
+      argValues: [runnerName],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiInstallRunnerConstMeta => const TaskConstMeta(
+        debugName: "install_runner",
+        argNames: ["runnerName"],
+      );
+
+  @override
+  Future<String> crateApiInstallUmuLauncher() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire__crate__api__install_umu_launcher(port_);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_String,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiInstallUmuLauncherConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiInstallUmuLauncherConstMeta => const TaskConstMeta(
+        debugName: "install_umu_launcher",
+        argNames: [],
       );
 
   @override

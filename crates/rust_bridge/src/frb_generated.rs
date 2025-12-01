@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -505066615;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1604030145;
 
 // Section: executor
 
@@ -45,6 +45,74 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
+fn wire__crate__api__delete_jadeite_impl(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "delete_jadeite",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok = Result::<_, ()>::Ok(crate::api::delete_jadeite().await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__delete_runner_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    runner_name: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "delete_runner",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_runner_name = runner_name.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Result::<_, ()>::Ok(crate::api::delete_runner(api_runner_name).await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__delete_umu_launcher_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "delete_umu_launcher",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Result::<_, ()>::Ok(crate::api::delete_umu_launcher().await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__get_all_games_json_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
 ) {
@@ -65,6 +133,38 @@ fn wire__crate__api__get_all_games_json_impl(
                     .await,
                 )
             }
+        },
+    )
+}
+fn wire__crate__api__get_available_components_json_impl(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::DcoCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "get_available_components_json",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            transform_result_dco::<_, _, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::api::get_available_components_json())?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__api__get_available_runners_json_impl(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::DcoCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "get_available_runners_json",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            transform_result_dco::<_, _, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::api::get_available_runners_json())?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -199,6 +299,74 @@ fn wire__crate__api__install_game_impl(
                         let output_ok = Result::<_, ()>::Ok(
                             crate::api::install_game(api_game_id, api_biz).await,
                         )?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__install_jadeite_impl(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "install_jadeite",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok = Result::<_, ()>::Ok(crate::api::install_jadeite().await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__install_runner_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    runner_name: impl CstDecode<String>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "install_runner",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_runner_name = runner_name.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Result::<_, ()>::Ok(crate::api::install_runner(api_runner_name).await)?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__install_umu_launcher_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "install_umu_launcher",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok =
+                            Result::<_, ()>::Ok(crate::api::install_umu_launcher().await)?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -422,8 +590,38 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__delete_jadeite(port_: i64) {
+        wire__crate__api__delete_jadeite_impl(port_)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__delete_runner(
+        port_: i64,
+        runner_name: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__delete_runner_impl(port_, runner_name)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__delete_umu_launcher(port_: i64) {
+        wire__crate__api__delete_umu_launcher_impl(port_)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_elysia_wire__crate__api__get_all_games_json(port_: i64) {
         wire__crate__api__get_all_games_json_impl(port_)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_available_components_json(
+    ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+        wire__crate__api__get_available_components_json_impl()
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__get_available_runners_json(
+    ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+        wire__crate__api__get_available_runners_json_impl()
     }
 
     #[unsafe(no_mangle)]
@@ -473,6 +671,24 @@ mod io {
         biz: *mut wire_cst_list_prim_u_8_strict,
     ) {
         wire__crate__api__install_game_impl(port_, game_id, biz)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__install_jadeite(port_: i64) {
+        wire__crate__api__install_jadeite_impl(port_)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__install_runner(
+        port_: i64,
+        runner_name: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__install_runner_impl(port_, runner_name)
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__install_umu_launcher(port_: i64) {
+        wire__crate__api__install_umu_launcher_impl(port_)
     }
 
     #[unsafe(no_mangle)]
@@ -575,10 +791,44 @@ mod web {
     }
 
     #[wasm_bindgen]
+    pub fn wire__crate__api__delete_jadeite(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+    ) {
+        wire__crate__api__delete_jadeite_impl(port_)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__delete_runner(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        runner_name: String,
+    ) {
+        wire__crate__api__delete_runner_impl(port_, runner_name)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__delete_umu_launcher(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+    ) {
+        wire__crate__api__delete_umu_launcher_impl(port_)
+    }
+
+    #[wasm_bindgen]
     pub fn wire__crate__api__get_all_games_json(
         port_: flutter_rust_bridge::for_generated::MessagePort,
     ) {
         wire__crate__api__get_all_games_json_impl(port_)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__get_available_components_json(
+    ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+        wire__crate__api__get_available_components_json_impl()
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__get_available_runners_json(
+    ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+        wire__crate__api__get_available_runners_json_impl()
     }
 
     #[wasm_bindgen]
@@ -628,6 +878,28 @@ mod web {
         biz: String,
     ) {
         wire__crate__api__install_game_impl(port_, game_id, biz)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__install_jadeite(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+    ) {
+        wire__crate__api__install_jadeite_impl(port_)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__install_runner(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        runner_name: String,
+    ) {
+        wire__crate__api__install_runner_impl(port_, runner_name)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__install_umu_launcher(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+    ) {
+        wire__crate__api__install_umu_launcher_impl(port_)
     }
 
     #[wasm_bindgen]

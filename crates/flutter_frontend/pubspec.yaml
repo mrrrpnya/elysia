@@ -36,6 +36,9 @@ dependencies:
   
   # Icons
   cupertino_icons: ^1.0.8
+  
+  # Archive extraction for components
+  archive: ^4.0.4
 
 dev_dependencies:
   flutter_test:
