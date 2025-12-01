@@ -16,7 +16,7 @@ void main() async {
   // Register fvp as video_player backend with decoders for VP9/WebM support
   // VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
   fvp.registerWith(options: {
-    'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg'],
+    'video.decoders': ['FFmpeg'],
     'lowLatency': 1,  // Reduce latency for smoother playback (1 for vod, 2 for live)
     'global': {
       'logLevel': 'Error',  // Suppress frame logging (options: Error, Warning, Info, Debug, All)
