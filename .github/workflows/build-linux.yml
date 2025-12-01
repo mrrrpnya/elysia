@@ -125,6 +125,23 @@ jobs:
             echo "Rust library bundled with app"
           fi
           
+          # Bundle libmpv and its dependencies for video playback
+          echo "Bundling libmpv..."
+          MPV_LIB=$(ldconfig -p | grep 'libmpv.so.1' | head -1 | awk '{print $NF}')
+          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
+            cp "$MPV_LIB" "$BUNDLE_DIR/"
+            echo "libmpv.so.1 bundled from $MPV_LIB"
+          else
+            # Fallback: try common paths
+            for path in /usr/lib/x86_64-linux-gnu/libmpv.so.1 /usr/lib/libmpv.so.1; do
+              if [ -f "$path" ]; then
+                cp "$path" "$BUNDLE_DIR/"
+                echo "libmpv.so.1 bundled from $path"
+                break
+              fi
+            done
+          fi
+          
           echo "Bundled libraries:"
           ls -la "$BUNDLE_DIR"
       
