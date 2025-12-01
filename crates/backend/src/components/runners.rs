@@ -64,7 +64,7 @@ pub fn get_available_runners() -> Vec<AvailableRunner> {
             display_name: "Wine-TKG AAGL".to_string(),
             runner_type: RunnerType::Wine,
             version: "v10.15-7".to_string(),
-            download_url: "https://github.com/NelloKudo/Wine-Builds/releases/download/wine-tkg-aagl-v10.15-7/wine-tkg-aagl-v10.15-7-x86_64.tar.xz".to_string(),
+            download_url: "https://github.com/NelloKudo/Wine-Builds/releases/download/wine-tkg-aagl-v10.15-7/spritz-wine-tkg-staging-wow64-10.15-7-x86_64.tar.xz".to_string(),
             folder_name: "wine-tkg-aagl-v10.15-7".to_string(),
         },
         AvailableRunner {
@@ -72,7 +72,7 @@ pub fn get_available_runners() -> Vec<AvailableRunner> {
             display_name: "DW Proton".to_string(),
             runner_type: RunnerType::Proton,
             version: "10.0-9".to_string(),
-            download_url: "https://dawn.wine/dawn-winery/dwproton/releases/download/dwproton-10.0-9/dwproton-10.0-9.tar.xz".to_string(),
+            download_url: "https://dawn.wine/dawn-winery/dwproton/releases/download/dwproton-10.0-9/dwproton-10.0-9-x86_64.tar.xz".to_string(),
             folder_name: "GE-Proton".to_string(),
         },
     ]
