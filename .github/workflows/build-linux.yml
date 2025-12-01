@@ -131,34 +131,6 @@ jobs:
             echo "Bundled: librust_bridge.so"
           fi
           
-          # Find and copy libmpv.so.1
-          echo "Finding libmpv.so.1..."
-          MPV_LIB=$(ldconfig -p | grep 'libmpv.so.1 ' | awk '{print $4}' | head -n 1)
-          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
-            cp "$MPV_LIB" "$BUNDLE_DIR/"
-            echo "Bundled: $MPV_LIB"
-          else
-            echo "WARNING: libmpv.so.1 not found"
-          fi
-          
-          # Find and copy libc.so.6 (glibc) - SKIP THIS, use host system's libc
-          # Bundling glibc can cause stack smashing and other issues
-          # echo "Skipping libc.so.6 - will use host system's glibc"
-          
-          # Get dependencies of libmpv and bundle non-system libs
-          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
-            echo "Finding libmpv dependencies..."
-            ldd "$MPV_LIB" | grep "=> /" | awk '{print $3}' | while read dep; do
-              # Only bundle libraries from /usr/lib or /usr/local/lib
-              if [[ "$dep" == /usr/lib/* ]] || [[ "$dep" == /usr/local/lib/* ]]; then
-                if [ -f "$dep" ]; then
-                  cp "$dep" "$BUNDLE_DIR/" 2>/dev/null || true
-                  echo "Bundled dependency: $(basename $dep)"
-                fi
-              fi
-            done
-          fi
-          
           echo ""
           echo "All bundled libraries:"
           ls -lh "$BUNDLE_DIR"
@@ -169,7 +141,7 @@ jobs:
           
           # Download appimage-builder
           wget -q https://github.com/Lord-Kamina/appimage-builder/releases/download/continuous/appimage-builder_x86_64-AppImage.tar
-          tar -xf appimage-builder_x86_64-AppImage.tar
+          tar -xvf appimage-builder-x86_64.AppImage.tar --transform='s/.*\///'
           chmod +x appimage-builder-x86_64.AppImage
           
           # Create AppDir structure
