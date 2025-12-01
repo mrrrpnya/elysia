@@ -225,7 +225,7 @@ jobs:
           ./appimage-builder-x86_64.AppImage --recipe AppImageBuilder.yml --skip-test
           
           # Move the generated AppImage
-          mv *.AppImage ../../../../../elysia-x86_64.AppImage
+          mv elysia-latest-x86_64.AppImage ../../../../../elysia-x86_64.AppImage
           
           echo "AppImage created successfully"
           ls -lh ../../../../../elysia-x86_64.AppImage
