@@ -123,29 +123,37 @@ class _BackgroundImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (url.isEmpty) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-              Color(0xFF0F3460),
-            ],
+      return Padding(
+        padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A1A2E),
+                Color(0xFF16213E),
+                Color(0xFF0F3460),
+              ],
+            ),
           ),
         ),
       );
     }
     
-    return CachedNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: ElysiaTheme.backgroundColor,
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: ElysiaTheme.backgroundColor,
+    return Padding(
+      padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
+      child: CachedNetworkImage(
+        imageUrl: url,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        placeholder: (context, url) => Container(
+          color: ElysiaTheme.backgroundColor,
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: ElysiaTheme.backgroundColor,
+        ),
       ),
     );
   }

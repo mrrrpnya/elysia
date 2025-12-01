@@ -164,20 +164,18 @@ class _BannerImage extends StatelessWidget {
       );
     }
     
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Container(
-        color: ElysiaTheme.cardColor,
-        child: const Center(
+    return Container(
+      color: ElysiaTheme.cardColor,
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
+        placeholder: (context, url) => const Center(
           child: CircularProgressIndicator(
             color: ElysiaTheme.primaryColor,
           ),
         ),
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: ElysiaTheme.cardColor,
-        child: const Center(
+        errorWidget: (context, url, error) => const Center(
           child: Icon(
             Icons.broken_image,
             color: ElysiaTheme.textSecondary,
