@@ -209,23 +209,34 @@ jobs:
           # Let the system provide all other libraries to avoid ABI conflicts
           echo "Bundling libmpv and FFmpeg dependencies..."
           
-          # Find and copy all necessary libraries recursively
-          copy_lib_deps() {
-            local lib_path="$1"
-            local lib_name=$(basename "$lib_path")
+          # Use iterative approach to bundle libraries and their dependencies
+          declare -A bundled_libs
+          libs_to_process=()
+          
+          # Start with the media_kit plugin
+          if [ -f "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so" ]; then
+            libs_to_process+=("AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so")
+          fi
+          
+          while [ ${#libs_to_process[@]} -gt 0 ]; do
+            lib_path="${libs_to_process[0]}"
+            libs_to_process=("${libs_to_process[@]:1}")
+            lib_name=$(basename "$lib_path")
             
-            # Skip if already copied
-            if [ -f "AppDir/usr/lib/$lib_name" ]; then
-              return
+            # Skip if already processed
+            if [ -n "${bundled_libs[$lib_name]}" ]; then
+              continue
+            fi
+            bundled_libs[$lib_name]=1
+            
+            # Copy the library if it's not already in AppDir
+            if [ -f "$lib_path" ] && [ ! -f "AppDir/usr/lib/$lib_name" ]; then
+              cp -L "$lib_path" AppDir/usr/lib/ 2>/dev/null && echo "Bundled: $lib_name" || true
             fi
             
-            # Copy the library
+            # Find dependencies and add media-related ones to the queue
             if [ -f "$lib_path" ]; then
-              cp -L "$lib_path" AppDir/usr/lib/ 2>/dev/null || true
-              echo "Bundled: $lib_name"
-              
-              # Recursively copy dependencies
-              ldd "$lib_path" 2>/dev/null | grep "=> /" | awk '{print $3}' | while read dep; do
+              while IFS= read -r dep; do
                 dep_name=$(basename "$dep")
                 # Only bundle media-related libs (FFmpeg, libmpv, libass, etc.)
                 if [[ "$dep_name" == libmpv* ]] || [[ "$dep_name" == libavcodec* ]] || \
@@ -238,17 +249,13 @@ jobs:
                    [[ "$dep_name" == libvpx* ]] || [[ "$dep_name" == libaom* ]] || \
                    [[ "$dep_name" == libdav1d* ]] || [[ "$dep_name" == libvorbis* ]] || \
                    [[ "$dep_name" == libopus* ]] || [[ "$dep_name" == libmp3lame* ]]; then
-                  copy_lib_deps "$dep"
+                  if [ -z "${bundled_libs[$dep_name]}" ]; then
+                    libs_to_process+=("$dep")
+                  fi
                 fi
-              done
+              done < <(ldd "$lib_path" 2>/dev/null | grep "=> /" | awk '{print $3}')
             fi
-          }
-          
-          # Start with media_kit plugin and copy its dependencies
-          if [ -f "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so" ]; then
-            echo "Found media_kit plugin, bundling dependencies..."
-            copy_lib_deps "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so"
-          fi
+          done
           
           echo "Dependency bundling complete"
           echo "Bundled libraries:"
