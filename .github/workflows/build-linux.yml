@@ -180,10 +180,9 @@ jobs:
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
           
-          # Download linuxdeploy and appimagetool
-          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          # Download appimagetool only (linuxdeploy not needed for manual AppDir creation)
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
           
           # Create AppDir structure
           mkdir -p AppDir/usr/bin
