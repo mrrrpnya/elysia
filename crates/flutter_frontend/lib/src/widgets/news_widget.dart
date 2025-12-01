@@ -77,69 +77,71 @@ class _NewsWidgetState extends State<NewsWidget> {
       return const SizedBox.shrink();
     }
     
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
-      child: AspectRatio(
-        aspectRatio: 21 / 9,
-        child: Stack(
-          children: [
-            // Banner carousel
-            Listener(
-              onPointerSignal: (event) {
-                // Handle mouse wheel for carousel
-                if (event is PointerScrollEvent && banners.length > 1) {
-                  if (event.scrollDelta.dy > 0) {
-                    // Scroll down - next (wrap to first)
-                    final nextPage = (_currentIndex + 1) % banners.length;
-                    _goToPage(nextPage);
-                  } else if (event.scrollDelta.dy < 0) {
-                    // Scroll up - previous (wrap to last)
-                    final prevPage = (_currentIndex - 1 + banners.length) % banners.length;
-                    _goToPage(prevPage);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Banner carousel with intrinsic height based on image
+        ClipRRect(
+          borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
+          child: Stack(
+            children: [
+              // Image carousel
+              Listener(
+                onPointerSignal: (event) {
+                  // Handle mouse wheel for carousel
+                  if (event is PointerScrollEvent && banners.length > 1) {
+                    if (event.scrollDelta.dy > 0) {
+                      final nextPage = (_currentIndex + 1) % banners.length;
+                      _goToPage(nextPage);
+                    } else if (event.scrollDelta.dy < 0) {
+                      final prevPage = (_currentIndex - 1 + banners.length) % banners.length;
+                      _goToPage(prevPage);
+                    }
                   }
-                }
-              },
-              child: GestureDetector(
-                onTap: _resetAutoScroll,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: banners.length,
-                  onPageChanged: (index) {
-                    setState(() => _currentIndex = index);
-                    _resetAutoScroll();
-                  },
-                  itemBuilder: (context, index) {
-                    final banner = banners[index];
-                    return _BannerImage(
-                      imageUrl: banner.image.url,
-                    );
-                  },
-                ),
-              ),
-            ),
-            
-            // Page indicators overlay at bottom
-            if (banners.length > 1)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 8,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    banners.length,
-                    (index) => GestureDetector(
-                      onTap: () => _goToPage(index),
-                      child: _PageIndicator(
-                        isActive: index == _currentIndex,
-                      ),
+                },
+                child: GestureDetector(
+                  onTap: _resetAutoScroll,
+                  child: SizedBox(
+                    // Use a reasonable height that works for most banner aspect ratios
+                    height: 200,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: banners.length,
+                      onPageChanged: (index) {
+                        setState(() => _currentIndex = index);
+                        _resetAutoScroll();
+                      },
+                      itemBuilder: (context, index) {
+                        final banner = banners[index];
+                        return _BannerImage(imageUrl: banner.image.url);
+                      },
                     ),
                   ),
                 ),
               ),
-          ],
+              
+              // Page indicators overlay at bottom
+              if (banners.length > 1)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      banners.length,
+                      (index) => GestureDetector(
+                        onTap: () => _goToPage(index),
+                        child: _PageIndicator(isActive: index == _currentIndex),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -147,9 +149,7 @@ class _NewsWidgetState extends State<NewsWidget> {
 class _BannerImage extends StatelessWidget {
   final String imageUrl;
   
-  const _BannerImage({
-    required this.imageUrl,
-  });
+  const _BannerImage({required this.imageUrl});
   
   @override
   Widget build(BuildContext context) {
@@ -166,15 +166,23 @@ class _BannerImage extends StatelessWidget {
       );
     }
     
+    // Use BoxFit.contain to show full image without cropping
+    // The image will fill the width and maintain aspect ratio
     return CachedNetworkImage(
       imageUrl: imageUrl,
       cacheManager: ElysiaCacheManager.instance,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
+      alignment: Alignment.center,
       placeholder: (context, url) => Container(
         color: ElysiaTheme.cardColor,
         child: const Center(
-          child: CircularProgressIndicator(
-            color: ElysiaTheme.primaryColor,
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: ElysiaTheme.primaryColor,
+            ),
           ),
         ),
       ),
@@ -195,9 +203,7 @@ class _BannerImage extends StatelessWidget {
 class _PageIndicator extends StatelessWidget {
   final bool isActive;
   
-  const _PageIndicator({
-    required this.isActive,
-  });
+  const _PageIndicator({required this.isActive});
   
   @override
   Widget build(BuildContext context) {
