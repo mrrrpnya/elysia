@@ -121,19 +121,28 @@ class _NewsWidgetState extends State<NewsWidget> {
                 ),
               ),
               
-              // Page indicators overlay at bottom
+              // Page indicators overlay at bottom with background for visibility
               if (banners.length > 1)
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 8,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      banners.length,
-                      (index) => GestureDetector(
-                        onTap: () => _goToPage(index),
-                        child: _PageIndicator(isActive: index == _currentIndex),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          banners.length,
+                          (index) => GestureDetector(
+                            onTap: () => _goToPage(index),
+                            child: _PageIndicator(isActive: index == _currentIndex),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -215,14 +224,8 @@ class _PageIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive 
             ? ElysiaTheme.primaryColor 
-            : Colors.white.withValues(alpha: 0.5),
+            : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(3),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 2,
-          ),
-        ],
       ),
     );
   }
