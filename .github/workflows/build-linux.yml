@@ -181,7 +181,7 @@ jobs:
           cd crates/flutter_frontend/build/linux/x64/release/bundle
           
           # Download appimagetool (linuxdeploy not needed - using ldd instead)
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
           
           # Create AppDir structure
