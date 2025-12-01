@@ -196,8 +196,8 @@ jobs:
           cp -r lib AppDir/usr/lib/
           cp elysia AppDir/usr/bin/
           
-          # Create desktop file
-          cat > AppDir/usr/share/applications/elysia.desktop << EOF
+          # Create desktop file in root of AppDir (required by appimagetool)
+          cat > AppDir/elysia.desktop << EOF
           [Desktop Entry]
           Name=Elysia
           Exec=elysia
@@ -205,6 +205,9 @@ jobs:
           Type=Application
           Categories=Game;
           EOF
+          
+          # Also copy to standard location
+          cp AppDir/elysia.desktop AppDir/usr/share/applications/elysia.desktop
           
           # Create a simple icon (placeholder - you should add a real icon)
           convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
