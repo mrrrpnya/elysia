@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/models.dart';
 import '../theme/theme.dart';
+import '../services/cache_service.dart';
 
 /// News/Banner widget with carousel
 class NewsWidget extends StatefulWidget {
@@ -76,17 +77,14 @@ class _NewsWidgetState extends State<NewsWidget> {
       return const SizedBox.shrink();
     }
     
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Banner carousel - uses SizedBox with max height instead of fixed aspect ratio
-        // This allows images to display at their natural aspect ratio
-        ClipRRect(
-          borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
-          child: SizedBox(
-            height: 280,
-            child: Listener(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
+      child: AspectRatio(
+        aspectRatio: 21 / 9,
+        child: Stack(
+          children: [
+            // Banner carousel
+            Listener(
               onPointerSignal: (event) {
                 // Handle mouse wheel for carousel
                 if (event is PointerScrollEvent && banners.length > 1) {
@@ -119,26 +117,29 @@ class _NewsWidgetState extends State<NewsWidget> {
                 ),
               ),
             ),
-          ),
-        ),
-        
-        // Page indicators
-        if (banners.length > 1) ...[
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              banners.length,
-              (index) => GestureDetector(
-                onTap: () => _goToPage(index),
-                child: _PageIndicator(
-                  isActive: index == _currentIndex,
+            
+            // Page indicators overlay at bottom
+            if (banners.length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 8,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    banners.length,
+                    (index) => GestureDetector(
+                      onTap: () => _goToPage(index),
+                      child: _PageIndicator(
+                        isActive: index == _currentIndex,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -165,11 +166,10 @@ class _BannerImage extends StatelessWidget {
       );
     }
     
-    // Use BoxFit.scaleDown to scale the image to fit without cropping
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      fit: BoxFit.scaleDown,
-      alignment: Alignment.center,
+      cacheManager: ElysiaCacheManager.instance,
+      fit: BoxFit.cover,
       placeholder: (context, url) => Container(
         color: ElysiaTheme.cardColor,
         child: const Center(
@@ -203,12 +203,20 @@ class _PageIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: isActive ? 24 : 8,
-      height: 8,
+      margin: const EdgeInsets.symmetric(horizontal: 3),
+      width: isActive ? 20 : 6,
+      height: 6,
       decoration: BoxDecoration(
-        color: isActive ? ElysiaTheme.primaryColor : ElysiaTheme.borderColor,
-        borderRadius: BorderRadius.circular(4),
+        color: isActive 
+            ? ElysiaTheme.primaryColor 
+            : Colors.white.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 2,
+          ),
+        ],
       ),
     );
   }

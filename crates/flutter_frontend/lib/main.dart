@@ -7,8 +7,14 @@ import 'src/theme/theme.dart';
 import 'src/providers/app_provider.dart';
 import 'src/pages/pages.dart';
 import 'src/widgets/widgets.dart';
+import 'src/services/cache_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize the image cache manager
+  await ElysiaCacheManager.initialize();
+  
   runApp(const ElysiaApp());
 }
 
@@ -247,6 +253,7 @@ class _GameIcon extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: CachedNetworkImage(
         imageUrl: iconUrl,
+        cacheManager: ElysiaCacheManager.instance,
         width: 48,
         height: 48,
         fit: BoxFit.cover,

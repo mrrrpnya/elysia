@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
+import '../services/cache_service.dart';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
@@ -145,6 +146,7 @@ class _BackgroundImage extends StatelessWidget {
       padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
       child: CachedNetworkImage(
         imageUrl: url,
+        cacheManager: ElysiaCacheManager.instance,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
