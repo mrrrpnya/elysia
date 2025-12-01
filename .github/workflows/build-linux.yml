@@ -40,7 +40,10 @@ jobs:
             llvm-dev \
             libclang-dev \
             libasound2-dev \
-            libmpv-dev
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -123,29 +126,6 @@ jobs:
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so "$BUNDLE_DIR/"
             echo "Rust library bundled with app"
-          fi
-          
-          # Bundle libmpv.so.1 from media_kit_libs_linux package
-          echo "Searching for libmpv.so.1 from media_kit_libs_linux..."
-          
-          # Find libmpv.so.1 in Flutter pub cache (media_kit_libs_linux stores it there)
-          MEDIA_KIT_MPV=$(find ~/.pub-cache -name "libmpv.so.1" -path "*/media_kit_libs_linux/*" 2>/dev/null | head -1)
-          if [ -n "$MEDIA_KIT_MPV" ] && [ -f "$MEDIA_KIT_MPV" ]; then
-            cp "$MEDIA_KIT_MPV" "$BUNDLE_DIR/"
-            echo "libmpv.so.1 bundled from media_kit_libs_linux: $MEDIA_KIT_MPV"
-          else
-            # Also check in the build directory
-            BUILD_MPV=$(find crates/flutter_frontend/build -name "libmpv.so.1" 2>/dev/null | head -1)
-            if [ -n "$BUILD_MPV" ] && [ -f "$BUILD_MPV" ]; then
-              cp "$BUILD_MPV" "$BUNDLE_DIR/"
-              echo "libmpv.so.1 bundled from build: $BUILD_MPV"
-            else
-              echo "WARNING: libmpv.so.1 not found in media_kit_libs_linux or build directory"
-              echo "Searching entire pub-cache..."
-              find ~/.pub-cache -name "libmpv*" 2>/dev/null || echo "No libmpv files found"
-              echo "Searching build directory..."
-              find crates/flutter_frontend/build -name "libmpv*" 2>/dev/null || echo "No libmpv files found in build"
-            fi
           fi
           
           echo "Bundled libraries:"

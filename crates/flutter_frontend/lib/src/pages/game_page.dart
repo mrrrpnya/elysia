@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:video_player/video_player.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
@@ -156,8 +155,7 @@ class _VideoBackground extends StatefulWidget {
 }
 
 class _VideoBackgroundState extends State<_VideoBackground> {
-  late final Player _player;
-  late final VideoController _controller;
+  VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
   
@@ -169,13 +167,14 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   Future<void> _initializeVideo() async {
     try {
-      _player = Player();
-      _controller = VideoController(_player);
+      _controller = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      );
       
-      // Set up the player with looping
-      await _player.setPlaylistMode(PlaylistMode.loop);
-      await _player.open(Media(widget.videoUrl));
-      await _player.setVolume(0); // Mute the video background
+      await _controller!.initialize();
+      await _controller!.setLooping(true);
+      await _controller!.setVolume(0); // Mute the video background
+      await _controller!.play();
       
       if (mounted) {
         setState(() {
@@ -194,7 +193,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   @override
   void dispose() {
-    _player.dispose();
+    _controller?.dispose();
     super.dispose();
   }
   
@@ -227,11 +226,16 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             ),
           
           // Video player
-          if (_isInitialized)
-            Video(
-              controller: _controller,
-              fit: BoxFit.cover,
-              controls: NoVideoControls,
+          if (_isInitialized && _controller != null)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller!.value.size.width,
+                  height: _controller!.value.size.height,
+                  child: VideoPlayer(_controller!),
+                ),
+              ),
             ),
           
           // Theme image overlay on top of video (if available)
