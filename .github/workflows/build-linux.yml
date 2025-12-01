@@ -180,10 +180,9 @@ jobs:
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
           
-          # Download linuxdeploy and appimagetool
-          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          # Download appimagetool (linuxdeploy not needed - using ldd instead)
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
           
           # Create AppDir structure
           mkdir -p AppDir/usr/bin
@@ -213,12 +212,33 @@ jobs:
           convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
             echo "Icon generation skipped (imagemagick not available)"
           
-          # Use linuxdeploy to deploy dependencies of all binaries in usr/bin and usr/lib
-          # Set LD_LIBRARY_PATH so linuxdeploy can find our bundled Flutter libraries
-          # --deploy-deps-only will scan the directory and bundle all dependencies
+          # Manually deploy dependencies using ldd
+          # This is more reliable than linuxdeploy when dealing with custom library paths
+          echo "Deploying dependencies for elysia executable..."
           export LD_LIBRARY_PATH="$PWD/AppDir/usr/lib:${LD_LIBRARY_PATH}"
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --deploy-deps-only AppDir/usr/bin
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --deploy-deps-only AppDir/usr/lib
+          
+          # Find and copy dependencies of the main executable
+          ldd AppDir/usr/bin/elysia | grep "=> /" | awk '{print $3}' | while read dep; do
+            if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
+              cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
+              echo "Bundled: $(basename $dep)"
+            fi
+          done
+          
+          # Find and copy dependencies of all libraries in usr/lib
+          echo "Deploying dependencies for libraries in usr/lib..."
+          for lib in AppDir/usr/lib/*.so*; do
+            if [ -f "$lib" ]; then
+              ldd "$lib" 2>/dev/null | grep "=> /" | awk '{print $3}' | while read dep; do
+                if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
+                  cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
+                fi
+              done
+            fi
+          done
+          
+          echo "Dependency deployment complete"
+          ls -lh AppDir/usr/lib/ | head -20
           
           # Create AppRun script
           cat > AppDir/AppRun << 'EOF'
