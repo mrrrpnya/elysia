@@ -718,3 +718,21 @@ class _RunnerListItemState extends State<_RunnerListItem> {
           IconButton(
             onPressed: widget.onDelete,
             icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+            tooltip: 'Remove',
+          ),
+        ],
+      );
+    }
+
+    return ElevatedButton.icon(
+      onPressed: widget.onInstall,
+      icon: const Icon(Icons.download, size: 18),
+      label: const Text('Install'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: ElysiaTheme.primaryColor,
+        foregroundColor: Colors.black,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
+  }
+}
