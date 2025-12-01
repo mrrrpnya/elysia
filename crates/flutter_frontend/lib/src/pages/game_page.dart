@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
@@ -26,8 +28,8 @@ class GamePage extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Background image (two layers for effect like original)
-        _BackgroundImage(url: game.display.background.url),
+        // Background - video or image
+        _GameBackground(display: game.display),
         
         // Content overlay
         Positioned.fill(
@@ -112,6 +114,139 @@ class GamePage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Combined background widget that handles both video and image backgrounds
+class _GameBackground extends StatelessWidget {
+  final Display display;
+  
+  const _GameBackground({required this.display});
+  
+  @override
+  Widget build(BuildContext context) {
+    // Use video background if available, otherwise fall back to image
+    if (display.hasVideoBackground) {
+      return _VideoBackground(
+        videoUrl: display.videoBackgroundUrl,
+        themeImageUrl: display.themeImageUrl,
+        fallbackImageUrl: display.background.url,
+      );
+    }
+    
+    return _BackgroundImage(url: display.background.url);
+  }
+}
+
+/// Video background widget with optional theme image overlay
+class _VideoBackground extends StatefulWidget {
+  final String videoUrl;
+  final String themeImageUrl;
+  final String fallbackImageUrl;
+  
+  const _VideoBackground({
+    required this.videoUrl,
+    required this.themeImageUrl,
+    required this.fallbackImageUrl,
+  });
+  
+  @override
+  State<_VideoBackground> createState() => _VideoBackgroundState();
+}
+
+class _VideoBackgroundState extends State<_VideoBackground> {
+  late final Player _player;
+  late final VideoController _controller;
+  bool _isInitialized = false;
+  bool _hasError = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+  
+  Future<void> _initializeVideo() async {
+    try {
+      _player = Player();
+      _controller = VideoController(_player);
+      
+      // Set up the player with looping
+      await _player.setPlaylistMode(PlaylistMode.loop);
+      await _player.open(Media(widget.videoUrl));
+      await _player.setVolume(0); // Mute the video background
+      
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error initializing video: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+  
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // Show fallback image if video failed to load
+    if (_hasError) {
+      return _BackgroundImage(url: widget.fallbackImageUrl);
+    }
+    
+    return Padding(
+      padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Show fallback image while video is loading
+          if (!_isInitialized)
+            CachedNetworkImage(
+              imageUrl: widget.fallbackImageUrl,
+              cacheManager: ElysiaCacheManager.instance,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              placeholder: (context, url) => Container(
+                color: ElysiaTheme.backgroundColor,
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: ElysiaTheme.backgroundColor,
+              ),
+            ),
+          
+          // Video player
+          if (_isInitialized)
+            Video(
+              controller: _controller,
+              fit: BoxFit.cover,
+              controls: NoVideoControls,
+            ),
+          
+          // Theme image overlay on top of video (if available)
+          if (_isInitialized && widget.themeImageUrl.isNotEmpty)
+            CachedNetworkImage(
+              imageUrl: widget.themeImageUrl,
+              cacheManager: ElysiaCacheManager.instance,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              placeholder: (context, url) => const SizedBox.shrink(),
+              errorWidget: (context, url, error) => const SizedBox.shrink(),
+            ),
+        ],
+      ),
     );
   }
 }

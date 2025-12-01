@@ -39,6 +39,11 @@ dependencies:
   
   # Archive extraction for components
   archive: ^4.0.4
+  
+  # Video player for background videos
+  media_kit: ^1.1.11
+  media_kit_video: ^1.2.5
+  media_kit_libs_linux: ^1.1.3
 
 dev_dependencies:
   flutter_test:
