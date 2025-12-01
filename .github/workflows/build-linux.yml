@@ -163,119 +163,97 @@ jobs:
           echo "All bundled libraries:"
           ls -lh "$BUNDLE_DIR"
       
-      - name: Create AppImage
+      - name: Create AppImage with appimage-builder
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
           
-          # Download appimagetool (linuxdeploy not needed - using ldd instead)
-          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
+          # Download appimage-builder
+          wget -q https://github.com/Lord-Kamina/appimage-builder/releases/download/continuous/appimage-builder_x86_64-AppImage.tar
+          tar -xf appimage-builder_x86_64-AppImage.tar
+          chmod +x appimage-builder-x86_64.AppImage
           
           # Create AppDir structure
-          mkdir -p AppDir/usr/bin
-          mkdir -p AppDir/usr/lib
-          mkdir -p AppDir/usr/share/applications
-          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir
           
           # Copy application files
-          cp -r data AppDir/usr/bin/
-          cp elysia AppDir/usr/bin/
+          cp -r data elysia lib AppDir/
           
-          # Copy Flutter lib directory - this contains plugin .so files and Flutter assets
-          # We need to preserve the directory structure but also copy .so files to usr/lib for LD_LIBRARY_PATH
-          cp -r lib AppDir/usr/bin/lib
+          # Create appimage-builder recipe
+          cat > AppImageBuilder.yml << 'EOF'
+          version: 1
           
-          # Also copy all .so files from lib to usr/lib so they can be found via LD_LIBRARY_PATH
-          find lib -name "*.so*" -type f -exec cp {} AppDir/usr/lib/ \;
+          AppDir:
+            path: ./AppDir
+            
+            app_info:
+              id: com.elysia.launcher
+              name: Elysia
+              icon: elysia
+              version: latest
+              exec: elysia
+              exec_args: $@
+            
+            apt:
+              arch: amd64
+              allow_unauthenticated: true
+              sources:
+                - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ jammy main universe'
+                - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ jammy-updates main universe'
+              
+              include:
+                - libmpv1
+                - libmpv-dev
+                - ffmpeg
+                - libavcodec59
+                - libavformat59
+                - libavutil57
+                - libswscale6
+                - libswresample4
+                - libass9
+                - libdrm2
+                - libva2
+                - libva-drm2
+                - libvdpau1
+              
+              exclude:
+                - libgtk-3-0
+                - libglib2.0-0
+                - libpango-1.0-0
+                - libcairo2
+                - libharfbuzz0b
+                - libfontconfig1
+                - libfreetype6
+                - libpixman-1-0
+                - libgdk-pixbuf-2.0-0
+                - libc6
+                - libstdc++6
+                - libgcc-s1
           
-          # Create desktop file in root of AppDir (required by appimagetool)
-          cat > AppDir/elysia.desktop << EOF
-          [Desktop Entry]
-          Name=Elysia
-          Exec=elysia
-          Icon=elysia
-          Type=Application
-          Categories=Game;
+            files:
+              exclude:
+                - usr/share/man
+                - usr/share/doc
+                - usr/share/locale
+            
+            runtime:
+              env:
+                LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
+                GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
+          
+          AppImage:
+            update-information: None
+            sign-key: None
+            arch: x86_64
           EOF
           
-          # Also copy to standard location
-          cp AppDir/elysia.desktop AppDir/usr/share/applications/elysia.desktop
-          
-          # Copy icon from source (required by appimagetool)
+          # Copy icon
           cp ../../../../../elysia.png AppDir/elysia.png
-          cp ../../../../../elysia.png AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png
           
-          # Only bundle media_kit dependencies (libmpv and FFmpeg libraries)
-          # Let the system provide all other libraries to avoid ABI conflicts
-          echo "Bundling libmpv and FFmpeg dependencies..."
+          # Run appimage-builder
+          ./appimage-builder-x86_64.AppImage --recipe AppImageBuilder.yml --skip-test
           
-          # Use iterative approach to bundle libraries and their dependencies
-          declare -A bundled_libs
-          libs_to_process=()
-          
-          # Start with the media_kit plugin
-          if [ -f "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so" ]; then
-            libs_to_process+=("AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so")
-          fi
-          
-          while [ ${#libs_to_process[@]} -gt 0 ]; do
-            lib_path="${libs_to_process[0]}"
-            libs_to_process=("${libs_to_process[@]:1}")
-            lib_name=$(basename "$lib_path")
-            
-            # Skip if already processed
-            if [ -n "${bundled_libs[$lib_name]}" ]; then
-              continue
-            fi
-            bundled_libs[$lib_name]=1
-            
-            # Copy the library if it's not already in AppDir
-            if [ -f "$lib_path" ] && [ ! -f "AppDir/usr/lib/$lib_name" ]; then
-              cp -L "$lib_path" AppDir/usr/lib/ 2>/dev/null && echo "Bundled: $lib_name" || true
-            fi
-            
-            # Find dependencies and add media-related ones to the queue
-            if [ -f "$lib_path" ]; then
-              while IFS= read -r dep; do
-                dep_name=$(basename "$dep")
-                # Only bundle media-related libs (FFmpeg, libmpv, libass, etc.)
-                if [[ "$dep_name" == libmpv* ]] || [[ "$dep_name" == libavcodec* ]] || \
-                   [[ "$dep_name" == libavformat* ]] || [[ "$dep_name" == libavutil* ]] || \
-                   [[ "$dep_name" == libswscale* ]] || [[ "$dep_name" == libswresample* ]] || \
-                   [[ "$dep_name" == libavfilter* ]] || [[ "$dep_name" == libavdevice* ]] || \
-                   [[ "$dep_name" == libpostproc* ]] || [[ "$dep_name" == libass* ]] || \
-                   [[ "$dep_name" == libdrm* ]] || [[ "$dep_name" == libva* ]] || \
-                   [[ "$dep_name" == libx264* ]] || [[ "$dep_name" == libx265* ]] || \
-                   [[ "$dep_name" == libvpx* ]] || [[ "$dep_name" == libaom* ]] || \
-                   [[ "$dep_name" == libdav1d* ]] || [[ "$dep_name" == libvorbis* ]] || \
-                   [[ "$dep_name" == libopus* ]] || [[ "$dep_name" == libmp3lame* ]]; then
-                  if [ -z "${bundled_libs[$dep_name]}" ]; then
-                    libs_to_process+=("$dep")
-                  fi
-                fi
-              done < <(ldd "$lib_path" 2>/dev/null | grep "=> /" | awk '{print $3}')
-            fi
-          done
-          
-          echo "Dependency bundling complete"
-          echo "Bundled libraries:"
-          ls -lh AppDir/usr/lib/ | grep -E "\.so" | awk '{print $9}'
-          
-          # Create AppRun script
-          cat > AppDir/AppRun << 'EOF'
-          #!/bin/bash
-          SELF=$(readlink -f "$0")
-          HERE=${SELF%/*}
-          export PATH="${HERE}/usr/bin:${PATH}"
-          export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
-          # Disable GIO modules from system to avoid warnings about missing modules
-          export GIO_MODULE_DIR="${HERE}/usr/lib/gio/modules"
-          exec "${HERE}/usr/bin/elysia" "$@"
-          EOF
-          chmod +x AppDir/AppRun
-          
-          # Build AppImage
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir ../../../../../elysia-x86_64.AppImage
+          # Move the generated AppImage
+          mv *.AppImage ../../../../../elysia-x86_64.AppImage
           
           echo "AppImage created successfully"
           ls -lh ../../../../../elysia-x86_64.AppImage
