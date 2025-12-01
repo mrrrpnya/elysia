@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get remove libunwind-*
-          sudo apt-get -y install --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          sudo apt-get -y install --no-install-recommends libmpv-dev
           sudo apt-get install -y \
             clang \
             cmake \
@@ -42,8 +42,10 @@ jobs:
             llvm-dev \
             libclang-dev \
             libasound2-dev \
-            gstreamer1.0-plugins-good \
-            gstreamer1.0-plugins-bad
+            file \
+            wget \
+            fuse \
+            libfuse2
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -118,28 +120,95 @@ jobs:
           flutter build linux --release
           echo "Flutter build completed"
       
-      - name: Bundle Rust libraries with Flutter app
+      - name: Bundle libraries with Flutter app
         run: |
           BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
           mkdir -p "$BUNDLE_DIR"
           
+          # Copy Rust library
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so "$BUNDLE_DIR/"
-            echo "Rust library bundled with app"
+            echo "Rust library bundled"
           fi
           
+          # Find and copy libmpv and its dependencies
+          echo "Finding libmpv.so.1..."
+          MPV_LIB=$(ldconfig -p | grep 'libmpv.so.1 ' | awk '{print $4}' | head -n 1)
+          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
+            cp "$MPV_LIB" "$BUNDLE_DIR/"
+            echo "Bundled: $MPV_LIB"
+            
+            # Get dependencies of libmpv
+            echo "Finding libmpv dependencies..."
+            ldd "$MPV_LIB" | grep "=> /" | awk '{print $3}' | while read dep; do
+              # Only bundle non-system libraries (ones from /usr/lib, not /lib/x86_64-linux-gnu)
+              if [[ "$dep" == /usr/lib/* ]] || [[ "$dep" == /usr/local/lib/* ]]; then
+                cp "$dep" "$BUNDLE_DIR/" 2>/dev/null || true
+                echo "Bundled dependency: $dep"
+              fi
+            done
+          else
+            echo "WARNING: libmpv.so.1 not found"
+          fi
+          
+          echo ""
           echo "Bundled libraries:"
-          ls -la "$BUNDLE_DIR"
+          ls -lh "$BUNDLE_DIR"
       
-      - name: Create release archive
+      - name: Create AppImage
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
-          tar -czvf ../../../../../elysia-linux-x64.tar.gz .
-          echo "Archive created: elysia-linux-x64.tar.gz"
+          
+          # Download linuxdeploy and appimagetool
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage appimagetool-x86_64.AppImage
+          
+          # Create AppDir structure
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/lib
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          
+          # Copy application files
+          cp -r data AppDir/usr/bin/
+          cp -r lib AppDir/usr/lib/
+          cp elysia AppDir/usr/bin/
+          
+          # Create desktop file
+          cat > AppDir/usr/share/applications/elysia.desktop << EOF
+          [Desktop Entry]
+          Name=Elysia
+          Exec=elysia
+          Icon=elysia
+          Type=Application
+          Categories=Game;
+          EOF
+          
+          # Create a simple icon (placeholder - you should add a real icon)
+          convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
+            echo "Icon generation skipped (imagemagick not available)"
+          
+          # Create AppRun script
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}"
+          exec "${HERE}/usr/bin/elysia" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          
+          # Build AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir ../../../../../elysia-x86_64.AppImage
+          
+          echo "AppImage created successfully"
+          ls -lh ../../../../../elysia-x86_64.AppImage
       
-      - name: Upload Linux artifact
+      - name: Upload Linux AppImage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: elysia-linux-x64
-          path: crates/flutter_frontend/elysia-linux-x64.tar.gz
+          name: elysia-linux-x64-appimage
+          path: crates/flutter_frontend/elysia-x86_64.AppImage
           retention-days: 7

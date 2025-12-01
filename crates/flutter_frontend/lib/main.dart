@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fvp/fvp.dart' as fvp;
+import 'package:media_kit/media_kit.dart';
 
 import 'src/theme/theme.dart';
 import 'src/providers/app_provider.dart';
@@ -13,15 +13,8 @@ import 'src/services/cache_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Register fvp as video_player backend with decoders for VP9/WebM support
-  // VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
-  fvp.registerWith(options: {
-    'video.decoders': ['FFmpeg'],
-    'lowLatency': 1,  // Reduce latency for smoother playback (1 for vod, 2 for live)
-    'global': {
-      'logLevel': 'Error',  // Suppress frame logging (options: Error, Warning, Info, Debug, All)
-    },
-  });
+  // Initialize MediaKit for video playback
+  MediaKit.ensureInitialized();
   
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();

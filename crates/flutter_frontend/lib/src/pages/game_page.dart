@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:video_player/video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
@@ -159,7 +160,8 @@ class _VideoBackground extends StatefulWidget {
 }
 
 class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingObserver {
-  VideoPlayerController? _controller;
+  Player? _player;
+  VideoController? _videoController;
   bool _isInitialized = false;
   bool _hasError = false;
   bool _isDisposing = false;
@@ -188,14 +190,14 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   }
   
   void _pauseVideo() {
-    if (_controller != null && _controller!.value.isInitialized) {
-      _controller!.pause();
+    if (_player != null && !_isDisposing) {
+      _player!.pause();
     }
   }
   
   void _resumeVideo() {
-    if (!_isDisposing && _controller != null && _controller!.value.isInitialized) {
-      _controller!.play();
+    if (!_isDisposing && _player != null) {
+      _player!.play();
     }
   }
   
@@ -203,23 +205,20 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      _controller = VideoPlayerController.networkUrl(
-        Uri.parse(widget.videoUrl),
-      );
+      _player = Player();
+      _videoController = VideoController(_player!);
       
-      // Set looping and volume before initializing for faster playback
-      await _controller!.setLooping(true);
-      await _controller!.setVolume(0); // Mute the video background
-      
-      await _controller!.initialize();
+      await _player!.open(Media(widget.videoUrl), play: false);
+      await _player!.setPlaylistMode(PlaylistMode.loop);
+      await _player!.setVolume(0); // Mute the video background
       
       if (_isDisposing || !mounted) {
-        await _disposeController();
+        await _disposeResources();
         return;
       }
       
-      // Start playing immediately
-      await _controller!.play();
+      // Start playing
+      await _player!.play();
       
       if (mounted && !_isDisposing) {
         setState(() {
@@ -245,18 +244,24 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
   }
   
-  Future<void> _disposeController() async {
-    final controller = _controller;
-    _controller = null;
+  Future<void> _disposeResources() async {
+    final player = _player;
+    final videoController = _videoController;
+    _player = null;
+    _videoController = null;
     
-    if (controller != null) {
+    if (player != null) {
       try {
-        if (controller.value.isInitialized) {
-          await controller.pause();
-          // Small delay to allow the video to fully pause before dispose
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-        await controller.dispose();
+        await player.pause();
+        await player.dispose();
+      } catch (e) {
+        debugPrint('Error disposing media_kit player: $e');
+      }
+    }
+    
+    if (videoController != null) {
+      try {
+        await videoController.dispose();
       } catch (e) {
         debugPrint('Error disposing video controller: $e');
       }
@@ -270,28 +275,31 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     _showTheme = false;
     WidgetsBinding.instance.removeObserver(this);
     
-    // Capture controller reference before nullifying
-    final controller = _controller;
-    _controller = null;
+    // Capture references before nullifying
+    final player = _player;
+    final videoController = _videoController;
+    _player = null;
+    _videoController = null;
     
-    // Dispose asynchronously with proper waiting
-    if (controller != null) {
-      // Schedule disposal in next event loop cycle with longer delay
-      Future.delayed(const Duration(milliseconds: 300), () async {
-        try {
-          // First, stop the video completely
-          if (controller.value.isInitialized) {
-            if (controller.value.isPlaying) {
-              await controller.pause();
-            }
-            // Wait for video to fully stop
-            await Future.delayed(const Duration(milliseconds: 200));
+    // Dispose asynchronously
+    if (player != null || videoController != null) {
+      Future(() async {
+        if (player != null) {
+          try {
+            await player.pause();
+            await Future.delayed(const Duration(milliseconds: 100));
+            await player.dispose();
+          } catch (e) {
+            debugPrint('Error disposing player: $e');
           }
-          
-          // Now dispose
-          await controller.dispose();
-        } catch (e) {
-          debugPrint('Error disposing video controller: $e');
+        }
+        
+        if (videoController != null) {
+          try {
+            await videoController.dispose();
+          } catch (e) {
+            debugPrint('Error disposing video controller: $e');
+          }
         }
       });
     }
@@ -307,46 +315,35 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
     
     // Show fallback while initializing
-    if (!_isInitialized || _controller == null) {
+    if (!_isInitialized || _videoController == null) {
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
-    
-    // Get the video dimensions
-    final videoWidth = _controller!.value.size.width;
-    final videoHeight = _controller!.value.size.height;
     
     return Padding(
       padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video player layer - isolated with RepaintBoundary
-          RepaintBoundary(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: videoWidth,
-                height: videoHeight,
-                child: VideoPlayer(_controller!),
-              ),
-            ),
+          // Video player layer
+          Video(
+            controller: _videoController!,
+            fit: BoxFit.cover,
+            controls: NoVideoControls,
           ),
           
-          // Theme image overlay layer - also isolated with RepaintBoundary
+          // Theme image overlay layer
           // Show when theme should be visible and theme URL exists
           if (widget.themeImageUrl.isNotEmpty && _showTheme)
-            RepaintBoundary(
-              child: CachedNetworkImage(
-                key: ValueKey('theme_${widget.themeImageUrl}'),
-                imageUrl: widget.themeImageUrl,
-                cacheManager: ElysiaCacheManager.instance,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                fadeInDuration: const Duration(milliseconds: 200),
-                placeholder: (context, url) => const SizedBox.shrink(),
-                errorWidget: (context, url, error) => const SizedBox.shrink(),
-              ),
+            CachedNetworkImage(
+              key: ValueKey('theme_${widget.themeImageUrl}'),
+              imageUrl: widget.themeImageUrl,
+              cacheManager: ElysiaCacheManager.instance,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              fadeInDuration: const Duration(milliseconds: 200),
+              placeholder: (context, url) => const SizedBox.shrink(),
+              errorWidget: (context, url, error) => const SizedBox.shrink(),
             ),
         ],
       ),
