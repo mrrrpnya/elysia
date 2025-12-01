@@ -3,8 +3,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:elysia/src/providers/app_provider.dart';
-import 'package:elysia/src/theme/theme.dart';
+import 'package:elysia_flutter/src/providers/app_provider.dart';
+import 'package:elysia_flutter/src/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 void main() {
