@@ -1,4 +1,4 @@
-name: elysia_flutter
+name: elysia
 description: "Elysia Game Launcher - Flutter frontend with Rust backend"
 publish_to: 'none'
 

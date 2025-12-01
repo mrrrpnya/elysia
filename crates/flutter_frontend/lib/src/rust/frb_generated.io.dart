@@ -146,7 +146,7 @@ class RustLibWire implements BaseWire {
 
   late final _wire__crate__api__get_all_games_jsonPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'frbgen_elysia_flutter_wire__crate__api__get_all_games_json');
+          'frbgen_elysia_wire__crate__api__get_all_games_json');
   late final _wire__crate__api__get_all_games_json =
       _wire__crate__api__get_all_games_jsonPtr.asFunction<void Function(int)>();
 
@@ -156,7 +156,7 @@ class RustLibWire implements BaseWire {
 
   late final _wire__crate__api__get_config_pathPtr =
       _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
-          'frbgen_elysia_flutter_wire__crate__api__get_config_path');
+          'frbgen_elysia_wire__crate__api__get_config_path');
   late final _wire__crate__api__get_config_path =
       _wire__crate__api__get_config_pathPtr
           .asFunction<WireSyncRust2DartDco Function()>();
@@ -167,7 +167,7 @@ class RustLibWire implements BaseWire {
 
   late final _wire__crate__api__get_data_pathPtr =
       _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
-          'frbgen_elysia_flutter_wire__crate__api__get_data_path');
+          'frbgen_elysia_wire__crate__api__get_data_path');
   late final _wire__crate__api__get_data_path =
       _wire__crate__api__get_data_pathPtr
           .asFunction<WireSyncRust2DartDco Function()>();
@@ -184,7 +184,7 @@ class RustLibWire implements BaseWire {
           ffi.NativeFunction<
               WireSyncRust2DartDco Function(
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_elysia_flutter_wire__crate__api__get_download_progress_json');
+      'frbgen_elysia_wire__crate__api__get_download_progress_json');
   late final _wire__crate__api__get_download_progress_json =
       _wire__crate__api__get_download_progress_jsonPtr.asFunction<
           WireSyncRust2DartDco Function(
@@ -208,7 +208,7 @@ class RustLibWire implements BaseWire {
                   ffi.Int64,
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>,
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_elysia_flutter_wire__crate__api__get_game_content_json');
+      'frbgen_elysia_wire__crate__api__get_game_content_json');
   late final _wire__crate__api__get_game_content_json =
       _wire__crate__api__get_game_content_jsonPtr.asFunction<
           void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>,
@@ -220,7 +220,7 @@ class RustLibWire implements BaseWire {
 
   late final _wire__crate__api__get_settings_jsonPtr =
       _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
-          'frbgen_elysia_flutter_wire__crate__api__get_settings_json');
+          'frbgen_elysia_wire__crate__api__get_settings_json');
   late final _wire__crate__api__get_settings_json =
       _wire__crate__api__get_settings_jsonPtr
           .asFunction<WireSyncRust2DartDco Function()>();
@@ -231,7 +231,7 @@ class RustLibWire implements BaseWire {
 
   late final _wire__crate__api__init_backendPtr =
       _lookup<ffi.NativeFunction<WireSyncRust2DartDco Function()>>(
-          'frbgen_elysia_flutter_wire__crate__api__init_backend');
+          'frbgen_elysia_wire__crate__api__init_backend');
   late final _wire__crate__api__init_backend =
       _wire__crate__api__init_backendPtr
           .asFunction<WireSyncRust2DartDco Function()>();
@@ -254,7 +254,7 @@ class RustLibWire implements BaseWire {
                   ffi.Int64,
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>,
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_elysia_flutter_wire__crate__api__install_game');
+      'frbgen_elysia_wire__crate__api__install_game');
   late final _wire__crate__api__install_game =
       _wire__crate__api__install_gamePtr.asFunction<
           void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>,
@@ -275,7 +275,7 @@ class RustLibWire implements BaseWire {
               WireSyncRust2DartDco Function(
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>,
                   ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_elysia_flutter_wire__crate__api__is_game_installed');
+      'frbgen_elysia_wire__crate__api__is_game_installed');
   late final _wire__crate__api__is_game_installed =
       _wire__crate__api__is_game_installedPtr.asFunction<
           WireSyncRust2DartDco Function(
@@ -296,7 +296,7 @@ class RustLibWire implements BaseWire {
           ffi.NativeFunction<
               ffi.Void Function(
                   ffi.Int64, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_elysia_flutter_wire__crate__api__launch_game');
+      'frbgen_elysia_wire__crate__api__launch_game');
   late final _wire__crate__api__launch_game =
       _wire__crate__api__launch_gamePtr.asFunction<
           void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
@@ -312,7 +312,7 @@ class RustLibWire implements BaseWire {
   late final _cst_new_list_prim_u_8_strictPtr = _lookup<
           ffi.NativeFunction<
               ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(ffi.Int32)>>(
-      'frbgen_elysia_flutter_cst_new_list_prim_u_8_strict');
+      'frbgen_elysia_cst_new_list_prim_u_8_strict');
   late final _cst_new_list_prim_u_8_strict = _cst_new_list_prim_u_8_strictPtr
       .asFunction<ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(int)>();
 
