@@ -192,8 +192,14 @@ jobs:
           
           # Copy application files
           cp -r data AppDir/usr/bin/
-          cp -r lib AppDir/usr/lib/
           cp elysia AppDir/usr/bin/
+          
+          # Copy Flutter lib directory - this contains plugin .so files and Flutter assets
+          # We need to preserve the directory structure but also copy .so files to usr/lib for LD_LIBRARY_PATH
+          cp -r lib AppDir/usr/bin/lib
+          
+          # Also copy all .so files from lib to usr/lib so they can be found via LD_LIBRARY_PATH
+          find lib -name "*.so*" -type f -exec cp {} AppDir/usr/lib/ \;
           
           # Create desktop file in root of AppDir (required by appimagetool)
           cat > AppDir/elysia.desktop << EOF
