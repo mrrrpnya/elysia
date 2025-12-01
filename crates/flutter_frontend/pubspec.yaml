@@ -42,6 +42,7 @@ dependencies:
   
   # Video player for background videos
   video_player: ^2.9.2
+  fvp: ^0.35.1  # FFmpeg-based video player backend (replaces default platform implementations)
 
 dev_dependencies:
   flutter_test:

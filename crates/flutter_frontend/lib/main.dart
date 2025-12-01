@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fvp/fvp.dart' as fvp;
 
 import 'src/theme/theme.dart';
 import 'src/providers/app_provider.dart';
@@ -11,6 +12,9 @@ import 'src/services/cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Register fvp as video_player backend (FFmpeg-based, works on all platforms)
+  fvp.registerWith();
   
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();
