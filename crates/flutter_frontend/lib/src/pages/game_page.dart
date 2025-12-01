@@ -30,10 +30,9 @@ class GamePage extends StatelessWidget {
         // Background - video or image
         _GameBackground(display: game.display),
         
-        // Content overlay - isolated with Transform to create separate compositing layer
+        // Content overlay - isolated with RepaintBoundary to prevent video texture artifacts
         Positioned.fill(
-          child: Transform.translate(
-            offset: Offset.zero,
+          child: RepaintBoundary(
             child: Padding(
               padding: const EdgeInsets.only(
                 left: ElysiaTheme.sidebarWidth + 32,
@@ -164,6 +163,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   bool _isInitialized = false;
   bool _hasError = false;
   bool _isDisposing = false;
+  bool _showTheme = false;
   
   @override
   void initState() {
@@ -207,8 +207,9 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
         Uri.parse(widget.videoUrl),
       );
       
-      // Listen to controller updates to rebuild when playing state changes
-      _controller!.addListener(_onVideoStateChange);
+      // Set looping and volume before initializing for faster playback
+      await _controller!.setLooping(true);
+      await _controller!.setVolume(0); // Mute the video background
       
       await _controller!.initialize();
       
@@ -217,13 +218,21 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
         return;
       }
       
-      await _controller!.setLooping(true);
-      await _controller!.setVolume(0); // Mute the video background
+      // Start playing immediately
       await _controller!.play();
       
       if (mounted && !_isDisposing) {
         setState(() {
           _isInitialized = true;
+        });
+        
+        // Show theme overlay after a short delay to ensure video has started rendering
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted && !_isDisposing && _isInitialized) {
+            setState(() {
+              _showTheme = true;
+            });
+          }
         });
       }
     } catch (e) {
@@ -236,20 +245,12 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
   }
   
-  void _onVideoStateChange() {
-    // Rebuild when video playing state changes to update theme overlay visibility
-    if (mounted && !_isDisposing) {
-      setState(() {});
-    }
-  }
-  
   Future<void> _disposeController() async {
     final controller = _controller;
     _controller = null;
     
     if (controller != null) {
       try {
-        controller.removeListener(_onVideoStateChange);
         if (controller.value.isInitialized) {
           await controller.pause();
           // Small delay to allow the video to fully pause before dispose
@@ -266,31 +267,26 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   void dispose() {
     _isDisposing = true;
     _isInitialized = false;
+    _showTheme = false;
     WidgetsBinding.instance.removeObserver(this);
     
     // Capture controller reference before nullifying
     final controller = _controller;
     _controller = null;
     
-    // Dispose asynchronously using scheduleMicrotask and longer delay
+    // Dispose asynchronously with proper waiting
     if (controller != null) {
-      // Remove listener immediately
-      try {
-        controller.removeListener(_onVideoStateChange);
-      } catch (e) {
-        debugPrint('Error removing listener: $e');
-      }
-      
-      // Schedule disposal after all rendering is complete
-      Future(() async {
+      // Schedule disposal in next event loop cycle with longer delay
+      Future.delayed(const Duration(milliseconds: 300), () async {
         try {
           // First, stop the video completely
-          if (controller.value.isInitialized && controller.value.isPlaying) {
-            await controller.pause();
+          if (controller.value.isInitialized) {
+            if (controller.value.isPlaying) {
+              await controller.pause();
+            }
+            // Wait for video to fully stop
+            await Future.delayed(const Duration(milliseconds: 200));
           }
-          
-          // Wait significantly longer to ensure video pipeline is fully stopped
-          await Future.delayed(const Duration(milliseconds: 200));
           
           // Now dispose
           await controller.dispose();
@@ -324,9 +320,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video player layer - isolated with Transform to create new compositing layer
-          Transform.translate(
-            offset: Offset.zero,
+          // Video player layer - isolated with RepaintBoundary
+          RepaintBoundary(
             child: FittedBox(
               fit: BoxFit.cover,
               child: SizedBox(
@@ -337,18 +332,18 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
             ),
           ),
           
-          // Theme image overlay layer - also isolated with Transform
-          // Show when initialized (video has started playing) and theme URL exists
-          if (widget.themeImageUrl.isNotEmpty && _isInitialized)
-            Transform.translate(
-              offset: Offset.zero,
+          // Theme image overlay layer - also isolated with RepaintBoundary
+          // Show when theme should be visible and theme URL exists
+          if (widget.themeImageUrl.isNotEmpty && _showTheme)
+            RepaintBoundary(
               child: CachedNetworkImage(
+                key: ValueKey('theme_${widget.themeImageUrl}'),
                 imageUrl: widget.themeImageUrl,
                 cacheManager: ElysiaCacheManager.instance,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                fadeInDuration: const Duration(milliseconds: 300),
+                fadeInDuration: const Duration(milliseconds: 200),
                 placeholder: (context, url) => const SizedBox.shrink(),
                 errorWidget: (context, url, error) => const SizedBox.shrink(),
               ),
