@@ -1,8 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 
 /// Glass-style button inspired by Collapse launcher
+/// Note: BackdropFilter removed to prevent rendering issues with video backgrounds
 class GlassButton extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;
@@ -27,13 +27,15 @@ class _GlassButtonState extends State<GlassButton> {
   
   @override
   Widget build(BuildContext context) {
+    // Use a more opaque background to simulate glass effect without BackdropFilter
+    // BackdropFilter causes rendering issues with video backgrounds
     final backgroundColor = !widget.enabled
-        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.3)
+        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.5)
         : _isPressed
-            ? ElysiaTheme.surfaceColor.withValues(alpha: 0.8)
+            ? ElysiaTheme.surfaceColor.withValues(alpha: 0.9)
             : _isHovering
-                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.7)
-                : ElysiaTheme.surfaceColor.withValues(alpha: 0.6);
+                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.85)
+                : ElysiaTheme.surfaceColor.withValues(alpha: 0.8);
     
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
@@ -44,37 +46,31 @@ class _GlassButtonState extends State<GlassButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.enabled ? widget.onPressed : null,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: widget.width,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
-                border: Border.all(color: ElysiaTheme.borderColor),
-                boxShadow: const [
-                  BoxShadow(
-                    color: ElysiaTheme.shadowColor,
-                    blurRadius: 5,
-                    offset: Offset(2, 2),
-                  ),
-                ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: widget.width,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
+            border: Border.all(color: ElysiaTheme.borderColor),
+            boxShadow: const [
+              BoxShadow(
+                color: ElysiaTheme.shadowColor,
+                blurRadius: 5,
+                offset: Offset(2, 2),
               ),
-              child: DefaultTextStyle(
-                style: TextStyle(
-                  color: widget.enabled 
-                      ? ElysiaTheme.textPrimary 
-                      : ElysiaTheme.textSecondary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-                child: widget.child,
-              ),
+            ],
+          ),
+          child: DefaultTextStyle(
+            style: TextStyle(
+              color: widget.enabled 
+                  ? ElysiaTheme.textPrimary 
+                  : ElysiaTheme.textSecondary,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
             ),
+            child: widget.child,
           ),
         ),
       ),

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import '../models/models.dart';
@@ -41,67 +40,62 @@ class DownloadControl extends StatelessWidget {
     final percentage = progress.percentage;
     final statusText = _buildStatusText(progress);
     
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(ElysiaTheme.itemRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(ElysiaTheme.itemRadius),
-            border: Border.all(color: ElysiaTheme.borderColor),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Progress bar
-              Container(
-                height: 24,
+    // Note: BackdropFilter removed to prevent rendering issues with video backgrounds
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(ElysiaTheme.itemRadius),
+        border: Border.all(color: ElysiaTheme.borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Progress bar
+          Container(
+            height: 24,
+            decoration: BoxDecoration(
+              color: ElysiaTheme.borderColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: percentage / 100,
+              child: Container(
                 decoration: BoxDecoration(
-                  color: ElysiaTheme.borderColor,
+                  color: ElysiaTheme.primaryColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: percentage / 100,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: ElysiaTheme.primaryColor,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 6),
+          
+          // Status text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  statusText,
+                  style: const TextStyle(
+                    color: ElysiaTheme.textPrimary,
+                    fontSize: 12,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              
-              const SizedBox(height: 6),
-              
-              // Status text
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      statusText,
-                      style: const TextStyle(
-                        color: ElysiaTheme.textPrimary,
-                        fontSize: 12,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    '${percentage.toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: ElysiaTheme.textPrimary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
+              Text(
+                '${percentage.toStringAsFixed(1)}%',
+                style: const TextStyle(
+                  color: ElysiaTheme.textPrimary,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -147,40 +141,35 @@ class _ActionButtonState extends State<_ActionButton> {
   
   @override
   Widget build(BuildContext context) {
+    // Note: BackdropFilter removed to prevent rendering issues with video backgrounds
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: widget.onPressed,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              decoration: BoxDecoration(
-                color: _isHovering
-                    ? ElysiaTheme.primaryColor.withValues(alpha: 0.8)
-                    : ElysiaTheme.primaryColor.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
-                boxShadow: const [
-                  BoxShadow(
-                    color: ElysiaTheme.shadowColor,
-                    blurRadius: 5,
-                    offset: Offset(2, 2),
-                  ),
-                ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          decoration: BoxDecoration(
+            color: _isHovering
+                ? ElysiaTheme.primaryColor.withValues(alpha: 0.95)
+                : ElysiaTheme.primaryColor.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
+            boxShadow: const [
+              BoxShadow(
+                color: ElysiaTheme.shadowColor,
+                blurRadius: 5,
+                offset: Offset(2, 2),
               ),
-              child: Text(
-                widget.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            ],
+          ),
+          child: Text(
+            widget.text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
