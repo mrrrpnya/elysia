@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process::Command;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 use anyhow::Result;
@@ -35,19 +36,28 @@ pub async fn jade_download(tweaks_dir: PathBuf) -> Result<PathBuf> {
     }
 
     fs::create_dir_all(&tweaks_dir).await?;
+    fs::create_dir_all(&extract_path).await?;
     let temp_file = tweaks_dir.join("jade.tmp.zip");
     let mut file = fs::File::create(&temp_file).await?;
     file.write_all(&bytes).await?;
 
-    tokio::task::spawn_blocking({
-        let temp_file = temp_file.clone();
-        let extract_path = extract_path.clone();
-        move || -> Result<()> {
-            let file = std::fs::File::open(&temp_file)?;
-            let mut archive = zip::ZipArchive::new(file)?;
-            archive.extract(&extract_path)?;
-            Ok(())
+    // Use system unzip command which handles more zip formats
+    let temp_file_clone = temp_file.clone();
+    let extract_path_clone = extract_path.clone();
+    tokio::task::spawn_blocking(move || -> Result<()> {
+        let output = Command::new("unzip")
+            .arg("-o") // overwrite without prompting
+            .arg("-q") // quiet mode
+            .arg(&temp_file_clone)
+            .arg("-d")
+            .arg(&extract_path_clone)
+            .output()?;
+        
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow::anyhow!("Failed to extract zip: {}", stderr));
         }
+        Ok(())
     })
     .await??;
 
