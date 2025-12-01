@@ -141,22 +141,9 @@ jobs:
             echo "WARNING: libmpv.so.1 not found"
           fi
           
-          # Find and copy libc.so.6 (glibc)
-          echo "Finding libc.so.6..."
-          LIBC_LIB=$(ldconfig -p | grep 'libc.so.6 ' | awk '{print $4}' | head -n 1)
-          if [ -n "$LIBC_LIB" ] && [ -f "$LIBC_LIB" ]; then
-            cp "$LIBC_LIB" "$BUNDLE_DIR/"
-            echo "Bundled: $LIBC_LIB"
-            
-            # Also copy the ld-linux loader that libc depends on
-            LD_LOADER=$(ldd "$LIBC_LIB" | grep 'ld-linux' | awk '{print $1}')
-            if [ -n "$LD_LOADER" ] && [ -f "$LD_LOADER" ]; then
-              cp "$LD_LOADER" "$BUNDLE_DIR/"
-              echo "Bundled: $LD_LOADER"
-            fi
-          else
-            echo "WARNING: libc.so.6 not found"
-          fi
+          # Find and copy libc.so.6 (glibc) - SKIP THIS, use host system's libc
+          # Bundling glibc can cause stack smashing and other issues
+          # echo "Skipping libc.so.6 - will use host system's glibc"
           
           # Get dependencies of libmpv and bundle non-system libs
           if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
@@ -224,8 +211,20 @@ jobs:
           export LD_LIBRARY_PATH="$PWD/AppDir/usr/lib:${LD_LIBRARY_PATH}"
           
           # Find and copy dependencies of the main executable
+          # Exclude critical system libraries that should come from host
+          EXCLUDED_LIBS="libc.so libdl.so libpthread.so libm.so librt.so libresolv.so ld-linux"
+          
           ldd AppDir/usr/bin/elysia | grep "=> /" | awk '{print $3}' | while read dep; do
-            if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
+            # Check if this library should be excluded
+            should_exclude=0
+            for excluded in $EXCLUDED_LIBS; do
+              if [[ "$(basename $dep)" == $excluded* ]]; then
+                should_exclude=1
+                break
+              fi
+            done
+            
+            if [ $should_exclude -eq 0 ] && [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
               cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
               echo "Bundled: $(basename $dep)"
             fi
@@ -236,7 +235,16 @@ jobs:
           for lib in AppDir/usr/lib/*.so*; do
             if [ -f "$lib" ]; then
               ldd "$lib" 2>/dev/null | grep "=> /" | awk '{print $3}' | while read dep; do
-                if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
+                # Check if this library should be excluded
+                should_exclude=0
+                for excluded in $EXCLUDED_LIBS; do
+                  if [[ "$(basename $dep)" == $excluded* ]]; then
+                    should_exclude=1
+                    break
+                  fi
+                done
+                
+                if [ $should_exclude -eq 0 ] && [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$(basename $dep)" ]; then
                   cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
                 fi
               done
