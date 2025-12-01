@@ -30,18 +30,19 @@ class GamePage extends StatelessWidget {
         // Background - video or image
         _GameBackground(display: game.display),
         
-        // Content overlay
+        // Content overlay - wrapped in RepaintBoundary to isolate from video rendering
         Positioned.fill(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: ElysiaTheme.sidebarWidth + 32,
-              top: 32,
-              right: 32,
-              bottom: 32,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
+          child: RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: ElysiaTheme.sidebarWidth + 32,
+                top: 32,
+                right: 32,
+                bottom: 32,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
                 // Left side - News and Download control
                 SizedBox(
                   width: 500,
@@ -258,19 +259,17 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     final controller = _controller;
     _controller = null;
     
-    // Pause immediately if possible
+    // Dispose asynchronously to avoid SIGSEGV
     if (controller != null) {
-      try {
-        controller.pause();
-      } catch (e) {
-        debugPrint('Error pausing video on dispose: $e');
-      }
-      
-      // Schedule disposal for after the current frame to avoid race conditions
-      // with the GPU texture being released while still in use
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Use Future.microtask to dispose after all pending UI frames
+      Future.microtask(() async {
         try {
-          controller.dispose();
+          if (controller.value.isInitialized) {
+            await controller.pause();
+            // Wait for video to fully stop
+            await Future.delayed(const Duration(milliseconds: 150));
+          }
+          await controller.dispose();
         } catch (e) {
           debugPrint('Error disposing video controller: $e');
         }
@@ -301,26 +300,32 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video player
-          FittedBox(
-            fit: BoxFit.cover,
-            child: SizedBox(
-              width: videoWidth,
-              height: videoHeight,
-              child: VideoPlayer(_controller!),
+          // Video player in its own RepaintBoundary
+          RepaintBoundary(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: videoWidth,
+                height: videoHeight,
+                child: VideoPlayer(_controller!),
+              ),
             ),
           ),
           
-          // Theme image overlay on top of video (if available)
-          if (widget.themeImageUrl.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: widget.themeImageUrl,
-              cacheManager: ElysiaCacheManager.instance,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              placeholder: (context, url) => const SizedBox.shrink(),
-              errorWidget: (context, url, error) => const SizedBox.shrink(),
+          // Theme image overlay on top of video (if available and video is playing)
+          if (widget.themeImageUrl.isNotEmpty && _controller!.value.isPlaying)
+            RepaintBoundary(
+              child: CachedNetworkImage(
+                key: ValueKey(widget.themeImageUrl),
+                imageUrl: widget.themeImageUrl,
+                cacheManager: ElysiaCacheManager.instance,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                fadeInDuration: const Duration(milliseconds: 300),
+                placeholder: (context, url) => const SizedBox.shrink(),
+                errorWidget: (context, url, error) => const SizedBox.shrink(),
+              ),
             ),
         ],
       ),
