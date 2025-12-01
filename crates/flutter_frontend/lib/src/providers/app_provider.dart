@@ -37,7 +37,12 @@ class AppProvider extends ChangeNotifier {
     
     try {
       // Initialize shared preferences for persistent storage
-      _prefs = await SharedPreferences.getInstance();
+      try {
+        _prefs = await SharedPreferences.getInstance();
+      } catch (e) {
+        debugPrint('Failed to initialize SharedPreferences: $e');
+        _prefs = null;
+      }
       
       // Initialize the backend
       await _backend.initialize();
@@ -69,14 +74,18 @@ class AppProvider extends ChangeNotifier {
   Future<void> _restoreLastSelectedGame() async {
     if (_games.isEmpty) return;
     
-    final lastGameId = _prefs?.getString(_lastSelectedGameKey);
-    if (lastGameId != null) {
-      // Find the game with the saved ID
-      final lastGame = _games.where((g) => g.id == lastGameId).firstOrNull;
-      if (lastGame != null) {
-        _selectedGame = lastGame;
-        return;
+    try {
+      final lastGameId = _prefs?.getString(_lastSelectedGameKey);
+      if (lastGameId != null) {
+        // Find the game with the saved ID
+        final lastGame = _games.where((g) => g.id == lastGameId).firstOrNull;
+        if (lastGame != null) {
+          _selectedGame = lastGame;
+          return;
+        }
       }
+    } catch (e) {
+      debugPrint('Failed to restore last selected game: $e');
     }
     
     // Default to first game if no saved selection or game not found
@@ -85,12 +94,17 @@ class AppProvider extends ChangeNotifier {
   
   /// Save the selected game ID to preferences
   Future<void> _saveSelectedGame(String gameId) async {
-    await _prefs?.setString(_lastSelectedGameKey, gameId);
+    try {
+      await _prefs?.setString(_lastSelectedGameKey, gameId);
+    } catch (e) {
+      debugPrint('Failed to save selected game: $e');
+    }
   }
   
   /// Select a game
   void selectGame(Game game) {
     _selectedGame = game;
+    // Fire and forget - don't block UI for persistence
     _saveSelectedGame(game.id);
     notifyListeners();
   }
