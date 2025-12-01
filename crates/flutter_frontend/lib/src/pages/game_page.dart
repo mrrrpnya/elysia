@@ -30,87 +30,85 @@ class GamePage extends StatelessWidget {
         // Background - video or image
         _GameBackground(display: game.display),
         
-        // Content overlay - isolated from video rendering
+        // Content overlay
         Positioned.fill(
-          child: RepaintBoundary(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: ElysiaTheme.sidebarWidth + 32,
-                top: 32,
-                right: 32,
-                bottom: 32,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Left side - News and Download control
-                  SizedBox(
-                    width: 500,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // News carousel
-                        NewsWidget(content: content),
-                        const SizedBox(height: 32),
-                        
-                        // Download/Launch control
-                        DownloadControl(
-                          gameId: game.id,
-                          isInstalled: isInstalled,
-                          progress: progress,
-                          onActionPressed: () {
-                            if (isInstalled) {
-                              provider.launchGame(game.id);
-                            } else {
-                              provider.installGame(game.id);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const Spacer(),
-                  
-                  // Right side - Action buttons
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: ElysiaTheme.sidebarWidth + 32,
+              top: 32,
+              right: 32,
+              bottom: 32,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Left side - News and Download control
+                SizedBox(
+                  width: 500,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Top right button
-                      GlassButton(
-                        onPressed: () {
-                          debugPrint('Explode button pressed!');
-                        },
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.auto_awesome, size: 24),
-                            SizedBox(width: 8),
-                            Text('Explode', style: TextStyle(fontSize: 20)),
-                          ],
-                        ),
-                      ),
+                      // News carousel
+                      NewsWidget(content: content),
+                      const SizedBox(height: 32),
                       
-                      // Bottom right button
-                      GlassButton(
-                        onPressed: () {
-                          debugPrint('Meow button pressed!');
+                      // Download/Launch control
+                      DownloadControl(
+                        gameId: game.id,
+                        isInstalled: isInstalled,
+                        progress: progress,
+                        onActionPressed: () {
+                          if (isInstalled) {
+                            provider.launchGame(game.id);
+                          } else {
+                            provider.installGame(game.id);
+                          }
                         },
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.pets, size: 24),
-                            SizedBox(width: 8),
-                            Text('Meow', style: TextStyle(fontSize: 20)),
-                          ],
-                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                
+                const Spacer(),
+                
+                // Right side - Action buttons
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Top right button
+                    GlassButton(
+                      onPressed: () {
+                        debugPrint('Explode button pressed!');
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.auto_awesome, size: 24),
+                          SizedBox(width: 8),
+                          Text('Explode', style: TextStyle(fontSize: 20)),
+                        ],
+                      ),
+                    ),
+                    
+                    // Bottom right button
+                    GlassButton(
+                      onPressed: () {
+                        debugPrint('Meow button pressed!');
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.pets, size: 24),
+                          SizedBox(width: 8),
+                          Text('Meow', style: TextStyle(fontSize: 20)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -129,13 +127,11 @@ class _GameBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     // Use video background if available, otherwise fall back to image
     if (display.hasVideoBackground) {
-      return RepaintBoundary(
-        child: _VideoBackground(
-          key: ValueKey(display.videoBackgroundUrl),
-          videoUrl: display.videoBackgroundUrl,
-          themeImageUrl: display.themeImageUrl,
-          fallbackImageUrl: display.background.url,
-        ),
+      return _VideoBackground(
+        key: ValueKey(display.videoBackgroundUrl),
+        videoUrl: display.videoBackgroundUrl,
+        themeImageUrl: display.themeImageUrl,
+        fallbackImageUrl: display.background.url,
       );
     }
     
@@ -275,69 +271,42 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
-    // Get the video dimensions, or use placeholder dimensions
-    final videoWidth = _controller?.value.size.width ?? 1920;
-    final videoHeight = _controller?.value.size.height ?? 1080;
+    // Show fallback while initializing
+    if (!_isInitialized || _controller == null) {
+      return _BackgroundImage(url: widget.fallbackImageUrl);
+    }
+    
+    // Get the video dimensions
+    final videoWidth = _controller!.value.size.width;
+    final videoHeight = _controller!.value.size.height;
     
     return Padding(
       padding: EdgeInsets.only(left: ElysiaTheme.sidebarWidth),
-      child: ColoredBox(
-        color: ElysiaTheme.backgroundColor,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Video player (hidden until initialized)
-            Visibility(
-              visible: _isInitialized && _controller != null,
-              maintainState: true,
-              maintainAnimation: true,
-              maintainSize: true,
-              child: IgnorePointer(
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  clipBehavior: Clip.hardEdge,
-                  child: SizedBox(
-                    width: videoWidth,
-                    height: videoHeight,
-                    child: _controller != null 
-                      ? VideoPlayer(_controller!)
-                      : const SizedBox.shrink(),
-                  ),
-                ),
-              ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Video player
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: videoWidth,
+              height: videoHeight,
+              child: VideoPlayer(_controller!),
             ),
-            
-            // Fallback image (shown while video initializes or on error)
-            Visibility(
-              visible: !_isInitialized || _controller == null,
-              child: CachedNetworkImage(
-                imageUrl: widget.fallbackImageUrl,
-                cacheManager: ElysiaCacheManager.instance,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                placeholder: (context, url) => const SizedBox.shrink(),
-                errorWidget: (context, url, error) => const SizedBox.shrink(),
-              ),
+          ),
+          
+          // Theme image overlay on top of video (if available)
+          if (widget.themeImageUrl.isNotEmpty)
+            CachedNetworkImage(
+              imageUrl: widget.themeImageUrl,
+              cacheManager: ElysiaCacheManager.instance,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              placeholder: (context, url) => const SizedBox.shrink(),
+              errorWidget: (context, url, error) => const SizedBox.shrink(),
             ),
-            
-            // Theme image overlay on top of video (if available and video is playing)
-            Visibility(
-              visible: _isInitialized && widget.themeImageUrl.isNotEmpty,
-              child: IgnorePointer(
-                child: CachedNetworkImage(
-                  imageUrl: widget.themeImageUrl,
-                  cacheManager: ElysiaCacheManager.instance,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  placeholder: (context, url) => const SizedBox.shrink(),
-                  errorWidget: (context, url, error) => const SizedBox.shrink(),
-                ),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
