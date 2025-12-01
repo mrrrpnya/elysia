@@ -10,19 +10,13 @@ class ElysiaCacheManager {
   static CacheManager? _instance;
   
   static CacheManager get instance {
-    _instance ??= CacheManager(
-      Config(
-        key,
-        stalePeriod: const Duration(days: 30),
-        maxNrOfCacheObjects: 200,
-        repo: JsonCacheInfoRepository(databaseName: key),
-        fileService: HttpFileService(),
-      ),
-    );
+    if (_instance == null) {
+      throw StateError('ElysiaCacheManager not initialized. Call initialize() first.');
+    }
     return _instance!;
   }
   
-  /// Initialize cache manager with custom directory
+  /// Initialize cache manager with custom directory in app's data folder
   static Future<void> initialize() async {
     // Get the app's support directory
     final appDir = await getApplicationSupportDirectory();
@@ -39,6 +33,7 @@ class ElysiaCacheManager {
         stalePeriod: const Duration(days: 30),
         maxNrOfCacheObjects: 200,
         repo: JsonCacheInfoRepository(databaseName: key),
+        fileSystem: IOFileSystem(cacheDir.path),
         fileService: HttpFileService(),
       ),
     );
