@@ -8,8 +8,3 @@ anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 reqwest = { workspace = true }
-
-[profile.release]
-strip = true
-opt-level = "s"
-lto = true

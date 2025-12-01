@@ -19,8 +19,3 @@ lodepng = "3.12.1"
 bytes = "1.10.1"
 cacache = { version = "13.1.0", features = ["libc", "memmap2", "mmap", "tokio-runtime"], default-features = false }
 tar = "0.4.44"
-
-[profile.release]
-strip = true
-opt-level = "s"
-lto = true
