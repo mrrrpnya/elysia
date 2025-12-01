@@ -213,9 +213,10 @@ jobs:
           convert -size 256x256 xc:blue AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png 2>/dev/null || \
             echo "Icon generation skipped (imagemagick not available)"
           
-          # Use linuxdeploy to deploy the executable and its dependencies automatically
-          # This will find and bundle all shared library dependencies including libmpv.so.1, libc6, etc.
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --executable AppDir/usr/bin/elysia
+          # Use linuxdeploy to deploy dependencies of all binaries in usr/bin and usr/lib
+          # --deploy-deps-only will scan the directory and bundle all dependencies
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --deploy-deps-only AppDir/usr/bin
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --deploy-deps-only AppDir/usr/lib
           
           # Create AppRun script
           cat > AppDir/AppRun << 'EOF'
