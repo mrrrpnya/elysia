@@ -40,7 +40,8 @@ jobs:
             llvm-dev \
             libclang-dev \
             libasound2-dev \
-            libmpv-dev
+            libmpv-dev \
+            libmpv2
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -125,18 +126,40 @@ jobs:
             echo "Rust library bundled with app"
           fi
           
-          # Bundle libmpv and its dependencies for video playback
+          # Bundle libmpv for video playback
+          # media_kit_libs_linux expects libmpv.so.1 but Ubuntu 22.04 has libmpv.so.2
           echo "Bundling libmpv..."
-          MPV_LIB=$(ldconfig -p | grep 'libmpv.so.1' | head -1 | awk '{print $NF}')
-          if [ -n "$MPV_LIB" ] && [ -f "$MPV_LIB" ]; then
-            cp "$MPV_LIB" "$BUNDLE_DIR/"
-            echo "libmpv.so.1 bundled from $MPV_LIB"
-          else
-            # Fallback: try common paths
-            for path in /usr/lib/x86_64-linux-gnu/libmpv.so.1 /usr/lib/libmpv.so.1; do
+          
+          # First try to find libmpv.so.1 (from media_kit_libs_linux or older systems)
+          MPV_LIB1=$(ldconfig -p | grep 'libmpv.so.1' | head -1 | awk '{print $NF}')
+          if [ -n "$MPV_LIB1" ] && [ -f "$MPV_LIB1" ]; then
+            cp "$MPV_LIB1" "$BUNDLE_DIR/"
+            echo "libmpv.so.1 bundled from $MPV_LIB1"
+          fi
+          
+          # Also bundle libmpv.so.2 if available (Ubuntu 22.04+)
+          MPV_LIB2=$(ldconfig -p | grep 'libmpv.so.2' | head -1 | awk '{print $NF}')
+          if [ -n "$MPV_LIB2" ] && [ -f "$MPV_LIB2" ]; then
+            cp "$MPV_LIB2" "$BUNDLE_DIR/"
+            echo "libmpv.so.2 bundled from $MPV_LIB2"
+            # Create symlink for compatibility if libmpv.so.1 wasn't found
+            if [ ! -f "$BUNDLE_DIR/libmpv.so.1" ]; then
+              ln -sf libmpv.so.2 "$BUNDLE_DIR/libmpv.so.1"
+              echo "Created libmpv.so.1 symlink to libmpv.so.2"
+            fi
+          fi
+          
+          # Fallback: try common paths
+          if [ ! -f "$BUNDLE_DIR/libmpv.so.1" ] && [ ! -f "$BUNDLE_DIR/libmpv.so.2" ]; then
+            for path in /usr/lib/x86_64-linux-gnu/libmpv.so.2 /usr/lib/x86_64-linux-gnu/libmpv.so.1 /usr/lib/libmpv.so.2 /usr/lib/libmpv.so.1; do
               if [ -f "$path" ]; then
                 cp "$path" "$BUNDLE_DIR/"
-                echo "libmpv.so.1 bundled from $path"
+                echo "libmpv bundled from $path"
+                # Create symlink if needed
+                if [[ "$path" == *".so.2" ]] && [ ! -f "$BUNDLE_DIR/libmpv.so.1" ]; then
+                  ln -sf "$(basename $path)" "$BUNDLE_DIR/libmpv.so.1"
+                  echo "Created libmpv.so.1 symlink"
+                fi
                 break
               fi
             done
