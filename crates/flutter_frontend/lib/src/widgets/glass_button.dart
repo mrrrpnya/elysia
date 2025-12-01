@@ -27,17 +27,18 @@ class _GlassButtonState extends State<GlassButton> {
   
   @override
   Widget build(BuildContext context) {
-    // Use a more opaque background to simulate glass effect without BackdropFilter
-    // BackdropFilter causes rendering issues with video backgrounds
+    // Use fully opaque background to prevent video texture artifacts
     final backgroundColor = !widget.enabled
-        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.5)
+        ? const Color(0xFF3A3A3A)
         : _isPressed
-            ? ElysiaTheme.surfaceColor.withValues(alpha: 0.9)
+            ? const Color(0xFF5A5A5A)
             : _isHovering
-                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.85)
-                : ElysiaTheme.surfaceColor.withValues(alpha: 0.8);
+                ? const Color(0xFF4A4A4A)
+                : const Color(0xFF404040);
     
-    return MouseRegion(
+    // Wrap in RepaintBoundary to isolate from video rendering
+    return RepaintBoundary(
+      child: MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -46,8 +47,7 @@ class _GlassButtonState extends State<GlassButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.enabled ? widget.onPressed : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           width: widget.width,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
@@ -74,6 +74,7 @@ class _GlassButtonState extends State<GlassButton> {
           ),
         ),
       ),
+    ),
     );
   }
 }
@@ -103,16 +104,18 @@ class _AccentButtonState extends State<AccentButton> {
   
   @override
   Widget build(BuildContext context) {
-    final baseColor = ElysiaTheme.primaryColor;
+    // Use fully opaque colors to prevent video texture artifacts
     final backgroundColor = !widget.enabled
-        ? baseColor.withValues(alpha: 0.3)
+        ? const Color(0xFF8B6914)
         : _isPressed
-            ? baseColor.withValues(alpha: 0.9)
+            ? const Color(0xFFD4A017)
             : _isHovering
-                ? baseColor.withValues(alpha: 0.8)
-                : baseColor.withValues(alpha: 0.7);
+                ? const Color(0xFFC49516)
+                : const Color(0xFFB58915);
     
-    return MouseRegion(
+    // Wrap in RepaintBoundary to isolate from video rendering
+    return RepaintBoundary(
+      child: MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -121,8 +124,7 @@ class _AccentButtonState extends State<AccentButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.enabled ? widget.onPressed : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+        child: Container(
           width: widget.width,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
@@ -146,6 +148,7 @@ class _AccentButtonState extends State<AccentButton> {
           ),
         ),
       ),
+    ),
     );
   }
 }

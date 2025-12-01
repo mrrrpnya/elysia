@@ -253,14 +253,30 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     _isDisposing = true;
     _isInitialized = false;
     WidgetsBinding.instance.removeObserver(this);
-    // Use synchronous pause, then async dispose
-    try {
-      _controller?.pause();
-    } catch (e) {
-      debugPrint('Error pausing video on dispose: $e');
-    }
-    _controller?.dispose();
+    
+    // Capture controller reference before nullifying
+    final controller = _controller;
     _controller = null;
+    
+    // Pause immediately if possible
+    if (controller != null) {
+      try {
+        controller.pause();
+      } catch (e) {
+        debugPrint('Error pausing video on dispose: $e');
+      }
+      
+      // Schedule disposal for after the current frame to avoid race conditions
+      // with the GPU texture being released while still in use
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          controller.dispose();
+        } catch (e) {
+          debugPrint('Error disposing video controller: $e');
+        }
+      });
+    }
+    
     super.dispose();
   }
   
