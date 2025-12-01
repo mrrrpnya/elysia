@@ -68,6 +68,9 @@ class Display {
       logo: ImageLink.fromJson(json['logo'] as Map<String, dynamic>),
       thumbnail: ImageLink.fromJson(json['thumbnail'] as Map<String, dynamic>),
       shortcut: Image.fromJson(json['shortcut'] as Map<String, dynamic>),
+      videoBackgroundUrl: json['video_background_url'] as String? ?? '',
+      themeImageUrl: json['theme_image_url'] as String? ?? '',
+      backgroundType: json['background_type'] as String? ?? '',
     );
   }
 }
