@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -139,60 +138,15 @@ class _BackgroundImage extends StatelessWidget {
       );
     }
     
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Blurred background (bottom layer)
-        CachedNetworkImage(
-          imageUrl: url,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: ElysiaTheme.backgroundColor,
-          ),
-          errorWidget: (context, url, error) => Container(
-            color: ElysiaTheme.backgroundColor,
-          ),
-          imageBuilder: (context, imageProvider) => Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: imageProvider,
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-              ),
-            ),
-          ),
-        ),
-        
-        // Clear background (aligned to end)
-        Align(
-          alignment: Alignment.bottomRight,
-          child: CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const SizedBox.shrink(),
-            errorWidget: (context, url, error) => const SizedBox.shrink(),
-          ),
-        ),
-        
-        // Gradient overlay
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Colors.black.withOpacity(0.6),
-                Colors.black.withOpacity(0.0),
-              ],
-            ),
-          ),
-        ),
-      ],
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: ElysiaTheme.backgroundColor,
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: ElysiaTheme.backgroundColor,
+      ),
     );
   }
 }
