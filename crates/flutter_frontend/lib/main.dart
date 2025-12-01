@@ -46,6 +46,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   bool _showSettings = false;
+  bool _showComponents = false;
   
   @override
   Widget build(BuildContext context) {
@@ -102,14 +103,16 @@ class _AppShellState extends State<AppShell> {
           // Main content
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: _showSettings
-                ? const SettingsPage()
-                : provider.selectedGame != null
-                    ? GamePage(
-                        key: ValueKey(provider.selectedGame!.id),
-                        game: provider.selectedGame!,
-                      )
-                    : const HomePage(),
+            child: _showComponents
+                ? const ComponentsPage()
+                : _showSettings
+                    ? const SettingsPage()
+                    : provider.selectedGame != null
+                        ? GamePage(
+                            key: ValueKey(provider.selectedGame!.id),
+                            game: provider.selectedGame!,
+                          )
+                        : const HomePage(),
           ),
           
           // Sidebar
@@ -117,12 +120,25 @@ class _AppShellState extends State<AppShell> {
             games: provider.games,
             selectedGame: provider.selectedGame,
             showSettings: _showSettings,
+            showComponents: _showComponents,
             onGameSelected: (game) {
-              setState(() => _showSettings = false);
+              setState(() {
+                _showSettings = false;
+                _showComponents = false;
+              });
               provider.selectGame(game);
             },
+            onComponentsPressed: () {
+              setState(() {
+                _showComponents = !_showComponents;
+                if (_showComponents) _showSettings = false;
+              });
+            },
             onSettingsPressed: () {
-              setState(() => _showSettings = !_showSettings);
+              setState(() {
+                _showSettings = !_showSettings;
+                if (_showSettings) _showComponents = false;
+              });
             },
           ),
         ],
@@ -136,14 +152,18 @@ class _Sidebar extends StatelessWidget {
   final List games;
   final dynamic selectedGame;
   final bool showSettings;
+  final bool showComponents;
   final Function(dynamic) onGameSelected;
+  final VoidCallback onComponentsPressed;
   final VoidCallback onSettingsPressed;
   
   const _Sidebar({
     required this.games,
     required this.selectedGame,
     required this.showSettings,
+    required this.showComponents,
     required this.onGameSelected,
+    required this.onComponentsPressed,
     required this.onSettingsPressed,
   });
   
@@ -177,7 +197,7 @@ class _Sidebar extends StatelessWidget {
                     itemCount: games.length,
                     itemBuilder: (context, index) {
                       final game = games[index];
-                      final isSelected = selectedGame?.id == game.id && !showSettings;
+                      final isSelected = selectedGame?.id == game.id && !showSettings && !showComponents;
                       
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -193,6 +213,22 @@ class _Sidebar extends StatelessWidget {
                     },
                   ),
                 ),
+                
+                // Components button (wine bottle icon)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SidebarItem(
+                    isActive: showComponents,
+                    onTap: onComponentsPressed,
+                    child: const Icon(
+                      Icons.wine_bar,
+                      size: 32,
+                      color: ElysiaTheme.textPrimary,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
                 
                 // Settings button
                 Padding(

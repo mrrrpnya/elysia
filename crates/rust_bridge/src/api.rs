@@ -352,3 +352,254 @@ pub async fn launch_game(game_id: String) -> String {
         }
     }
 }
+
+// ============================================================================
+// Component Management APIs
+// ============================================================================
+
+/// Available runner DTO for FFI
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AvailableRunnerDto {
+    pub name: String,
+    pub display_name: String,
+    pub runner_type: String,
+    pub version: String,
+    pub download_url: String,
+    pub folder_name: String,
+    pub is_installed: bool,
+}
+
+/// Available component DTO for FFI
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AvailableComponentDto {
+    pub name: String,
+    pub display_name: String,
+    pub description: String,
+    pub component_type: String,
+    pub version: String,
+    pub is_installed: bool,
+}
+
+/// Get available runners as JSON
+#[flutter_rust_bridge::frb(sync)]
+pub fn get_available_runners_json() -> String {
+    use backend::components::runners::{get_available_runners, is_runner_installed, RunnerType};
+    
+    let runners = get_available_runners();
+    let dtos: Vec<AvailableRunnerDto> = runners
+        .iter()
+        .map(|r| AvailableRunnerDto {
+            name: r.name.clone(),
+            display_name: r.display_name.clone(),
+            runner_type: match r.runner_type {
+                RunnerType::Wine => "wine".to_string(),
+                RunnerType::Proton => "proton".to_string(),
+            },
+            version: r.version.clone(),
+            download_url: r.download_url.clone(),
+            folder_name: r.folder_name.clone(),
+            is_installed: is_runner_installed(r),
+        })
+        .collect();
+    
+    serde_json::to_string(&dtos).unwrap_or_else(|_| "[]".to_string())
+}
+
+/// Get available components (umu-launcher, jadeite) as JSON
+#[flutter_rust_bridge::frb(sync)]
+pub fn get_available_components_json() -> String {
+    let components_dir = backend::globals::DATA_PATH.join("components");
+    
+    let mut components = Vec::new();
+    
+    // UMU Launcher
+    let umu_installed = components_dir.join("umu/umu-run").exists();
+    components.push(AvailableComponentDto {
+        name: "umu-launcher".to_string(),
+        display_name: "UMU Launcher".to_string(),
+        description: "Required for running games with Proton".to_string(),
+        component_type: "umu".to_string(),
+        version: "1.2.9".to_string(),
+        is_installed: umu_installed,
+    });
+    
+    // Jadeite
+    let jadeite_installed = components_dir.join("tweaks/jadeite/jadeite.exe").exists();
+    components.push(AvailableComponentDto {
+        name: "jadeite".to_string(),
+        display_name: "Jadeite".to_string(),
+        description: "Required for certain games (anti-cheat compatibility)".to_string(),
+        component_type: "jadeite".to_string(),
+        version: "v5.0.1".to_string(),
+        is_installed: jadeite_installed,
+    });
+    
+    serde_json::to_string(&components).unwrap_or_else(|_| "[]".to_string())
+}
+
+/// Install a runner by name
+/// Returns "ok" if installation succeeded, or an error message
+pub async fn install_runner(runner_name: String) -> String {
+    use backend::components::runners::{get_available_runners, install_runner as backend_install_runner};
+    
+    let runners = get_available_runners();
+    let runner = runners.iter().find(|r| r.name == runner_name);
+    
+    match runner {
+        Some(r) => {
+            match backend_install_runner(r).await {
+                Ok(_) => {
+                    eprintln!("[INFO] Runner installed: {}", runner_name);
+                    "ok".to_string()
+                }
+                Err(e) => {
+                    let err = format!("Failed to install runner: {}", e);
+                    eprintln!("[ERROR] {}", err);
+                    err
+                }
+            }
+        }
+        None => {
+            let err = format!("Runner not found: {}", runner_name);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}
+
+/// Delete a runner by name
+/// Returns "ok" if deletion succeeded, or an error message
+pub async fn delete_runner(runner_name: String) -> String {
+    use backend::components::runners::{get_available_runners, get_components_directory, RunnerType};
+    
+    let runners = get_available_runners();
+    let runner = runners.iter().find(|r| r.name == runner_name);
+    
+    match runner {
+        Some(r) => {
+            let components_dir = get_components_directory();
+            let runner_dir = components_dir
+                .join(r.runner_type.directory_name())
+                .join(&r.folder_name);
+            
+            if runner_dir.exists() {
+                match std::fs::remove_dir_all(&runner_dir) {
+                    Ok(_) => {
+                        eprintln!("[INFO] Runner deleted: {}", runner_name);
+                        "ok".to_string()
+                    }
+                    Err(e) => {
+                        let err = format!("Failed to delete runner: {}", e);
+                        eprintln!("[ERROR] {}", err);
+                        err
+                    }
+                }
+            } else {
+                "ok".to_string()
+            }
+        }
+        None => {
+            let err = format!("Runner not found: {}", runner_name);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}
+
+/// Install UMU launcher component
+/// Returns "ok" if installation succeeded, or an error message
+pub async fn install_umu_launcher() -> String {
+    let settings = match backend::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(_) => {
+            let mut s = backend::settings::GlobalSettings::default();
+            s.validate();
+            s
+        }
+    };
+    
+    match backend::components::umu::setup_umu(&settings).await {
+        Ok(_) => {
+            eprintln!("[INFO] UMU Launcher installed");
+            "ok".to_string()
+        }
+        Err(e) => {
+            let err = format!("Failed to install UMU Launcher: {}", e);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}
+
+/// Install Jadeite component
+/// Returns "ok" if installation succeeded, or an error message
+pub async fn install_jadeite() -> String {
+    let settings = match backend::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(_) => {
+            let mut s = backend::settings::GlobalSettings::default();
+            s.validate();
+            s
+        }
+    };
+    
+    let tweaks_dir = settings.components_directory.join("tweaks");
+    
+    match backend::components::tweaks::downloader::jade_download(tweaks_dir).await {
+        Ok(_) => {
+            eprintln!("[INFO] Jadeite installed");
+            "ok".to_string()
+        }
+        Err(e) => {
+            let err = format!("Failed to install Jadeite: {}", e);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
+}
+
+/// Delete UMU launcher component
+/// Returns "ok" if deletion succeeded, or an error message
+pub async fn delete_umu_launcher() -> String {
+    let components_dir = backend::globals::DATA_PATH.join("components");
+    let umu_dir = components_dir.join("umu");
+    
+    if umu_dir.exists() {
+        match std::fs::remove_dir_all(&umu_dir) {
+            Ok(_) => {
+                eprintln!("[INFO] UMU Launcher deleted");
+                "ok".to_string()
+            }
+            Err(e) => {
+                let err = format!("Failed to delete UMU Launcher: {}", e);
+                eprintln!("[ERROR] {}", err);
+                err
+            }
+        }
+    } else {
+        "ok".to_string()
+    }
+}
+
+/// Delete Jadeite component
+/// Returns "ok" if deletion succeeded, or an error message
+pub async fn delete_jadeite() -> String {
+    let components_dir = backend::globals::DATA_PATH.join("components");
+    let jadeite_dir = components_dir.join("tweaks/jadeite");
+    
+    if jadeite_dir.exists() {
+        match std::fs::remove_dir_all(&jadeite_dir) {
+            Ok(_) => {
+                eprintln!("[INFO] Jadeite deleted");
+                "ok".to_string()
+            }
+            Err(e) => {
+                let err = format!("Failed to delete Jadeite: {}", e);
+                eprintln!("[ERROR] {}", err);
+                err
+            }
+        }
+    } else {
+        "ok".to_string()
+    }
+}

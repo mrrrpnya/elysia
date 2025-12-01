@@ -8,7 +8,9 @@ use serde::{Deserialize, Serialize};
 
 mod dxvk;
 mod jadeite;
+pub mod runners;
 pub mod tweaks;
+pub mod umu;
 
 use crate::components::{dxvk::Dxvk, jadeite::Jadeite};
 
