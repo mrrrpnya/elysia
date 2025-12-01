@@ -80,11 +80,12 @@ class _NewsWidgetState extends State<NewsWidget> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Banner carousel
+        // Banner carousel - uses SizedBox with max height instead of fixed aspect ratio
+        // This allows images to display at their natural aspect ratio
         ClipRRect(
           borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
+          child: SizedBox(
+            height: 280,
             child: Listener(
               onPointerSignal: (event) {
                 // Handle mouse wheel for carousel
@@ -164,18 +165,22 @@ class _BannerImage extends StatelessWidget {
       );
     }
     
-    return Container(
-      color: ElysiaTheme.cardColor,
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: BoxFit.contain,
-        alignment: Alignment.center,
-        placeholder: (context, url) => const Center(
+    // Use BoxFit.scaleDown to scale the image to fit without cropping
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.center,
+      placeholder: (context, url) => Container(
+        color: ElysiaTheme.cardColor,
+        child: const Center(
           child: CircularProgressIndicator(
             color: ElysiaTheme.primaryColor,
           ),
         ),
-        errorWidget: (context, url, error) => const Center(
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: ElysiaTheme.cardColor,
+        child: const Center(
           child: Icon(
             Icons.broken_image,
             color: ElysiaTheme.textSecondary,

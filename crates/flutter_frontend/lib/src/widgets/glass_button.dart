@@ -28,12 +28,12 @@ class _GlassButtonState extends State<GlassButton> {
   @override
   Widget build(BuildContext context) {
     final backgroundColor = !widget.enabled
-        ? ElysiaTheme.surfaceColor.withOpacity(0.3)
+        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.3)
         : _isPressed
-            ? ElysiaTheme.surfaceColor.withOpacity(0.8)
+            ? ElysiaTheme.surfaceColor.withValues(alpha: 0.8)
             : _isHovering
-                ? ElysiaTheme.surfaceColor.withOpacity(0.7)
-                : ElysiaTheme.surfaceColor.withOpacity(0.6);
+                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.7)
+                : ElysiaTheme.surfaceColor.withValues(alpha: 0.6);
     
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
@@ -109,12 +109,12 @@ class _AccentButtonState extends State<AccentButton> {
   Widget build(BuildContext context) {
     final baseColor = ElysiaTheme.primaryColor;
     final backgroundColor = !widget.enabled
-        ? baseColor.withOpacity(0.3)
+        ? baseColor.withValues(alpha: 0.3)
         : _isPressed
-            ? baseColor.withOpacity(0.9)
+            ? baseColor.withValues(alpha: 0.9)
             : _isHovering
-                ? baseColor.withOpacity(0.8)
-                : baseColor.withOpacity(0.7);
+                ? baseColor.withValues(alpha: 0.8)
+                : baseColor.withValues(alpha: 0.7);
     
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),

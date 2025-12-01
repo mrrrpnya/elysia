@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/theme.dart';
@@ -5,6 +6,11 @@ import '../theme/theme.dart';
 /// Settings page
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+  
+  String get _baseDir {
+    final homeDir = Platform.environment['HOME'] ?? '/home';
+    return '$homeDir/.local/share/elysia';
+  }
   
   Future<void> _openDirectory(BuildContext context, String path) async {
     // Open the directory in the system file manager
@@ -35,9 +41,7 @@ class SettingsPage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    // Get home directory from environment
-    final homeDir = const String.fromEnvironment('HOME', defaultValue: '~');
-    final baseDir = homeDir == '~' ? '~/.local/share/elysia' : '$homeDir/.local/share/elysia';
+    final baseDir = _baseDir;
     
     return Container(
       decoration: const BoxDecoration(
@@ -147,7 +151,7 @@ class _SettingsSection extends StatelessWidget {
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: ElysiaTheme.surfaceColor.withOpacity(0.5),
+            color: ElysiaTheme.surfaceColor.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(ElysiaTheme.cardRadius),
             border: Border.all(color: ElysiaTheme.borderColor),
           ),
@@ -195,7 +199,7 @@ class _SettingsItemState extends State<_SettingsItem> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isHovering && widget.onTap != null
-                ? ElysiaTheme.surfaceColor.withOpacity(0.3)
+                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.3)
                 : Colors.transparent,
           ),
           child: Row(
