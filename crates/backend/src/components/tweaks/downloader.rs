@@ -11,12 +11,28 @@ pub async fn jade_download(tweaks_dir: PathBuf) -> Result<PathBuf> {
         return Ok(extract_path);
     }
 
-    println!("Downloading Steam tweak...");
+    println!("Downloading Jadeite...");
 
     let url = "https://codeberg.org/mkrsym1/jadeite/releases/download/v5.0.1/v5.0.1.zip";
 
-    let response = reqwest::get(url).await?;
+    // Use a client that follows redirects
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::limited(10))
+        .build()?;
+    
+    let response = client.get(url).send().await?;
+    
+    // Check if the request was successful
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!("Failed to download Jadeite: HTTP {}", response.status()));
+    }
+    
     let bytes = response.bytes().await?;
+    
+    // Verify we got a non-empty response
+    if bytes.is_empty() {
+        return Err(anyhow::anyhow!("Downloaded file is empty"));
+    }
 
     fs::create_dir_all(&tweaks_dir).await?;
     let temp_file = tweaks_dir.join("jade.tmp.zip");
