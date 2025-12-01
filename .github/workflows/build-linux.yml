@@ -212,7 +212,8 @@ jobs:
           
           # Find and copy dependencies of the main executable
           # Exclude critical system libraries that should come from host
-          EXCLUDED_LIBS="libc.so libdl.so libpthread.so libm.so librt.so libresolv.so ld-linux"
+          # This prevents version mismatches and ABI incompatibilities
+          EXCLUDED_LIBS="libc.so libdl.so libpthread.so libm.so librt.so libresolv.so ld-linux libglib libgobject libgio libgmodule libgtk libgdk libatk libpango libcairo"
           
           ldd AppDir/usr/bin/elysia | grep "=> /" | awk '{print $3}' | while read dep; do
             # Check if this library should be excluded
