@@ -1,1 +1,25 @@
 /target
+
+# Flutter
+crates/flutter_frontend/.dart_tool/
+crates/flutter_frontend/build/
+crates/flutter_frontend/.packages
+crates/flutter_frontend/.pub/
+*.dart_tool/
+*.flutter-plugins
+*.flutter-plugins-dependencies
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# Compiled native libraries (in wrong places)
+crates/flutter_frontend/linux/libs/*.so
+*.dylib
+*.dll
+_codeql_detected_source_root
