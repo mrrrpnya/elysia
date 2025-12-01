@@ -31,8 +31,8 @@ class GamePage extends StatelessWidget {
         _GameBackground(display: game.display),
         
         // Content overlay - isolated from video rendering
-        RepaintBoundary(
-          child: Positioned.fill(
+        Positioned.fill(
+          child: RepaintBoundary(
             child: Padding(
               padding: const EdgeInsets.only(
                 left: ElysiaTheme.sidebarWidth + 32,
