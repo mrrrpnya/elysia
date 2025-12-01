@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,16 +13,11 @@ import 'src/services/cache_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Register fvp as video_player backend with platform-specific decoders
-  // VP9/WebM is supported by FFmpeg decoder
-  if (Platform.isLinux) {
-    // Linux: Use VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
-    fvp.registerWith(options: {
-      'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg']
-    });
-  } else {
-    fvp.registerWith();
-  }
+  // Register fvp as video_player backend with decoders for VP9/WebM support
+  // VAAPI/VDPAU for hardware acceleration, FFmpeg for VP9/WebM
+  fvp.registerWith(options: {
+    'video.decoders': ['VAAPI', 'VDPAU', 'FFmpeg']
+  });
   
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();
