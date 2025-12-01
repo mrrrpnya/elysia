@@ -66,7 +66,7 @@ List<AvailableRunner> getAvailableRunners() {
       displayName: 'Wine-TKG AAGL',
       runnerType: RunnerType.wine,
       version: 'v10.15-7',
-      downloadUrl: 'https://github.com/NelloKudo/Wine-Builds/releases/download/wine-tkg-aagl-v10.15-7/wine-tkg-aagl-v10.15-7-x86_64.tar.xz',
+      downloadUrl: 'https://github.com/NelloKudo/Wine-Builds/releases/download/wine-tkg-aagl-v10.15-7/spritz-wine-tkg-staging-wow64-10.15-7-x86_64.tar.xz',
       folderName: 'wine-tkg-aagl-v10.15-7',
     ),
     AvailableRunner(
@@ -74,7 +74,7 @@ List<AvailableRunner> getAvailableRunners() {
       displayName: 'DW Proton',
       runnerType: RunnerType.proton,
       version: '10.0-9',
-      downloadUrl: 'https://dawn.wine/dawn-winery/dwproton/releases/download/dwproton-10.0-9/dwproton-10.0-9.tar.xz',
+      downloadUrl: 'https://dawn.wine/dawn-winery/dwproton/releases/download/dwproton-10.0-9/dwproton-10.0-9-x86_64.tar.xz',
       folderName: 'GE-Proton',
     ),
   ];
