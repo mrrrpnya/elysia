@@ -319,7 +319,7 @@ pub async fn install_game(game_id: String, biz: String) -> String {
 /// Launch an installed game
 /// Returns "ok" if launch started, or an error message
 pub async fn launch_game(game_id: String) -> String {
-    use backend::runners::{Runner, Runners};
+    use backend::runners::Runner;
     
     let settings = match backend::settings::GlobalSettings::load() {
         Ok(s) => s,
@@ -470,7 +470,7 @@ pub async fn install_runner(runner_name: String) -> String {
 /// Delete a runner by name
 /// Returns "ok" if deletion succeeded, or an error message
 pub async fn delete_runner(runner_name: String) -> String {
-    use backend::components::runners::{get_available_runners, get_components_directory, RunnerType};
+    use backend::components::runners::{get_available_runners, get_components_directory};
     
     let runners = get_available_runners();
     let runner = runners.iter().find(|r| r.name == runner_name);

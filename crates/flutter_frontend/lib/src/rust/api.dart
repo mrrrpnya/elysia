@@ -7,8 +7,8 @@ import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `content_to_dto`, `game_to_dto`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `BannerDto`, `ContentDto`, `DownloadProgressDto`, `GameDto`, `PostDto`, `SettingsDto`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AvailableComponentDto`, `AvailableRunnerDto`, `BannerDto`, `ContentDto`, `DownloadProgressDto`, `GameDto`, `PostDto`, `SettingsDto`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// Initialize the backend (call on app startup)
 String initBackend() => RustLib.instance.api.crateApiInitBackend();
@@ -48,3 +48,40 @@ Future<String> installGame({required String gameId, required String biz}) =>
 /// Returns "ok" if launch started, or an error message
 Future<String> launchGame({required String gameId}) =>
     RustLib.instance.api.crateApiLaunchGame(gameId: gameId);
+
+/// Get available runners as JSON
+String getAvailableRunnersJson() =>
+    RustLib.instance.api.crateApiGetAvailableRunnersJson();
+
+/// Get available components (umu-launcher, jadeite) as JSON
+String getAvailableComponentsJson() =>
+    RustLib.instance.api.crateApiGetAvailableComponentsJson();
+
+/// Install a runner by name
+/// Returns "ok" if installation succeeded, or an error message
+Future<String> installRunner({required String runnerName}) =>
+    RustLib.instance.api.crateApiInstallRunner(runnerName: runnerName);
+
+/// Delete a runner by name
+/// Returns "ok" if deletion succeeded, or an error message
+Future<String> deleteRunner({required String runnerName}) =>
+    RustLib.instance.api.crateApiDeleteRunner(runnerName: runnerName);
+
+/// Install UMU launcher component
+/// Returns "ok" if installation succeeded, or an error message
+Future<String> installUmuLauncher() =>
+    RustLib.instance.api.crateApiInstallUmuLauncher();
+
+/// Install Jadeite component
+/// Returns "ok" if installation succeeded, or an error message
+Future<String> installJadeite() =>
+    RustLib.instance.api.crateApiInstallJadeite();
+
+/// Delete UMU launcher component
+/// Returns "ok" if deletion succeeded, or an error message
+Future<String> deleteUmuLauncher() =>
+    RustLib.instance.api.crateApiDeleteUmuLauncher();
+
+/// Delete Jadeite component
+/// Returns "ok" if deletion succeeded, or an error message
+Future<String> deleteJadeite() => RustLib.instance.api.crateApiDeleteJadeite();
