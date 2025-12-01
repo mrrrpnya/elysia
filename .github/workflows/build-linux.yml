@@ -205,38 +205,54 @@ jobs:
           cp ../../../../../elysia.png AppDir/elysia.png
           cp ../../../../../elysia.png AppDir/usr/share/icons/hicolor/256x256/apps/elysia.png
           
-          # Only bundle media_kit dependencies (libmpv and its direct dependencies)
+          # Only bundle media_kit dependencies (libmpv and FFmpeg libraries)
           # Let the system provide all other libraries to avoid ABI conflicts
-          echo "Bundling libmpv and its dependencies..."
+          echo "Bundling libmpv and FFmpeg dependencies..."
           
-          # Find libmpv and copy it
+          # Find and copy all necessary libraries recursively
+          copy_lib_deps() {
+            local lib_path="$1"
+            local lib_name=$(basename "$lib_path")
+            
+            # Skip if already copied
+            if [ -f "AppDir/usr/lib/$lib_name" ]; then
+              return
+            fi
+            
+            # Copy the library
+            if [ -f "$lib_path" ]; then
+              cp -L "$lib_path" AppDir/usr/lib/ 2>/dev/null || true
+              echo "Bundled: $lib_name"
+              
+              # Recursively copy dependencies
+              ldd "$lib_path" 2>/dev/null | grep "=> /" | awk '{print $3}' | while read dep; do
+                dep_name=$(basename "$dep")
+                # Only bundle media-related libs (FFmpeg, libmpv, libass, etc.)
+                if [[ "$dep_name" == libmpv* ]] || [[ "$dep_name" == libavcodec* ]] || \
+                   [[ "$dep_name" == libavformat* ]] || [[ "$dep_name" == libavutil* ]] || \
+                   [[ "$dep_name" == libswscale* ]] || [[ "$dep_name" == libswresample* ]] || \
+                   [[ "$dep_name" == libavfilter* ]] || [[ "$dep_name" == libavdevice* ]] || \
+                   [[ "$dep_name" == libpostproc* ]] || [[ "$dep_name" == libass* ]] || \
+                   [[ "$dep_name" == libdrm* ]] || [[ "$dep_name" == libva* ]] || \
+                   [[ "$dep_name" == libx264* ]] || [[ "$dep_name" == libx265* ]] || \
+                   [[ "$dep_name" == libvpx* ]] || [[ "$dep_name" == libaom* ]] || \
+                   [[ "$dep_name" == libdav1d* ]] || [[ "$dep_name" == libvorbis* ]] || \
+                   [[ "$dep_name" == libopus* ]] || [[ "$dep_name" == libmp3lame* ]]; then
+                  copy_lib_deps "$dep"
+                fi
+              done
+            fi
+          }
+          
+          # Start with media_kit plugin and copy its dependencies
           if [ -f "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so" ]; then
-            echo "Found media_kit plugin, checking for libmpv..."
-            ldd AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so | grep libmpv | awk '{print $3}' | while read mpv_lib; do
-              if [ -f "$mpv_lib" ]; then
-                cp -L "$mpv_lib" AppDir/usr/lib/
-                echo "Bundled: $(basename $mpv_lib)"
-                
-                # Now bundle libmpv's dependencies (but exclude system libs)
-                ldd "$mpv_lib" | grep "=> /" | awk '{print $3}' | while read dep; do
-                  dep_name=$(basename "$dep")
-                  # Only bundle media-related libs, not system libs
-                  if [[ "$dep_name" == libavcodec* ]] || [[ "$dep_name" == libavformat* ]] || \
-                     [[ "$dep_name" == libavutil* ]] || [[ "$dep_name" == libswscale* ]] || \
-                     [[ "$dep_name" == libswresample* ]] || [[ "$dep_name" == libass* ]] || \
-                     [[ "$dep_name" == libdrm* ]] || [[ "$dep_name" == libva* ]]; then
-                    if [ -f "$dep" ] && [ ! -f "AppDir/usr/lib/$dep_name" ]; then
-                      cp -L "$dep" AppDir/usr/lib/ 2>/dev/null || true
-                      echo "Bundled: $dep_name"
-                    fi
-                  fi
-                done
-              fi
-            done
+            echo "Found media_kit plugin, bundling dependencies..."
+            copy_lib_deps "AppDir/usr/lib/libmedia_kit_libs_linux_plugin.so"
           fi
           
-          echo "Dependency bundling complete (media_kit only)"
-          ls -lh AppDir/usr/lib/ | grep -E "(libmpv|libav|libass|libdrm|libva)"
+          echo "Dependency bundling complete"
+          echo "Bundled libraries:"
+          ls -lh AppDir/usr/lib/ | grep -E "\.so" | awk '{print $9}'
           
           # Create AppRun script
           cat > AppDir/AppRun << 'EOF'
