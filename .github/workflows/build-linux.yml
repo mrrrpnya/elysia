@@ -186,6 +186,7 @@ jobs:
               include:
                 - libmpv1
                 - ffmpeg
+                - mpv
               
               exclude:
                 - libglib2.0-0*
