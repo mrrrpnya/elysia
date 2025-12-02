@@ -22,5 +22,5 @@ zip = "6.0.0"
 enum-table = { version = "2.1.2", features = ["serde"] }
 flate2 = "1.0"
 xz2 = "0.1"
-ffmpeg-next = "7.1.1"
+ffmpeg-next = "7.1.0"
 image = "0.25"
