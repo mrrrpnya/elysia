@@ -41,9 +41,9 @@ dependencies:
   archive: ^4.0.4
   
   # Video player for background videos
-  media_kit: ^1.1.10+1
+  media_kit: ^1.2.2
   media_kit_video: ^1.2.4
-  media_kit_libs_linux: ^1.1.4
+  media_kit_libs_linux: ^1.2.1
 
 dev_dependencies:
   flutter_test:
