@@ -683,7 +683,7 @@ pub struct VideoFrameDto {
 /// Streams video frames via the provided sink
 pub async fn stream_video_frames(
     url: String,
-    sink: flutter_rust_bridge::StreamSink<VideoFrameDto>,
+    sink: crate::frb_generated::StreamSink<VideoFrameDto>,
 ) {
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
