@@ -2,8 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:video_player_media_kit/video_player_media_kit.dart';
-
+import 'package:media_kit/media_kit.dart';
 import 'src/theme/theme.dart';
 import 'src/providers/app_provider.dart';
 import 'src/pages/pages.dart';
@@ -13,8 +12,8 @@ import 'src/services/cache_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize VideoPlayerMediaKit for video playback with media_kit backend
-  VideoPlayerMediaKit.ensureInitialized(linux: true);
+  // Initialize MediaKit for video playback
+  MediaKit.ensureInitialized();
   
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();

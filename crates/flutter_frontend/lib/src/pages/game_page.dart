@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:video_player/video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
@@ -159,7 +160,8 @@ class _VideoBackground extends StatefulWidget {
 }
 
 class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingObserver {
-  VideoPlayerController? _controller;
+  Player? _player;
+  VideoController? _videoController;
   bool _isInitialized = false;
   bool _hasError = false;
   bool _isDisposing = false;
@@ -188,14 +190,14 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   }
   
   void _pauseVideo() {
-    if (_controller != null && !_isDisposing && _controller!.value.isPlaying) {
-      _controller!.pause();
+    if (_player != null && !_isDisposing && _player!.state.playing) {
+      _player!.pause();
     }
   }
   
   void _resumeVideo() {
-    if (!_isDisposing && _controller != null && !_controller!.value.isPlaying) {
-      _controller!.play();
+    if (!_isDisposing && _player != null && !_player!.state.playing) {
+      _player!.play();
     }
   }
   
@@ -203,21 +205,17 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      _player = Player();
+      _videoController = VideoController(_player!);
       
-      await _controller!.initialize();
+      await _player!.open(Media(widget.videoUrl));
+      await _player!.setPlaylistMode(PlaylistMode.loop);
+      await _player!.setVolume(0.0);
       
       if (_isDisposing || !mounted) {
         await _disposeResources();
         return;
       }
-      
-      // Configure looping and mute
-      await _controller!.setLooping(true);
-      await _controller!.setVolume(0.0);
-      
-      // Start playing
-      await _controller!.play();
       
       if (mounted && !_isDisposing) {
         setState(() {
@@ -244,15 +242,16 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   }
   
   Future<void> _disposeResources() async {
-    final controller = _controller;
-    _controller = null;
+    final player = _player;
+    _player = null;
+    _videoController = null;
     
-    if (controller != null) {
+    if (player != null) {
       try {
-        await controller.pause();
-        await controller.dispose();
+        await player.pause();
+        await player.dispose();
       } catch (e) {
-        debugPrint('Error disposing video player controller: $e');
+        debugPrint('Error disposing player: $e');
       }
     }
   }
@@ -280,7 +279,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
     
     // Show fallback while initializing
-    if (!_isInitialized || _controller == null) {
+    if (!_isInitialized || _videoController == null) {
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
@@ -290,7 +289,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
         fit: StackFit.expand,
         children: [
           // Video player layer
-          VideoPlayer(_controller!),
+          Video(controller: _videoController!),
           
           // Theme image overlay layer
           // Show when theme should be visible and theme URL exists
