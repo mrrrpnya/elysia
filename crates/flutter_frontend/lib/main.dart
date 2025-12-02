@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,8 +14,10 @@ import 'src/services/cache_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize VideoPlayerMediaKit for video playback with media_kit backend
-  VideoPlayerMediaKit.ensureInitialized();
+  // Initialize VideoPlayerMediaKit for video playback with media_kit backend on Linux
+  if (Platform.isLinux) {
+    VideoPlayerMediaKit.ensureInitialized(linux: true);
+  }
   
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();
