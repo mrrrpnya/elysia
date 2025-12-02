@@ -206,11 +206,16 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     
     try {
       // Configure Player and VideoController for VP9/WebM support on Linux
-      _player = Player();
+      _player = Player(
+        configuration: const PlayerConfiguration(
+          vo: 'gpu',
+        ),
+      );
       _videoController = VideoController(
         _player!,
         configuration: const VideoControllerConfiguration(
-          hwdec: 'auto',
+          hwdec: 'vaapi',
+          vo: 'gpu',
         ),
       );
       
