@@ -209,10 +209,14 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       _player = Player(
         configuration: const PlayerConfiguration(
           vo: 'gpu',
+        ),
+      );
+      _videoController = VideoController(
+        _player!,
+        configuration: const VideoControllerConfiguration(
           hwdec: 'auto',
         ),
       );
-      _videoController = VideoController(_player!);
       
       await _player!.open(Media(widget.videoUrl));
       await _player!.setPlaylistMode(PlaylistMode.loop);
