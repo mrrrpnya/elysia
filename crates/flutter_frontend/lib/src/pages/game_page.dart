@@ -205,7 +205,15 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      _player = Player();
+      // Configure player with platform-specific options to prevent thread contention
+      _player = Player(
+        configuration: const PlayerConfiguration(
+          // Use dedicated thread for video output on Linux to prevent dispatch queue assertion
+          vo: 'gpu',
+          // Additional options to prevent threading issues
+          bufferSize: 32 * 1024 * 1024, // 32 MB
+        ),
+      );
       _videoController = VideoController(_player!);
       
       await _player!.open(Media(widget.videoUrl), play: false);
