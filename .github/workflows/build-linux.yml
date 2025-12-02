@@ -188,7 +188,6 @@ jobs:
                 - ffmpeg
               
               exclude:
-                - libc6
                 - libglib2.0-0*
                 - libgtk-3-0*
                 - libgtk-4-*
