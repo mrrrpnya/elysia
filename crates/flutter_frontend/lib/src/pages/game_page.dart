@@ -207,11 +207,14 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     try {
       // Configure player with platform-specific options to prevent thread contention
       _player = Player(
-        configuration: const PlayerConfiguration(
-          // Use x11 video output to prevent dispatch queue conflicts
-          vo: 'x11',
-          // Disable gpu-context to prevent threading issues
+        configuration: PlayerConfiguration(
           bufferSize: 32 * 1024 * 1024, // 32 MB
+          // Use MPV options to force single-threaded rendering and prevent dispatch queue conflicts
+          mpvOptions: const {
+            'vo': 'x11',
+            'hwdec': 'no',
+            'opengl-backend': 'x11',
+          },
         ),
       );
       _videoController = VideoController(_player!);
