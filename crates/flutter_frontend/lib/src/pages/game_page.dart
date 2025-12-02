@@ -207,12 +207,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     try {
       // Configure Player and VideoController for VP9/WebM support on Linux
       _player = Player();
-      _videoController = VideoController(
-        _player!,
-        configuration: const VideoControllerConfiguration(
-          enableHardwareAcceleration: true,
-        ),
-      );
+      _videoController = VideoController(_player!);
       
       await _player!.open(Media(widget.videoUrl));
       await _player!.setPlaylistMode(PlaylistMode.loop);
