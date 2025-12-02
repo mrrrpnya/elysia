@@ -205,12 +205,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      // Configure Player with proper video output for VP9/WebM support
-      _player = Player(
-        configuration: const PlayerConfiguration(
-          vo: 'gpu',
-        ),
-      );
+      // Configure Player and VideoController for VP9/WebM support on Linux
+      _player = Player();
       _videoController = VideoController(
         _player!,
         configuration: const VideoControllerConfiguration(
