@@ -205,15 +205,10 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      // Configure player with platform-specific options to prevent thread contention
+      // Configure player with larger buffer to prevent thread contention
       _player = Player(
         configuration: PlayerConfiguration(
           bufferSize: 32 * 1024 * 1024, // 32 MB
-          // Use MPV options to force single-threaded rendering and prevent dispatch queue conflicts
-          mpvOptions: const {
-            'vo': 'x11',
-            'hwdec': 'auto',
-          },
         ),
       );
       _videoController = VideoController(_player!);
