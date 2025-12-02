@@ -192,6 +192,25 @@ jobs:
                 - usr/share/man
                 - usr/share/doc
                 - usr/share/locale
+                - usr/lib/x86_64-linux-gnu/glib-2.0
+                - usr/lib/x86_64-linux-gnu/libglib*
+                - usr/lib/x86_64-linux-gnu/libgio*
+                - usr/lib/x86_64-linux-gnu/libgobject*
+                - usr/lib/x86_64-linux-gnu/libgmodule*
+                - usr/lib/x86_64-linux-gnu/libgthread*
+                - usr/lib/x86_64-linux-gnu/libatk*
+                - usr/lib/x86_64-linux-gnu/libgtk*
+                - usr/lib/x86_64-linux-gnu/libgdk*
+                - usr/lib/x86_64-linux-gnu/libpango*
+                - usr/lib/x86_64-linux-gnu/libcairo*
+                - usr/lib/x86_64-linux-gnu/libharfbuzz*
+                - usr/lib/x86_64-linux-gnu/libfontconfig*
+                - usr/lib/x86_64-linux-gnu/libpixman*
+                - usr/lib/x86_64-linux-gnu/libc.so*
+                - usr/lib/x86_64-linux-gnu/libpthread*
+                - usr/lib/x86_64-linux-gnu/libdl*
+                - usr/lib/x86_64-linux-gnu/libm.so*
+                - usr/lib/x86_64-linux-gnu/librt*
 
             runtime:
                 env:
