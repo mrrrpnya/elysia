@@ -173,6 +173,35 @@ jobs:
           echo "FFmpeg libraries bundled:"
           ls -la "$BUNDLE_DIR"/libav* "$BUNDLE_DIR"/libsw* 2>/dev/null || echo "Libraries copied"
       
+      - name: Create launcher script
+        run: |
+          BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle"
+          
+          # Rename original executable
+          mv "$BUNDLE_DIR/elysia" "$BUNDLE_DIR/elysia-bin"
+          
+          # Create launcher script
+          cat > "$BUNDLE_DIR/elysia" << 'EOF'
+#!/bin/bash
+# Elysia Launcher Script
+# Sets up library paths and launches the application
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set library path to include our bundled libraries
+export LD_LIBRARY_PATH="${SCRIPT_DIR}/lib:${LD_LIBRARY_PATH}"
+
+# Launch the application
+exec "${SCRIPT_DIR}/elysia-bin" "$@"
+EOF
+          
+          # Make launcher executable
+          chmod +x "$BUNDLE_DIR/elysia"
+          
+          echo "Launcher script created"
+          cat "$BUNDLE_DIR/elysia"
+      
       - name: Create release archive
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
