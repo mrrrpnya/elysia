@@ -50,7 +50,8 @@ jobs:
             sudo \
             jq \
             curl \
-            xz-utils
+            xz-utils \
+            git
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
