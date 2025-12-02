@@ -212,8 +212,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
           // Use MPV options to force single-threaded rendering and prevent dispatch queue conflicts
           mpvOptions: const {
             'vo': 'x11',
-            'hwdec': 'no',
-            'opengl-backend': 'x11',
+            'hwdec': 'auto',
           },
         ),
       );
