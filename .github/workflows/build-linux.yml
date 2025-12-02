@@ -48,7 +48,8 @@ jobs:
             libfuse2 \
             libmpv-dev \
             libmpv2 \
-            sudo
+            sudo \
+            jq
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
