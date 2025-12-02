@@ -44,7 +44,6 @@ jobs:
             libasound2-dev \
             file \
             wget \
-            fuse \
             libfuse2 \
             libmpv-dev \
             libmpv2 \
