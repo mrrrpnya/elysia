@@ -208,9 +208,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       // Configure player with platform-specific options to prevent thread contention
       _player = Player(
         configuration: const PlayerConfiguration(
-          // Use x11 video output and auto hardware decoding to prevent dispatch queue conflicts
+          // Use x11 video output to prevent dispatch queue conflicts
           vo: 'x11',
-          hwdec: 'auto',
           // Disable gpu-context to prevent threading issues
           bufferSize: 32 * 1024 * 1024, // 32 MB
         ),
