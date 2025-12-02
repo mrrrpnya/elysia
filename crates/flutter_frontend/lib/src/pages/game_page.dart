@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
+import '../rust_bridge/api.dart' as rust_api;
+import 'dart:async';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
@@ -143,6 +143,7 @@ class _GameBackground extends StatelessWidget {
 }
 
 /// Video background widget with optional theme image overlay
+/// Uses frame-by-frame rendering from Rust backend
 class _VideoBackground extends StatefulWidget {
   final String videoUrl;
   final String themeImageUrl;
@@ -159,116 +160,68 @@ class _VideoBackground extends StatefulWidget {
   State<_VideoBackground> createState() => _VideoBackgroundState();
 }
 
-class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingObserver {
-  Player? _player;
-  VideoController? _videoController;
-  bool _isInitialized = false;
+class _VideoBackgroundState extends State<_VideoBackground> {
+  StreamSubscription? _frameSubscription;
+  rust_api.VideoFrameDto? _currentFrame;
+  bool _isLoading = true;
   bool _hasError = false;
-  bool _isDisposing = false;
-  bool _showTheme = false;
+  Timer? _loopTimer;
   
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _initializeVideo();
+    _startVideoStream();
   }
   
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_isDisposing) return;
-    
-    // Pause video when app is not visible to prevent crashes
-    if (state == AppLifecycleState.paused || 
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.detached ||
-        state == AppLifecycleState.hidden) {
-      _pauseVideo();
-    } else if (state == AppLifecycleState.resumed && _isInitialized) {
-      _resumeVideo();
-    }
-  }
-  
-  void _pauseVideo() {
-    if (_player != null && !_isDisposing && _player!.state.playing) {
-      _player!.pause();
-    }
-  }
-  
-  void _resumeVideo() {
-    if (!_isDisposing && _player != null && !_player!.state.playing) {
-      _player!.play();
-    }
-  }
-  
-  Future<void> _initializeVideo() async {
-    if (_isDisposing) return;
-    
+  void _startVideoStream() async {
     try {
-      // Configure Player and VideoController for VP9/WebM support on Linux
-      _player = Player();
-      _videoController = VideoController(_player!);
+      // Get video frame stream from Rust
+      final stream = rust_api.streamVideoFrames(url: widget.videoUrl);
       
-      await _player!.open(Media(widget.videoUrl));
-      await _player!.setPlaylistMode(PlaylistMode.loop);
-      await _player!.setVolume(0.0);
-      
-      if (_isDisposing || !mounted) {
-        await _disposeResources();
-        return;
-      }
-      
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _isInitialized = true;
-        });
-        
-        // Show theme overlay after a short delay to ensure video has started rendering
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted && !_isDisposing && _isInitialized) {
+      _frameSubscription = stream.listen(
+        (frame) {
+          if (mounted) {
             setState(() {
-              _showTheme = true;
+              _currentFrame = frame;
+              _isLoading = false;
             });
           }
-        });
-      }
+        },
+        onError: (error) {
+          debugPrint('Video stream error: $error');
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+              _isLoading = false;
+            });
+          }
+        },
+        onDone: () {
+          // Video finished, loop by restarting
+          if (mounted && !_hasError) {
+            _loopTimer = Timer(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                _startVideoStream();
+              }
+            });
+          }
+        },
+      );
     } catch (e) {
-      debugPrint('Error initializing video: $e');
-      if (mounted && !_isDisposing) {
+      debugPrint('Error starting video stream: $e');
+      if (mounted) {
         setState(() {
           _hasError = true;
+          _isLoading = false;
         });
-      }
-    }
-  }
-  
-  Future<void> _disposeResources() async {
-    final player = _player;
-    _player = null;
-    _videoController = null;
-    
-    if (player != null) {
-      try {
-        await player.pause();
-        await player.dispose();
-      } catch (e) {
-        debugPrint('Error disposing player: $e');
       }
     }
   }
   
   @override
   void dispose() {
-    _isDisposing = true;
-    _isInitialized = false;
-    _showTheme = false;
-    WidgetsBinding.instance.removeObserver(this);
-    
-    // Dispose resources asynchronously to prevent blocking
-    Future.microtask(() async {
-      await _disposeResources();
-    });
-    
+    _frameSubscription?.cancel();
+    _loopTimer?.cancel();
     super.dispose();
   }
   
@@ -279,8 +232,8 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
-    // Show fallback while initializing
-    if (!_isInitialized || _videoController == null) {
+    // Show fallback while loading first frame
+    if (_isLoading || _currentFrame == null) {
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
@@ -289,12 +242,17 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video player layer
-          Video(controller: _videoController!),
+          // Video frame layer - display current frame as image
+          Image.memory(
+            _currentFrame!.data.cast<int>(),
+            width: _currentFrame!.width.toDouble(),
+            height: _currentFrame!.height.toDouble(),
+            fit: BoxFit.cover,
+            gaplessPlayback: true, // Smooth frame transitions
+          ),
           
           // Theme image overlay layer
-          // Show when theme should be visible and theme URL exists
-          if (widget.themeImageUrl.isNotEmpty && _showTheme)
+          if (widget.themeImageUrl.isNotEmpty)
             CachedNetworkImage(
               key: ValueKey('theme_${widget.themeImageUrl}'),
               imageUrl: widget.themeImageUrl,

@@ -661,3 +661,52 @@ pub async fn delete_jadeite() -> String {
         "ok".to_string()
     }
 }
+
+// ============================================================================
+// Video Frame Streaming API
+// ============================================================================
+
+/// Video frame DTO for FFI
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct VideoFrameDto {
+    /// RGBA image data
+    pub data: Vec<u8>,
+    /// Image width
+    pub width: u32,
+    /// Image height
+    pub height: u32,
+    /// Frame timestamp in milliseconds
+    pub timestamp_ms: i64,
+}
+
+/// Start streaming video frames from a URL
+/// Returns a stream of video frames
+pub async fn stream_video_frames(
+    url: String,
+) -> impl futures::Stream<Item = VideoFrameDto> + Send + 'static {
+    use backend::video_decoder::{VideoDecoder, VideoFrame};
+    use tokio::sync::mpsc;
+    
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(30); // Buffer ~1 second at 30fps
+    
+    // Start video decoder in background
+    let url_clone = url.clone();
+    tokio::spawn(async move {
+        let decoder = VideoDecoder::new(url_clone, frame_tx);
+        if let Err(e) = decoder.start().await {
+            eprintln!("[ERROR] Video decoder failed: {}", e);
+        }
+    });
+    
+    // Create stream from channel receiver
+    async_stream::stream! {
+        while let Some(frame) = frame_rx.recv().await {
+            yield VideoFrameDto {
+                data: frame.data,
+                width: frame.width,
+                height: frame.height,
+                timestamp_ms: frame.timestamp_ms,
+            };
+        }
+    }
+}
