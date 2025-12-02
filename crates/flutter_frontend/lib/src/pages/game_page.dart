@@ -243,8 +243,8 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         fit: StackFit.expand,
         children: [
           // Video frame layer - display current frame as image
-          widgets.Image.memory(
-            _currentFrame!.data.cast<int>(),
+          Image.memory(
+            _currentFrame!.data,
             width: _currentFrame!.width.toDouble(),
             height: _currentFrame!.height.toDouble(),
             fit: BoxFit.cover,

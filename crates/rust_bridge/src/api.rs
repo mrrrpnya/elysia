@@ -667,6 +667,7 @@ pub async fn delete_jadeite() -> String {
 // ============================================================================
 
 /// Video frame DTO for FFI
+#[frb(unignore)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VideoFrameDto {
     /// RGBA image data
@@ -680,10 +681,12 @@ pub struct VideoFrameDto {
 }
 
 /// Start streaming video frames from a URL
-/// Returns a stream of video frames
+/// Streams video frames via the provided sink
+#[frb]
 pub async fn stream_video_frames(
     url: String,
-) -> impl futures::Stream<Item = VideoFrameDto> + Send + 'static {
+    sink: flutter_rust_bridge::StreamSink<VideoFrameDto>,
+) {
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
@@ -698,15 +701,13 @@ pub async fn stream_video_frames(
         }
     });
     
-    // Create stream from channel receiver
-    async_stream::stream! {
-        while let Some(frame) = frame_rx.recv().await {
-            yield VideoFrameDto {
-                data: frame.data,
-                width: frame.width,
-                height: frame.height,
-                timestamp_ms: frame.timestamp_ms,
-            };
-        }
+    // Forward frames to Flutter via sink
+    while let Some(frame) = frame_rx.recv().await {
+        sink.add(VideoFrameDto {
+            data: frame.data,
+            width: frame.width,
+            height: frame.height,
+            timestamp_ms: frame.timestamp_ms,
+        });
     }
 }
