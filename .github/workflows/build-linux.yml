@@ -20,6 +20,8 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-22.04
+    container:
+      image: debian:12
     
     steps:
       - name: Checkout repository
@@ -45,7 +47,7 @@ jobs:
             fuse \
             libfuse2 \
             libmpv-dev \
-            libmpv1
+            libmpv2
       
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -184,9 +186,7 @@ jobs:
                 - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ jammy-updates main universe'
               
               include:
-                - libmpv1
                 - ffmpeg
-                - mpv
               
               exclude:
                 - libglib2.0-0*
