@@ -6,7 +6,7 @@ import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
-import '../rust_bridge/api.dart' as rust_api;
+import '../rust/api.dart' as rust_api;
 import 'dart:async';
 
 /// Game page - displays game details with background, news, and action buttons
@@ -243,7 +243,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         fit: StackFit.expand,
         children: [
           // Video frame layer - display current frame as image
-          Image.memory(
+          widgets.Image.memory(
             _currentFrame!.data.cast<int>(),
             width: _currentFrame!.width.toDouble(),
             height: _currentFrame!.height.toDouble(),
