@@ -150,6 +150,16 @@ jobs:
           
           # Copy application files
           cp -r data elysia lib AppDir/
+
+          # Create desktop file in root of AppDir (required by appimagetool)
+          cat > AppDir/com.elysia.launcher.desktop << EOF
+          [Desktop Entry]
+          Name=Elysia
+          Exec=elysia
+          Icon=elysia
+          Type=Application
+          Categories=Game;
+          EOF
           
           # Create appimage-builder recipe
           cat > AppImageBuilder.yml << 'EOF'
@@ -204,7 +214,8 @@ jobs:
           ./appimage-builder-x86_64.AppImage --recipe AppImageBuilder.yml --skip-test
           
           # Move the generated AppImage
-          mv elysia-latest-x86_64.AppImage ../../../../../elysia-x86_64.AppImage
+          rm appimage-builder-x86_64.AppImage
+          mv *.AppImage ../../../../../elysia-x86_64.AppImage
           
           echo "AppImage created successfully"
           ls -lh ../../../../../elysia-x86_64.AppImage
