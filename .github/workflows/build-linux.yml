@@ -45,8 +45,14 @@ jobs:
             file \
             wget \
             libfuse2 \
-            libmpv-dev \
-            libmpv2 \
+            ffmpeg \
+            libavcodec-dev \
+            libavformat-dev \
+            libavutil-dev \
+            libavfilter-dev \
+            libavdevice-dev \
+            libswscale-dev \
+            libswresample-dev \
             sudo \
             jq \
             curl \
