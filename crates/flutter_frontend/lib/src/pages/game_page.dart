@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:video_player/video_player.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
@@ -160,8 +159,7 @@ class _VideoBackground extends StatefulWidget {
 }
 
 class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingObserver {
-  Player? _player;
-  VideoController? _videoController;
+  VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
   bool _isDisposing = false;
@@ -190,14 +188,14 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   }
   
   void _pauseVideo() {
-    if (_player != null && !_isDisposing) {
-      _player!.pause();
+    if (_controller != null && !_isDisposing && _controller!.value.isPlaying) {
+      _controller!.pause();
     }
   }
   
   void _resumeVideo() {
-    if (!_isDisposing && _player != null) {
-      _player!.play();
+    if (!_isDisposing && _controller != null && !_controller!.value.isPlaying) {
+      _controller!.play();
     }
   }
   
@@ -205,28 +203,21 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      // Configure player to use x11 video output and disable async API
-      // to prevent dispatch queue threading issues
-      _player = Player(
-        configuration: const PlayerConfiguration(
-          vo: 'x11',
-          async: false, // Disable async to prevent threading conflicts
-          bufferSize: 32 * 1024 * 1024, // 32 MB
-        ),
-      );
-      _videoController = VideoController(_player!);
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       
-      await _player!.open(Media(widget.videoUrl), play: false);
-      await _player!.setPlaylistMode(PlaylistMode.loop);
-      await _player!.setVolume(0); // Mute the video background
+      await _controller!.initialize();
       
       if (_isDisposing || !mounted) {
         await _disposeResources();
         return;
       }
       
+      // Configure looping and mute
+      await _controller!.setLooping(true);
+      await _controller!.setVolume(0.0);
+      
       // Start playing
-      await _player!.play();
+      await _controller!.play();
       
       if (mounted && !_isDisposing) {
         setState(() {
@@ -253,22 +244,17 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
   }
   
   Future<void> _disposeResources() async {
-    final player = _player;
-    final videoController = _videoController;
-    _player = null;
-    _videoController = null;
+    final controller = _controller;
+    _controller = null;
     
-    if (player != null) {
+    if (controller != null) {
       try {
-        await player.pause();
-        await player.dispose();
+        await controller.pause();
+        await controller.dispose();
       } catch (e) {
-        debugPrint('Error disposing media_kit player: $e');
+        debugPrint('Error disposing video player controller: $e');
       }
     }
-    
-    // VideoController doesn't need explicit disposal in media_kit
-    // The Player object handles cleanup automatically
   }
   
   @override
@@ -278,29 +264,10 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     _showTheme = false;
     WidgetsBinding.instance.removeObserver(this);
     
-    // Capture references before nullifying
-    final player = _player;
-    final videoController = _videoController;
-    _player = null;
-    _videoController = null;
-    
-    // Dispose asynchronously
-    if (player != null || videoController != null) {
-      Future(() async {
-        if (player != null) {
-          try {
-            await player.pause();
-            await Future.delayed(const Duration(milliseconds: 100));
-            await player.dispose();
-          } catch (e) {
-            debugPrint('Error disposing player: $e');
-          }
-        }
-        
-        // VideoController doesn't need explicit disposal in media_kit
-        // The Player object handles cleanup automatically
-      });
-    }
+    // Dispose resources asynchronously to prevent blocking
+    Future.microtask(() async {
+      await _disposeResources();
+    });
     
     super.dispose();
   }
@@ -313,7 +280,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     }
     
     // Show fallback while initializing
-    if (!_isInitialized || _videoController == null) {
+    if (!_isInitialized || _controller == null) {
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
@@ -323,11 +290,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
         fit: StackFit.expand,
         children: [
           // Video player layer
-          Video(
-            controller: _videoController!,
-            fit: BoxFit.cover,
-            controls: NoVideoControls,
-          ),
+          VideoPlayer(_controller!),
           
           // Theme image overlay layer
           // Show when theme should be visible and theme URL exists

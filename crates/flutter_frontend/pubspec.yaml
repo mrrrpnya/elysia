@@ -41,8 +41,8 @@ dependencies:
   archive: ^4.0.4
   
   # Video player for background videos
-  media_kit: ^1.2.2
-  media_kit_video: ^1.2.4
+  video_player: ^2.9.2
+  video_player_media_kit: ^1.0.6
   media_kit_libs_linux: ^1.2.1
 
 dev_dependencies:
