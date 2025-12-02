@@ -209,6 +209,10 @@ jobs:
                 env:
                   LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
                   GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
+                  # MPV options to prevent dispatch queue threading conflicts
+                  MPV_VO: 'gpu'
+                  MPV_HWDEC: 'auto'
+                  MPV_GPU_CONTEXT: 'x11egl'
                 version: "continuous"
           
           AppImage:
