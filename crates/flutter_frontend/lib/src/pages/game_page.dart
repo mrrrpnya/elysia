@@ -205,7 +205,13 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      _player = Player();
+      // Configure Player with proper video output for VP9/WebM support
+      _player = Player(
+        configuration: const PlayerConfiguration(
+          vo: 'gpu',
+          hwdec: 'auto',
+        ),
+      );
       _videoController = VideoController(_player!);
       
       await _player!.open(Media(widget.videoUrl));
