@@ -162,7 +162,7 @@ jobs:
             fi
           done
           
-          # Copy FFmpeg dependencies (codecs, etc.)
+          # Copy FFmpeg dependencies (codecs)
           for lib in libx264.so* libx265.so* libvpx.so* libvorbis.so* libvorbisenc.so* libopus.so* libmp3lame.so* libass.so*; do
             if [ -f "/usr/lib/x86_64-linux-gnu/$lib" ]; then
               cp -P "/usr/lib/x86_64-linux-gnu/$lib" "$BUNDLE_DIR/"
