@@ -205,12 +205,7 @@ class _VideoBackgroundState extends State<_VideoBackground> with WidgetsBindingO
     if (_isDisposing) return;
     
     try {
-      _player = Player(
-        configuration: const PlayerConfiguration(
-          vo: 'gpu',
-          hwdec: 'auto',
-        ),
-      );
+      _player = Player();
       _videoController = VideoController(_player!);
       
       await _player!.open(Media(widget.videoUrl));
