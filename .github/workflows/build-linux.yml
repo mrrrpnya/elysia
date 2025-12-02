@@ -126,123 +126,28 @@ jobs:
           flutter build linux --release
           echo "Flutter build completed"
       
-      - name: Bundle libraries with Flutter app
+      - name: Bundle Rust libraries with Flutter app
         run: |
           BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
           mkdir -p "$BUNDLE_DIR"
           
-          # Copy Rust library
           if [ -f "target/release/librust_bridge.so" ]; then
             cp target/release/librust_bridge.so "$BUNDLE_DIR/"
-            echo "Bundled: librust_bridge.so"
+            echo "Rust library bundled with app"
           fi
           
-          echo ""
-          echo "All bundled libraries:"
-          ls -lh "$BUNDLE_DIR"
+          echo "Bundled libraries:"
+          ls -la "$BUNDLE_DIR"
       
-      - name: Create AppImage with appimage-builder
+      - name: Create release archive
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
-          
-          # Download appimage-builder
-          wget -q https://github.com/Lord-Kamina/appimage-builder/releases/download/continuous/appimage-builder_x86_64-AppImage.tar
-          tar -xvf appimage-builder_x86_64-AppImage.tar --transform='s/.*\///'
-          mv appimage-builder-*-x86_64.AppImage appimage-builder-x86_64.AppImage
-          chmod +x appimage-builder-x86_64.AppImage
-          
-          # Create AppDir structure
-          mkdir -p AppDir
-          
-          # Copy application files
-          cp -r data elysia lib AppDir/
-
-          # Create desktop file in root of AppDir (required by appimagetool)
-          cat > AppDir/com.elysia.launcher.desktop << EOF
-          [Desktop Entry]
-          Name=Elysia
-          Exec=elysia
-          Icon=elysia
-          Type=Application
-          Categories=Game;
-          EOF
-          
-          # Create appimage-builder recipe
-          cat > AppImageBuilder.yml << 'EOF'
-          version: 1
-          
-          AppDir:
-            path: ./AppDir
-            
-            app_info:
-              id: com.elysia.launcher
-              name: Elysia
-              icon: elysia
-              version: latest
-              exec: elysia
-              exec_args: $@
-            
-            apt:
-              arch: amd64
-              allow_unauthenticated: true
-              sources:
-                - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ jammy main universe'
-                - sourceline: 'deb http://archive.ubuntu.com/ubuntu/ jammy-updates main universe'
-              
-              include:
-                - ffmpeg
-              
-              exclude:
-                - libglib2.0-0*
-                - libgtk-3-0*
-                - libgtk-4-*
-                - libatk1.0-0*
-                - libatk-bridge2.0-0*
-                - libpango*
-                - libcairo*
-                - libharfbuzz0b
-                - libfontconfig1
-          
-            files:
-              exclude:
-                - usr/share/man
-                - usr/share/doc
-                - usr/share/locale
-
-            runtime:
-                env:
-                  LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
-                  GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
-                  # MPV options to prevent dispatch queue threading conflicts
-                  MPV_VO: 'gpu'
-                  MPV_HWDEC: 'auto'
-                  MPV_GPU_CONTEXT: 'x11egl'
-                version: "continuous"
-          
-          AppImage:
-            update-information: None
-            sign-key: None
-            arch: x86_64
-          EOF
-          
-          # Copy icon
-          cp ../../../../../elysia.png AppDir/elysia.png
-          mkdir -p AppDir/usr/share/icons
-          cp ../../../../../elysia.png AppDir/usr/share/icons/elysia.png
-          
-          # Run appimage-builder
-          ./appimage-builder-x86_64.AppImage --recipe AppImageBuilder.yml --skip-test
-          
-          # Move the generated AppImage
-          rm appimage-builder-x86_64.AppImage
-          mv *.AppImage ../../../../../elysia-x86_64.AppImage
-          
-          echo "AppImage created successfully"
-          ls -lh ../../../../../elysia-x86_64.AppImage
+          tar -czvf ../../../../../elysia-linux-x64.tar.gz .
+          echo "Archive created: elysia-linux-x64.tar.gz"
       
-      - name: Upload Linux AppImage artifact
+      - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
-          name: elysia-linux-x64-appimage
-          path: crates/flutter_frontend/elysia-x86_64.AppImage
+          name: elysia-linux-x64
+          path: crates/flutter_frontend/elysia-linux-x64.tar.gz
           retention-days: 7
