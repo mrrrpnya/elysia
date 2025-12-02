@@ -176,31 +176,12 @@ jobs:
               include:
                 - libmpv1
                 - ffmpeg
-              
-              exclude:
-                - libgtk-3-0
-                - libglib2.0-0
-                - libpango-1.0-0
-                - libcairo2
-                - libharfbuzz0b
-                - libfontconfig1
-                - libfreetype6
-                - libpixman-1-0
-                - libgdk-pixbuf-2.0-0
-                - libc6
-                - libstdc++6
-                - libgcc-s1
           
             files:
               exclude:
                 - usr/share/man
                 - usr/share/doc
                 - usr/share/locale
-            
-            runtime:
-              env:
-                LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
-                GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
           
           AppImage:
             update-information: None
