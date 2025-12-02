@@ -148,6 +148,31 @@ jobs:
           echo "Bundled libraries:"
           ls -la "$BUNDLE_DIR"
       
+      - name: Bundle FFmpeg libraries with app
+        run: |
+          BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
+          mkdir -p "$BUNDLE_DIR"
+          
+          echo "Copying FFmpeg runtime libraries..."
+          # Copy FFmpeg shared libraries
+          for lib in libavcodec.so* libavformat.so* libavutil.so* libavfilter.so* libswscale.so* libswresample.so* libavdevice.so*; do
+            if [ -f "/usr/lib/x86_64-linux-gnu/$lib" ]; then
+              cp -P "/usr/lib/x86_64-linux-gnu/$lib" "$BUNDLE_DIR/"
+              echo "Copied $lib"
+            fi
+          done
+          
+          # Copy FFmpeg dependencies (codecs, etc.)
+          for lib in libx264.so* libx265.so* libvpx.so* libvorbis.so* libvorbisenc.so* libopus.so* libmp3lame.so* libass.so*; do
+            if [ -f "/usr/lib/x86_64-linux-gnu/$lib" ]; then
+              cp -P "/usr/lib/x86_64-linux-gnu/$lib" "$BUNDLE_DIR/"
+              echo "Copied $lib"
+            fi
+          done
+          
+          echo "FFmpeg libraries bundled:"
+          ls -la "$BUNDLE_DIR"/libav* "$BUNDLE_DIR"/libsw* 2>/dev/null || echo "Libraries copied"
+      
       - name: Create release archive
         run: |
           cd crates/flutter_frontend/build/linux/x64/release/bundle
