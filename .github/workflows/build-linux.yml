@@ -183,11 +183,11 @@ jobs:
                 - usr/share/doc
                 - usr/share/locale
 
-          runtime:
-              env:
-                LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
-                GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
-              version: "continuous"
+            runtime:
+                env:
+                  LD_LIBRARY_PATH: '${APPDIR}/usr/lib:${APPDIR}/usr/lib/x86_64-linux-gnu:${APPDIR}/lib:${LD_LIBRARY_PATH}'
+                  GIO_MODULE_DIR: '${APPDIR}/usr/lib/gio/modules'
+                version: "continuous"
           
           AppImage:
             update-information: None
