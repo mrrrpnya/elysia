@@ -667,7 +667,6 @@ pub async fn delete_jadeite() -> String {
 // ============================================================================
 
 /// Video frame DTO for FFI
-#[frb(unignore)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VideoFrameDto {
     /// RGBA image data
@@ -682,7 +681,6 @@ pub struct VideoFrameDto {
 
 /// Start streaming video frames from a URL
 /// Streams video frames via the provided sink
-#[frb]
 pub async fn stream_video_frames(
     url: String,
     sink: flutter_rust_bridge::StreamSink<VideoFrameDto>,
