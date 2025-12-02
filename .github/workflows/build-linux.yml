@@ -196,6 +196,7 @@ jobs:
                 - libatk1.0-0
                 - libatk-bridge2.0-0t64
                 - libatk-bridge2.0-0
+                - libgtk-3-0t64
                 - libgtk-3-0
                 - libgtk-3-common
                 - libgtk-4-1
