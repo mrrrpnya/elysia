@@ -196,7 +196,9 @@ jobs:
           EOF
           
           # Copy icon
-          cp ../../../../../elysia.png AppDir/elysia.png
+          cp ../../../../../elysia.png AppDir/elysia.png /AppDir/usr/share/icons/elysia.png
+          mkdir -p AppDir/usr/share/icons
+          cp ../../../../../elysia.png AppDir/usr/share/icons/elysia.png
           
           # Run appimage-builder
           ./appimage-builder-x86_64.AppImage --recipe AppImageBuilder.yml --skip-test
