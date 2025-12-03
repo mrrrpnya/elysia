@@ -688,7 +688,7 @@ pub async fn stream_video_frames(
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
-    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(2); // Buffer only 2 frames to minimize memory
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
     
     // Start video decoder in background with abort handle
     let url_clone = url.clone();
@@ -700,7 +700,8 @@ pub async fn stream_video_frames(
     });
     
     // Forward frames to Flutter via sink
-    // When sink is dropped (Flutter side closes stream), this loop exits
+    // This runs in the current task, so when Flutter cancels the stream,
+    // this function is dropped/cancelled and the loop stops
     while let Some(frame) = frame_rx.recv().await {
         sink.add(VideoFrameDto {
             data: frame.data,
@@ -710,7 +711,8 @@ pub async fn stream_video_frames(
         });
     }
     
-    // Abort the decoder task when stream ends
+    // When we exit the loop or function is cancelled,
+    // abort the decoder task
     decoder_task.abort();
     println!("Video stream ended, decoder task aborted");
 }
