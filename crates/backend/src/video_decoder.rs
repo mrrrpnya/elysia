@@ -268,12 +268,22 @@ impl VideoDecoder {
                         timestamp_ms,
                     };
 
-                    // Send frame (blocking with timeout)
-                    if frame_tx.blocking_send(video_frame).is_err() {
-                        // Receiver dropped, stop decoding
-                        println!("Video stream closed by receiver");
-                        let _ = std::fs::remove_file(&temp_path);
-                        return Ok(());
+                    // Send frame (non-blocking to prevent decoder from being stuck)
+                    // If the channel is full, skip this frame to prevent blocking
+                    match frame_tx.try_send(video_frame) {
+                        Ok(_) => {
+                            // Frame sent successfully
+                        }
+                        Err(tokio::sync::mpsc::error::TrySendError::Full(_)) => {
+                            // Channel full, skip this frame
+                            // This prevents the decoder from blocking when Flutter is slow
+                        }
+                        Err(tokio::sync::mpsc::error::TrySendError::Closed(_)) => {
+                            // Receiver dropped, stop decoding immediately
+                            println!("Video stream closed by receiver");
+                            let _ = std::fs::remove_file(&temp_path);
+                            return Ok(());
+                        }
                     }
 
                     frame_count += 1;
