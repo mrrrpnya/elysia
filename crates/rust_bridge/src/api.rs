@@ -727,14 +727,10 @@ pub async fn stream_video_frames(
     // Drop frame_rx to close the channel
     // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
     drop(frame_rx);
-    println!("Frame channel closed, waiting for decoder to stop");
     
-    // Give decoder a brief moment to detect the closed channel and stop gracefully
-    // This ensures proper cleanup before aborting
-    tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
-    
-    // Abort the decoder task to ensure it stops
+    // Abort the decoder task immediately
+    // This prevents any more frames from being sent after we close the channel
     decoder_task.abort();
     
-    println!("Video stream ended, decoder stopped");
+    println!("Video stream ended, decoder task aborted");
 }
