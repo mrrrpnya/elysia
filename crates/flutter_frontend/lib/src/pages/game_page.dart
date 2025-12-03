@@ -195,11 +195,17 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       _loopTimer?.cancel();
       _loopTimer = null;
       
+      // Dispose old image before clearing state
+      try {
+        _currentImage?.dispose();
+      } catch (e) {
+        debugPrint('Error disposing old image: $e');
+      }
+      
       setState(() {
         _isLoading = true;
         _hasError = false;
         _currentFrame = null;
-        _currentImage?.dispose();
         _currentImage = null;
       });
       
@@ -210,7 +216,11 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       
       _frameSubscription = stream.listen(
         (frame) async {
-          if (mounted) {
+          if (!mounted) {
+            return;
+          }
+          
+          try {
             // Decode RGBA frame to ui.Image
             final buffer = await ui.ImmutableBuffer.fromUint8List(Uint8List.fromList(frame.data));
             final descriptor = ui.ImageDescriptor.raw(
@@ -230,11 +240,25 @@ class _VideoBackgroundState extends State<_VideoBackground> {
                 _currentImage = frameInfo.image;
                 _isLoading = false;
               });
-              oldImage?.dispose();
+              
+              // Dispose old image after state update
+              if (oldImage != null) {
+                try {
+                  oldImage.dispose();
+                } catch (e) {
+                  debugPrint('Error disposing old image: $e');
+                }
+              }
             } else {
               // Widget unmounted, dispose the new image
-              frameInfo.image.dispose();
+              try {
+                frameInfo.image.dispose();
+              } catch (e) {
+                debugPrint('Error disposing unmounted image: $e');
+              }
             }
+          } catch (e) {
+            debugPrint('Error decoding frame: $e');
           }
         },
         onError: (error) {
@@ -257,6 +281,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             });
           }
         },
+        cancelOnError: false,
       );
     } catch (e) {
       debugPrint('Error starting video stream: $e');
@@ -271,9 +296,17 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   @override
   void dispose() {
+    // Cancel subscription and timer synchronously
     _frameSubscription?.cancel();
     _loopTimer?.cancel();
-    _currentImage?.dispose();
+    
+    // Dispose image safely
+    try {
+      _currentImage?.dispose();
+    } catch (e) {
+      debugPrint('Error disposing image: $e');
+    }
+    
     super.dispose();
   }
   
