@@ -224,11 +224,6 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       // Give the Rust decoder time to detect the closed channel and clean up
       await Future.delayed(const Duration(milliseconds: 150));
       
-      // Strongly suggest garbage collection to free disposed image memory
-      // This helps ensure memory is freed before starting the next video
-      debugPrint('Requesting garbage collection after video switch');
-      developer.NativeRuntime.collectAllGarbage();
-      
       if (!mounted) {
         debugPrint('Widget unmounted during stream restart, aborting');
         _isStartingStream = false;
