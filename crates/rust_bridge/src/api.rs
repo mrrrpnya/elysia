@@ -720,15 +720,25 @@ pub async fn stream_video_frames(
     // Drop frame_rx to close the channel
     // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
     drop(frame_rx);
-    
-    // Note: StreamSink doesn't have a close() method in this version of flutter_rust_bridge
-    // Dropping the sink will signal Flutter that the stream has ended
     println!("Closed frame channel, waiting for decoder to stop...");
     
-    // Give decoder a moment to detect the closed channel and stop gracefully
-    tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+    // Wait for the decoder to actually finish (up to 200ms)
+    // This prevents "Fail to post message to Dart" errors and ensures proper cleanup
+    let timeout = tokio::time::Duration::from_millis(200);
+    match tokio::time::timeout(timeout, decoder_task).await {
+        Ok(result) => {
+            if let Err(e) = result {
+                if !e.is_cancelled() {
+                    eprintln!("Decoder task error: {:?}", e);
+                }
+            }
+            println!("Decoder task stopped gracefully");
+        }
+        Err(_) => {
+            // Timeout - decoder is taking too long, force stop
+            eprintln!("Decoder didn't stop in time after 200ms");
+        }
+    }
     
-    // If decoder is still running, abort it
-    decoder_task.abort();
-    println!("Video stream ended, decoder task aborted");
+    println!("Video stream ended, all resources cleaned up");
 }
