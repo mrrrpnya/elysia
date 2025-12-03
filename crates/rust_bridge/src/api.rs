@@ -689,7 +689,7 @@ pub async fn stream_video_frames(
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
-    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(0); // Rendezvous channel - no buffering
     
     // Start video decoder in background with abort handle
     let url_clone = url.clone();

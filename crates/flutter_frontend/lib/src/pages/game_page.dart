@@ -259,16 +259,16 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             final codec = await descriptor.instantiateCodec();
             final frameInfo = await codec.getNextFrame();
             
+            // Clean up codec/descriptor/buffer immediately to free memory
+            codec.dispose();
+            descriptor.dispose();
+            buffer.dispose();
+            
             if (mounted) {
-              // Dispose old image before setting new one
+              // Dispose old image BEFORE setState to free memory immediately
               final oldImage = _currentImage;
-              setState(() {
-                _currentFrame = frame;
-                _currentImage = frameInfo.image;
-                _isLoading = false;
-              });
+              _currentImage = null; // Clear reference first
               
-              // Dispose old image after state update
               if (oldImage != null) {
                 try {
                   oldImage.dispose();
@@ -276,8 +276,15 @@ class _VideoBackgroundState extends State<_VideoBackground> {
                   debugPrint('Error disposing old image: $e');
                 }
               }
+              
+              // Now set the new image
+              setState(() {
+                _currentFrame = frame;
+                _currentImage = frameInfo.image;
+                _isLoading = false;
+              });
             } else {
-              // Widget unmounted, dispose the new image
+              // Widget unmounted, dispose the new image immediately
               try {
                 frameInfo.image.dispose();
               } catch (e) {
