@@ -10,7 +10,6 @@ import '../rust/api.dart' as rust_api;
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
-import 'dart:developer' as developer;
 
 
 
@@ -223,13 +222,6 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       
       // Give the Rust decoder time to detect the closed channel and clean up
       await Future.delayed(const Duration(milliseconds: 150));
-      
-      // Hint to Dart VM that this is a good time for garbage collection
-      // By creating temporary memory pressure
-      debugPrint('Hinting garbage collection after video switch');
-      for (int i = 0; i < 10; i++) {
-        List.generate(1000, (i) => i);
-      }
       
       if (!mounted) {
         debugPrint('Widget unmounted during stream restart, aborting');
