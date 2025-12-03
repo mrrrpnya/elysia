@@ -681,7 +681,7 @@ pub struct VideoFrameDto {
 
 /// Start streaming video frames from a URL
 /// Streams video frames via the provided sink
-#[frb(stream_dart_await)]
+#[flutter_rust_bridge::frb(stream_dart_await)]
 pub async fn stream_video_frames(
     url: String,
     sink: crate::frb_generated::StreamSink<VideoFrameDto>,
