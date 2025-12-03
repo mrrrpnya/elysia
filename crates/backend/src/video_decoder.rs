@@ -7,10 +7,32 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
 use lazy_static::lazy_static;
+use std::path::PathBuf;
 
 lazy_static! {
-    /// Global cache for downloaded videos
+    /// Global cache for downloaded videos (in-memory)
     static ref VIDEO_CACHE: Arc<Mutex<HashMap<String, Vec<u8>>>> = Arc::new(Mutex::new(HashMap::new()));
+}
+
+/// Get the video cache directory path
+fn get_video_cache_dir() -> Result<PathBuf> {
+    let cache_dir = dirs::data_local_dir()
+        .context("Failed to get local data directory")?
+        .join("elysia")
+        .join("image_cache"); // Reuse existing image_cache directory
+    
+    // Create directory if it doesn't exist
+    std::fs::create_dir_all(&cache_dir)
+        .context("Failed to create cache directory")?;
+    
+    Ok(cache_dir)
+}
+
+/// Generate cache filename from URL
+fn get_cache_filename(url: &str) -> String {
+    // Use MD5 hash of URL as filename to avoid filesystem issues
+    let hash = md5::compute(url.as_bytes());
+    format!("{:x}.webm", hash)
 }
 
 /// Video frame data
@@ -73,23 +95,54 @@ impl VideoDecoder {
     
     /// Get video from cache or download it
     async fn get_or_download_video(url: &str) -> Result<Vec<u8>> {
-        // Check cache first
+        // Check in-memory cache first
         {
             let cache = VIDEO_CACHE.lock().unwrap();
             if let Some(cached_data) = cache.get(url) {
-                println!("Using cached video: {} bytes", cached_data.len());
+                println!("Using in-memory cached video: {} bytes", cached_data.len());
                 return Ok(cached_data.clone());
             }
         }
         
+        // Check disk cache
+        let cache_dir = get_video_cache_dir()?;
+        let cache_file = cache_dir.join(get_cache_filename(url));
+        
+        if cache_file.exists() {
+            match std::fs::read(&cache_file) {
+                Ok(cached_data) => {
+                    println!("Using disk cached video: {} bytes from {:?}", cached_data.len(), cache_file);
+                    
+                    // Store in memory cache for faster access
+                    {
+                        let mut cache = VIDEO_CACHE.lock().unwrap();
+                        cache.insert(url.to_string(), cached_data.clone());
+                    }
+                    
+                    return Ok(cached_data);
+                }
+                Err(e) => {
+                    eprintln!("Failed to read cached video file: {}", e);
+                    // Continue to download
+                }
+            }
+        }
+        
         // Download video
+        println!("Downloading video from: {}", url);
         let video_data = Self::download_video(url).await?;
         
-        // Store in cache
+        // Store in disk cache
+        if let Err(e) = std::fs::write(&cache_file, &video_data) {
+            eprintln!("Failed to cache video to disk: {}", e);
+        } else {
+            println!("Cached video to disk: {:?}", cache_file);
+        }
+        
+        // Store in memory cache
         {
             let mut cache = VIDEO_CACHE.lock().unwrap();
             cache.insert(url.to_string(), video_data.clone());
-            println!("Cached video for URL: {}", url);
         }
         
         Ok(video_data)
