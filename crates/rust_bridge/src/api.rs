@@ -719,13 +719,15 @@ pub async fn stream_video_frames(
     // Drop frame_rx to close the channel
     // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
     drop(frame_rx);
-    println!("Closed frame channel, waiting for decoder to stop...");
+    
+    // Close sink to signal Flutter immediately
+    let _ = sink.close();
+    println!("Closed frame channel and sink, waiting for decoder to stop...");
     
     // Give decoder a moment to detect the closed channel and stop gracefully
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
     
     // If decoder is still running, abort it
     decoder_task.abort();
-    let _ = sink.close();
-    println!("Video stream ended, decoder task aborted, sink closed");
+    println!("Video stream ended, decoder task aborted");
 }
