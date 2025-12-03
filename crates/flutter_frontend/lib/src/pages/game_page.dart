@@ -170,7 +170,14 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   bool _isLoading = true;
   bool _hasError = false;
   Timer? _loopTimer;
-  ui.Image? _currentImage;
+  
+  // Use ValueNotifier to update image without calling setState
+  // This prevents flickering by avoiding full widget rebuilds
+  final ValueNotifier<ui.Image?> _imageNotifier = ValueNotifier<ui.Image?>(null);
+  
+  ui.Image? get _currentImage => _imageNotifier.value;
+  set _currentImage(ui.Image? value) => _imageNotifier.value = value;
+  
   bool _isStartingStream = false;
   
   @override
@@ -279,12 +286,18 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             buffer.dispose();
             
             if (mounted) {
-              // Set the new image
-              setState(() {
-                _currentFrame = frame;
-                _currentImage = frameInfo.image;
-                _isLoading = false;
-              });
+              // Update image without calling setState to avoid flickering on every frame
+              // Only call setState for the first frame to clear loading state
+              final isFirstFrame = _currentImage == null;
+              _currentFrame = frame;
+              _currentImage = frameInfo.image; // This updates ValueNotifier
+              
+              // Only call setState for the first frame
+              if (isFirstFrame) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
             } else {
               // Widget unmounted, dispose the new image immediately
               try {
@@ -375,10 +388,18 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video frame layer - display current frame as image
-          RawImage(
-            image: _currentImage,
-            fit: BoxFit.cover,
+          // Video frame layer - use ValueListenableBuilder to update without setState
+          ValueListenableBuilder<ui.Image?>(
+            valueListenable: _imageNotifier,
+            builder: (context, image, child) {
+              if (image == null) {
+                return const SizedBox.shrink();
+              }
+              return RawImage(
+                image: image,
+                fit: BoxFit.cover,
+              );
+            },
           ),
           
           // Theme image overlay layer
