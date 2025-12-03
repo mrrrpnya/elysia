@@ -170,6 +170,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   bool _hasError = false;
   Timer? _loopTimer;
   ui.Image? _currentImage;
+  bool _isStartingStream = false;
   
   @override
   void initState() {
@@ -182,12 +183,23 @@ class _VideoBackgroundState extends State<_VideoBackground> {
     super.didUpdateWidget(oldWidget);
     // Restart video stream if URL changed
     if (oldWidget.videoUrl != widget.videoUrl) {
-      debugPrint('Video URL changed, restarting stream');
-      _startVideoStream();
+      debugPrint('Video URL changed from ${oldWidget.videoUrl} to ${widget.videoUrl}');
+      // Don't start a new stream if one is already starting
+      if (!_isStartingStream) {
+        _startVideoStream();
+      }
     }
   }
   
   void _startVideoStream() async {
+    // Prevent concurrent stream starts
+    if (_isStartingStream) {
+      debugPrint('Stream start already in progress, ignoring request');
+      return;
+    }
+    
+    _isStartingStream = true;
+    
     try {
       // Cancel any existing subscription first to stop the decoder
       debugPrint('Cancelling existing video stream (if any)');
@@ -207,11 +219,12 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       // Cancel old subscription to close the channel
       await oldSubscription?.cancel();
       
-      // Give the Rust decoder a moment to detect the closed channel and clean up
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Give the Rust decoder more time to detect the closed channel and clean up
+      await Future.delayed(const Duration(milliseconds: 150));
       
       if (!mounted) {
         debugPrint('Widget unmounted during stream restart, aborting');
+        _isStartingStream = false;
         return;
       }
       
@@ -297,8 +310,12 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         },
         cancelOnError: false,
       );
+      
+      _isStartingStream = false;
+      debugPrint('Video stream started successfully');
     } catch (e) {
       debugPrint('Error starting video stream: $e');
+      _isStartingStream = false;
       if (mounted) {
         setState(() {
           _hasError = true;
