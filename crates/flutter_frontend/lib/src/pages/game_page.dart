@@ -177,13 +177,33 @@ class _VideoBackgroundState extends State<_VideoBackground> {
     _startVideoStream();
   }
   
+  @override
+  void didUpdateWidget(_VideoBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Restart video stream if URL changed
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      debugPrint('Video URL changed, restarting stream');
+      _startVideoStream();
+    }
+  }
+  
   void _startVideoStream() async {
     try {
+      // Cancel any existing subscription first
+      await _frameSubscription?.cancel();
+      _frameSubscription = null;
+      _loopTimer?.cancel();
+      _loopTimer = null;
+      
       setState(() {
         _isLoading = true;
         _hasError = false;
         _currentFrame = null;
+        _currentImage?.dispose();
+        _currentImage = null;
       });
+      
+      debugPrint('Starting video stream: ${widget.videoUrl}');
       
       // Get video frame stream from Rust
       final stream = rust_api.streamVideoFrames(url: widget.videoUrl);
@@ -203,11 +223,17 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             final frameInfo = await codec.getNextFrame();
             
             if (mounted) {
+              // Dispose old image before setting new one
+              final oldImage = _currentImage;
               setState(() {
                 _currentFrame = frame;
                 _currentImage = frameInfo.image;
                 _isLoading = false;
               });
+              oldImage?.dispose();
+            } else {
+              // Widget unmounted, dispose the new image
+              frameInfo.image.dispose();
             }
           }
         },

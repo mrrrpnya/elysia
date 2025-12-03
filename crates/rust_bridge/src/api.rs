@@ -690,9 +690,9 @@ pub async fn stream_video_frames(
     
     let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(30); // Buffer ~1 second at 30fps
     
-    // Start video decoder in background
+    // Start video decoder in background with abort handle
     let url_clone = url.clone();
-    tokio::spawn(async move {
+    let decoder_task = tokio::spawn(async move {
         let decoder = VideoDecoder::new(url_clone, frame_tx);
         if let Err(e) = decoder.start().await {
             eprintln!("[ERROR] Video decoder failed: {}", e);
@@ -700,6 +700,7 @@ pub async fn stream_video_frames(
     });
     
     // Forward frames to Flutter via sink
+    // When sink is dropped (Flutter side closes stream), this loop exits
     while let Some(frame) = frame_rx.recv().await {
         sink.add(VideoFrameDto {
             data: frame.data,
@@ -708,4 +709,8 @@ pub async fn stream_video_frames(
             timestamp_ms: frame.timestamp_ms,
         });
     }
+    
+    // Abort the decoder task when stream ends
+    decoder_task.abort();
+    println!("Video stream ended, decoder task aborted");
 }

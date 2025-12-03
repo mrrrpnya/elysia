@@ -49,18 +49,38 @@ impl VideoDecoder {
 
     /// Download video from URL
     async fn download_video(url: &str) -> Result<Vec<u8>> {
-        let client = reqwest::Client::new();
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(60))
+            .build()
+            .context("Failed to build HTTP client")?;
+            
         let response = client
             .get(url)
             .send()
             .await
             .context("Failed to download video")?;
 
+        // Check response status
+        if !response.status().is_success() {
+            anyhow::bail!("HTTP error: {}", response.status());
+        }
+
         let bytes = response
             .bytes()
             .await
             .context("Failed to read video bytes")?;
 
+        // Validate we have data
+        if bytes.is_empty() {
+            anyhow::bail!("Downloaded video is empty");
+        }
+        
+        // Basic WebM/Matroska validation (starts with EBML header)
+        if bytes.len() < 4 || &bytes[0..4] != b"\x1A\x45\xDF\xA3" {
+            anyhow::bail!("Invalid video format: not a valid WebM/Matroska file");
+        }
+
+        println!("Downloaded video: {} bytes", bytes.len());
         Ok(bytes.to_vec())
     }
 
@@ -71,13 +91,16 @@ impl VideoDecoder {
 
         // Initialize ffmpeg
         ffmpeg::init().context("Failed to initialize ffmpeg")?;
+        
+        // Suppress ffmpeg warnings for minor container issues
+        ffmpeg::log::set_level(ffmpeg::log::Level::Error);
 
         // Create a temporary file for ffmpeg to read from
         let temp_dir = std::env::temp_dir();
         let temp_path = temp_dir.join(format!("elysia_video_{}.webm", std::process::id()));
         std::fs::write(&temp_path, video_data).context("Failed to write temp video file")?;
 
-        // Open input file
+        // Open input file with better error handling
         let mut ictx = ffmpeg::format::input(&temp_path)
             .context("Failed to open video file")?;
 
@@ -90,9 +113,16 @@ impl VideoDecoder {
         
         // Get frame rate
         let frame_rate = input.avg_frame_rate();
-        let frame_duration = Duration::from_secs_f64(
-            frame_rate.1 as f64 / frame_rate.0 as f64
-        );
+        let frame_duration = if frame_rate.0 > 0 && frame_rate.1 > 0 {
+            Duration::from_secs_f64(frame_rate.1 as f64 / frame_rate.0 as f64)
+        } else {
+            // Default to 30fps if frame rate cannot be determined
+            Duration::from_secs_f64(1.0 / 30.0)
+        };
+        
+        println!("Video frame rate: {}/{} ({:.2} fps)", 
+                 frame_rate.0, frame_rate.1, 
+                 frame_rate.0 as f64 / frame_rate.1.max(1) as f64);
 
         // Create decoder
         let context_decoder = ffmpeg::codec::context::Context::from_parameters(input.parameters())
@@ -122,7 +152,11 @@ impl VideoDecoder {
         
         for (stream, packet) in ictx.packets() {
             if stream.index() == video_stream_index {
-                decoder.send_packet(&packet)?;
+                // Send packet to decoder, ignore minor errors
+                if let Err(e) = decoder.send_packet(&packet) {
+                    eprintln!("Warning: Error sending packet to decoder: {}", e);
+                    continue;
+                }
                 
                 let mut decoded = ffmpeg::util::frame::Video::empty();
                 while decoder.receive_frame(&mut decoded).is_ok() {
@@ -134,7 +168,10 @@ impl VideoDecoder {
                     last_frame_time = Instant::now();
                     
                     let mut rgb_frame = ffmpeg::util::frame::Video::empty();
-                    scaler.run(&decoded, &mut rgb_frame)?;
+                    if let Err(e) = scaler.run(&decoded, &mut rgb_frame) {
+                        eprintln!("Warning: Error scaling frame: {}", e);
+                        continue;
+                    }
 
                     // Convert to Vec<u8>
                     let data = rgb_frame.data(0).to_vec();
@@ -156,7 +193,8 @@ impl VideoDecoder {
                     if frame_tx.blocking_send(video_frame).is_err() {
                         // Receiver dropped, stop decoding
                         println!("Video stream closed by receiver");
-                        break;
+                        let _ = std::fs::remove_file(&temp_path);
+                        return Ok(());
                     }
 
                     frame_count += 1;
@@ -164,19 +202,21 @@ impl VideoDecoder {
                     // Check if receiver is still connected periodically
                     if frame_count % 30 == 0 && frame_tx.is_closed() {
                         println!("Video stream receiver closed");
-                        break;
+                        let _ = std::fs::remove_file(&temp_path);
+                        return Ok(());
                     }
                 }
             }
             
             // Early exit if receiver closed
             if frame_tx.is_closed() {
-                break;
+                let _ = std::fs::remove_file(&temp_path);
+                return Ok(());
             }
         }
 
         // Send flush
-        decoder.send_eof()?;
+        let _ = decoder.send_eof();
         let mut decoded = ffmpeg::util::frame::Video::empty();
         while decoder.receive_frame(&mut decoded).is_ok() && !frame_tx.is_closed() {
             let elapsed = last_frame_time.elapsed();
@@ -186,25 +226,25 @@ impl VideoDecoder {
             last_frame_time = Instant::now();
             
             let mut rgb_frame = ffmpeg::util::frame::Video::empty();
-            scaler.run(&decoded, &mut rgb_frame)?;
+            if scaler.run(&decoded, &mut rgb_frame).is_ok() {
+                let data = rgb_frame.data(0).to_vec();
+                let width = rgb_frame.width();
+                let height = rgb_frame.height();
+                let pts = decoded.pts().unwrap_or(0);
+                let timestamp_ms = (pts as f64 * f64::from(time_base) * 1000.0) as i64;
 
-            let data = rgb_frame.data(0).to_vec();
-            let width = rgb_frame.width();
-            let height = rgb_frame.height();
-            let pts = decoded.pts().unwrap_or(0);
-            let timestamp_ms = (pts as f64 * f64::from(time_base) * 1000.0) as i64;
+                let video_frame = VideoFrame {
+                    data,
+                    width,
+                    height,
+                    timestamp_ms,
+                };
 
-            let video_frame = VideoFrame {
-                data,
-                width,
-                height,
-                timestamp_ms,
-            };
-
-            if frame_tx.blocking_send(video_frame).is_err() {
-                break;
+                if frame_tx.blocking_send(video_frame).is_err() {
+                    break;
+                }
+                frame_count += 1;
             }
-            frame_count += 1;
         }
 
         // Clean up temp file
