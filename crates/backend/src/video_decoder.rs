@@ -3,16 +3,8 @@
 
 use anyhow::{Context, Result};
 use bytes::Bytes;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
-use lazy_static::lazy_static;
 use std::path::PathBuf;
-
-lazy_static! {
-    /// Global cache for downloaded videos (in-memory)
-    static ref VIDEO_CACHE: Arc<Mutex<HashMap<String, Vec<u8>>>> = Arc::new(Mutex::new(HashMap::new()));
-}
 
 /// Get the video cache directory path
 fn get_video_cache_dir() -> Result<PathBuf> {
@@ -95,15 +87,6 @@ impl VideoDecoder {
     
     /// Get video from cache or download it
     async fn get_or_download_video(url: &str) -> Result<Vec<u8>> {
-        // Check in-memory cache first
-        {
-            let cache = VIDEO_CACHE.lock().unwrap();
-            if let Some(cached_data) = cache.get(url) {
-                println!("Using in-memory cached video: {} bytes", cached_data.len());
-                return Ok(cached_data.clone());
-            }
-        }
-        
         // Check disk cache
         let cache_dir = get_video_cache_dir()?;
         let cache_file = cache_dir.join(get_cache_filename(url));
@@ -112,13 +95,6 @@ impl VideoDecoder {
             match std::fs::read(&cache_file) {
                 Ok(cached_data) => {
                     println!("Using disk cached video: {} bytes from {:?}", cached_data.len(), cache_file);
-                    
-                    // Store in memory cache for faster access
-                    {
-                        let mut cache = VIDEO_CACHE.lock().unwrap();
-                        cache.insert(url.to_string(), cached_data.clone());
-                    }
-                    
                     return Ok(cached_data);
                 }
                 Err(e) => {
@@ -137,12 +113,6 @@ impl VideoDecoder {
             eprintln!("Failed to cache video to disk: {}", e);
         } else {
             println!("Cached video to disk: {:?}", cache_file);
-        }
-        
-        // Store in memory cache
-        {
-            let mut cache = VIDEO_CACHE.lock().unwrap();
-            cache.insert(url.to_string(), video_data.clone());
         }
         
         Ok(video_data)
