@@ -56,7 +56,7 @@ jobs:
             jq \
             curl \
             xz-utils \
-            git
+            zstd
           git config --global --add safe.directory '*'
       
       - name: Set up Flutter
@@ -225,6 +225,7 @@ jobs:
             update-information: None
             sign-key: None
             arch: x86_64
+            comp: zstd
           EOF
           
           # Copy icon
