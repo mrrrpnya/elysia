@@ -1,8 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 
 /// Glass-style button inspired by Collapse launcher
-/// Note: BackdropFilter removed to prevent rendering issues with video backgrounds
 class GlassButton extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;
@@ -27,18 +27,15 @@ class _GlassButtonState extends State<GlassButton> {
   
   @override
   Widget build(BuildContext context) {
-    // Use fully opaque background to prevent video texture artifacts
     final backgroundColor = !widget.enabled
-        ? const Color(0xFF3A3A3A)
+        ? ElysiaTheme.surfaceColor.withValues(alpha: 0.3)
         : _isPressed
-            ? const Color(0xFF5A5A5A)
+            ? ElysiaTheme.surfaceColor.withValues(alpha: 0.8)
             : _isHovering
-                ? const Color(0xFF4A4A4A)
-                : const Color(0xFF404040);
+                ? ElysiaTheme.surfaceColor.withValues(alpha: 0.7)
+                : ElysiaTheme.surfaceColor.withValues(alpha: 0.6);
     
-    // Wrap in RepaintBoundary to isolate from video rendering
-    return RepaintBoundary(
-      child: MouseRegion(
+    return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -47,34 +44,40 @@ class _GlassButtonState extends State<GlassButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.enabled ? widget.onPressed : null,
-        child: Container(
-          width: widget.width,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
-            border: Border.all(color: ElysiaTheme.borderColor),
-            boxShadow: const [
-              BoxShadow(
-                color: ElysiaTheme.shadowColor,
-                blurRadius: 5,
-                offset: Offset(2, 2),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: widget.width,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(ElysiaTheme.buttonRadius),
+                border: Border.all(color: ElysiaTheme.borderColor),
+                boxShadow: const [
+                  BoxShadow(
+                    color: ElysiaTheme.shadowColor,
+                    blurRadius: 5,
+                    offset: Offset(2, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: DefaultTextStyle(
-            style: TextStyle(
-              color: widget.enabled 
-                  ? ElysiaTheme.textPrimary 
-                  : ElysiaTheme.textSecondary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+              child: DefaultTextStyle(
+                style: TextStyle(
+                  color: widget.enabled 
+                      ? ElysiaTheme.textPrimary 
+                      : ElysiaTheme.textSecondary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                child: widget.child,
+              ),
             ),
-            child: widget.child,
           ),
         ),
       ),
-    ),
     );
   }
 }
@@ -104,18 +107,16 @@ class _AccentButtonState extends State<AccentButton> {
   
   @override
   Widget build(BuildContext context) {
-    // Use fully opaque colors to prevent video texture artifacts
+    final baseColor = ElysiaTheme.primaryColor;
     final backgroundColor = !widget.enabled
-        ? const Color(0xFF8B6914)
+        ? baseColor.withValues(alpha: 0.3)
         : _isPressed
-            ? const Color(0xFFD4A017)
+            ? baseColor.withValues(alpha: 0.9)
             : _isHovering
-                ? const Color(0xFFC49516)
-                : const Color(0xFFB58915);
+                ? baseColor.withValues(alpha: 0.8)
+                : baseColor.withValues(alpha: 0.7);
     
-    // Wrap in RepaintBoundary to isolate from video rendering
-    return RepaintBoundary(
-      child: MouseRegion(
+    return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
       cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
@@ -124,7 +125,8 @@ class _AccentButtonState extends State<AccentButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.enabled ? widget.onPressed : null,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
           width: widget.width,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
@@ -148,7 +150,6 @@ class _AccentButtonState extends State<AccentButton> {
           ),
         ),
       ),
-    ),
     );
   }
 }

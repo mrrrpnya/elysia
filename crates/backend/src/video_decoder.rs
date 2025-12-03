@@ -3,8 +3,15 @@
 
 use anyhow::{Context, Result};
 use bytes::Bytes;
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    /// Global cache for downloaded videos
+    static ref VIDEO_CACHE: Arc<Mutex<HashMap<String, Vec<u8>>>> = Arc::new(Mutex::new(HashMap::new()));
+}
 
 /// Video frame data
 #[derive(Clone, Debug)]
@@ -23,28 +30,69 @@ pub struct VideoFrame {
 pub struct VideoDecoder {
     url: String,
     frame_tx: mpsc::Sender<VideoFrame>,
+    should_loop: bool,
 }
 
 impl VideoDecoder {
     /// Create a new video decoder
     pub fn new(url: String, frame_tx: mpsc::Sender<VideoFrame>) -> Self {
-        Self { url, frame_tx }
+        Self { 
+            url, 
+            frame_tx,
+            should_loop: true, // Videos loop by default
+        }
     }
 
-    /// Start decoding video and streaming frames
+    /// Start decoding video and streaming frames with looping
     pub async fn start(self) -> Result<()> {
-        // Download video to temporary location
-        let video_data = Self::download_video(&self.url).await?;
+        // Download or get cached video
+        let video_data = Self::get_or_download_video(&self.url).await?;
         
         // Decode frames in a blocking task since ffmpeg operations are CPU-bound
         let frame_tx = self.frame_tx;
+        let should_loop = self.should_loop;
         tokio::task::spawn_blocking(move || {
-            if let Err(e) = Self::decode_frames(&video_data, frame_tx) {
-                eprintln!("Video decoding error: {}", e);
+            loop {
+                if let Err(e) = Self::decode_frames(&video_data, frame_tx.clone()) {
+                    eprintln!("Video decoding error: {}", e);
+                    break;
+                }
+                
+                // Check if we should loop
+                if !should_loop || frame_tx.is_closed() {
+                    break;
+                }
+                
+                // Continue looping immediately without redownloading
+                println!("Looping video playback...");
             }
         });
 
         Ok(())
+    }
+    
+    /// Get video from cache or download it
+    async fn get_or_download_video(url: &str) -> Result<Vec<u8>> {
+        // Check cache first
+        {
+            let cache = VIDEO_CACHE.lock().unwrap();
+            if let Some(cached_data) = cache.get(url) {
+                println!("Using cached video: {} bytes", cached_data.len());
+                return Ok(cached_data.clone());
+            }
+        }
+        
+        // Download video
+        let video_data = Self::download_video(url).await?;
+        
+        // Store in cache
+        {
+            let mut cache = VIDEO_CACHE.lock().unwrap();
+            cache.insert(url.to_string(), video_data.clone());
+            println!("Cached video for URL: {}", url);
+        }
+        
+        Ok(video_data)
     }
 
     /// Download video from URL
