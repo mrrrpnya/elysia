@@ -687,7 +687,6 @@ pub async fn stream_video_frames(
 ) {
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
-    use futures::SinkExt; // For close() method
     
     let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
     
@@ -721,9 +720,9 @@ pub async fn stream_video_frames(
     // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
     drop(frame_rx);
     
-    // Close sink to signal Flutter immediately
-    let _ = sink.close().await;
-    println!("Closed frame channel and sink, waiting for decoder to stop...");
+    // Note: StreamSink doesn't have a close() method in this version of flutter_rust_bridge
+    // Dropping the sink will signal Flutter that the stream has ended
+    println!("Closed frame channel, waiting for decoder to stop...");
     
     // Give decoder a moment to detect the closed channel and stop gracefully
     tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
