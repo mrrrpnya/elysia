@@ -195,7 +195,6 @@ jobs:
                 - sourceline: 'deb https://deb.debian.org/debian/ bookworm contrib main non-free non-free-firmware'
                 - sourceline: 'deb https://deb.debian.org/debian/ bookworm-updates contrib main non-free non-free-firmware'
                 - sourceline: 'deb https://deb.debian.org/debian/ bookworm-backports contrib main non-free non-free-firmware'
-                - sourceline: 'deb https://deb.debian.org/debian/ bookworm-security contrib main non-free non-free-firmware'
               
               include:
                 - ffmpeg
