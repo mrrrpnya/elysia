@@ -703,12 +703,17 @@ pub async fn stream_video_frames(
     // This runs in the current task, so when Flutter cancels the stream,
     // this function is dropped/cancelled and the loop stops
     while let Some(frame) = frame_rx.recv().await {
-        sink.add(VideoFrameDto {
+        // Check if add() succeeds - if it fails, Flutter closed the stream
+        if sink.add(VideoFrameDto {
             data: frame.data,
             width: frame.width,
             height: frame.height,
             timestamp_ms: frame.timestamp_ms,
-        }).ok(); // Ignore errors if Flutter already closed
+        }).is_err() {
+            // Flutter closed the stream, stop immediately
+            println!("Flutter closed stream, stopping decoder");
+            break;
+        }
     }
     
     // When we exit the loop or function is cancelled,
