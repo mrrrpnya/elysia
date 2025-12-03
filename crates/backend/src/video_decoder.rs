@@ -270,8 +270,8 @@ impl VideoDecoder {
 
                     frame_count += 1;
                     
-                    // Check if receiver is still connected periodically
-                    if frame_count % 30 == 0 && frame_tx.is_closed() {
+                    // Check if receiver is still connected every frame for immediate cleanup
+                    if frame_tx.is_closed() {
                         println!("Video stream receiver closed");
                         let _ = std::fs::remove_file(&temp_path);
                         return Ok(());
