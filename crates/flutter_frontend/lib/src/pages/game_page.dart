@@ -8,6 +8,9 @@ import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
 import '../rust/api.dart' as rust_api;
 import 'dart:async';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
@@ -166,6 +169,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   bool _isLoading = true;
   bool _hasError = false;
   Timer? _loopTimer;
+  ui.Image? _currentImage;
   
   @override
   void initState() {
@@ -175,16 +179,36 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   void _startVideoStream() async {
     try {
+      setState(() {
+        _isLoading = true;
+        _hasError = false;
+        _currentFrame = null;
+      });
+      
       // Get video frame stream from Rust
       final stream = rust_api.streamVideoFrames(url: widget.videoUrl);
       
       _frameSubscription = stream.listen(
-        (frame) {
+        (frame) async {
           if (mounted) {
-            setState(() {
-              _currentFrame = frame;
-              _isLoading = false;
-            });
+            // Decode RGBA frame to ui.Image
+            final buffer = await ui.ImmutableBuffer.fromUint8List(Uint8List.fromList(frame.data));
+            final descriptor = ui.ImageDescriptor.raw(
+              buffer,
+              width: frame.width.toInt(),
+              height: frame.height.toInt(),
+              pixelFormat: ui.PixelFormat.rgba8888,
+            );
+            final codec = await descriptor.instantiateCodec();
+            final frameInfo = await codec.getNextFrame();
+            
+            if (mounted) {
+              setState(() {
+                _currentFrame = frame;
+                _currentImage = frameInfo.image;
+                _isLoading = false;
+              });
+            }
           }
         },
         onError: (error) {
@@ -197,6 +221,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
           }
         },
         onDone: () {
+          debugPrint('Video playback finished, looping...');
           // Video finished, loop by restarting
           if (mounted && !_hasError) {
             _loopTimer = Timer(const Duration(milliseconds: 100), () {
@@ -222,6 +247,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   void dispose() {
     _frameSubscription?.cancel();
     _loopTimer?.cancel();
+    _currentImage?.dispose();
     super.dispose();
   }
   
@@ -233,7 +259,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
     }
     
     // Show fallback while loading first frame
-    if (_isLoading || _currentFrame == null) {
+    if (_isLoading || _currentImage == null) {
       return _BackgroundImage(url: widget.fallbackImageUrl);
     }
     
@@ -243,12 +269,9 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         fit: StackFit.expand,
         children: [
           // Video frame layer - display current frame as image
-          Image.memory(
-            _currentFrame!.data,
-            width: _currentFrame!.width.toDouble(),
-            height: _currentFrame!.height.toDouble(),
+          RawImage(
+            image: _currentImage,
             fit: BoxFit.cover,
-            gaplessPlayback: true, // Smooth frame transitions
           ),
           
           // Theme image overlay layer

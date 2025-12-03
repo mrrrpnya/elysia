@@ -67,6 +67,7 @@ impl VideoDecoder {
     /// Decode video frames using ffmpeg
     fn decode_frames(video_data: &[u8], frame_tx: mpsc::Sender<VideoFrame>) -> Result<()> {
         use ffmpeg_next as ffmpeg;
+        use std::time::{Duration, Instant};
 
         // Initialize ffmpeg
         ffmpeg::init().context("Failed to initialize ffmpeg")?;
@@ -86,6 +87,12 @@ impl VideoDecoder {
             .best(ffmpeg::media::Type::Video)
             .context("Could not find video stream")?;
         let video_stream_index = input.index();
+        
+        // Get frame rate
+        let frame_rate = input.avg_frame_rate();
+        let frame_duration = Duration::from_secs_f64(
+            frame_rate.1 as f64 / frame_rate.0 as f64
+        );
 
         // Create decoder
         let context_decoder = ffmpeg::codec::context::Context::from_parameters(input.parameters())
@@ -107,9 +114,11 @@ impl VideoDecoder {
         )
         .context("Failed to create scaler")?;
 
-        // Decode frames
+        // Decode frames with timing control
         let mut frame_count = 0;
         let time_base = input.time_base();
+        let start_time = Instant::now();
+        let mut last_frame_time = Instant::now();
         
         for (stream, packet) in ictx.packets() {
             if stream.index() == video_stream_index {
@@ -117,6 +126,13 @@ impl VideoDecoder {
                 
                 let mut decoded = ffmpeg::util::frame::Video::empty();
                 while decoder.receive_frame(&mut decoded).is_ok() {
+                    // Rate limit: sleep to maintain target frame rate
+                    let elapsed = last_frame_time.elapsed();
+                    if elapsed < frame_duration {
+                        std::thread::sleep(frame_duration - elapsed);
+                    }
+                    last_frame_time = Instant::now();
+                    
                     let mut rgb_frame = ffmpeg::util::frame::Video::empty();
                     scaler.run(&decoded, &mut rgb_frame)?;
 
@@ -136,21 +152,39 @@ impl VideoDecoder {
                         timestamp_ms,
                     };
 
-                    // Send frame (non-blocking)
+                    // Send frame (blocking with timeout)
                     if frame_tx.blocking_send(video_frame).is_err() {
                         // Receiver dropped, stop decoding
+                        println!("Video stream closed by receiver");
                         break;
                     }
 
                     frame_count += 1;
+                    
+                    // Check if receiver is still connected periodically
+                    if frame_count % 30 == 0 && frame_tx.is_closed() {
+                        println!("Video stream receiver closed");
+                        break;
+                    }
                 }
+            }
+            
+            // Early exit if receiver closed
+            if frame_tx.is_closed() {
+                break;
             }
         }
 
         // Send flush
         decoder.send_eof()?;
         let mut decoded = ffmpeg::util::frame::Video::empty();
-        while decoder.receive_frame(&mut decoded).is_ok() {
+        while decoder.receive_frame(&mut decoded).is_ok() && !frame_tx.is_closed() {
+            let elapsed = last_frame_time.elapsed();
+            if elapsed < frame_duration {
+                std::thread::sleep(frame_duration - elapsed);
+            }
+            last_frame_time = Instant::now();
+            
             let mut rgb_frame = ffmpeg::util::frame::Video::empty();
             scaler.run(&decoded, &mut rgb_frame)?;
 
@@ -176,7 +210,8 @@ impl VideoDecoder {
         // Clean up temp file
         let _ = std::fs::remove_file(&temp_path);
 
-        println!("Decoded {} frames", frame_count);
+        println!("Video playback complete: {} frames in {:.2}s", 
+                 frame_count, start_time.elapsed().as_secs_f64());
         Ok(())
     }
 }
