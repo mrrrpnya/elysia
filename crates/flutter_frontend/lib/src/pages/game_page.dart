@@ -190,16 +190,25 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   void _startVideoStream() async {
     try {
       // Cancel any existing subscription first to stop the decoder
+      debugPrint('Cancelling existing video stream (if any)');
       await _frameSubscription?.cancel();
       _frameSubscription = null;
       _loopTimer?.cancel();
       _loopTimer = null;
+      
+      // Give the Rust decoder a moment to detect the closed channel and clean up
+      await Future.delayed(const Duration(milliseconds: 50));
       
       // Dispose old image before clearing state
       try {
         _currentImage?.dispose();
       } catch (e) {
         debugPrint('Error disposing old image: $e');
+      }
+      
+      if (!mounted) {
+        debugPrint('Widget unmounted during stream restart, aborting');
+        return;
       }
       
       setState(() {
@@ -311,9 +320,12 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   @override
   void dispose() {
-    // Cancel subscription and timer synchronously
+    debugPrint('VideoBackground disposing - cancelling stream');
+    // Cancel subscription and timer - this closes the stream sink and stops the Rust decoder
     _frameSubscription?.cancel();
+    _frameSubscription = null;
     _loopTimer?.cancel();
+    _loopTimer = null;
     
     // Dispose image safely
     try {

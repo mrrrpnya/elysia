@@ -67,6 +67,12 @@ impl VideoDecoder {
         let should_loop = self.should_loop;
         tokio::task::spawn_blocking(move || {
             loop {
+                // Check if receiver is closed before starting decode
+                if frame_tx.is_closed() {
+                    println!("Frame receiver closed, stopping video decoder");
+                    break;
+                }
+                
                 if let Err(e) = Self::decode_frames(&video_data, frame_tx.clone()) {
                     eprintln!("Video decoding error: {}", e);
                     break;
@@ -74,12 +80,14 @@ impl VideoDecoder {
                 
                 // Check if we should loop
                 if !should_loop || frame_tx.is_closed() {
+                    println!("Video decoder stopping (loop={}, closed={})", should_loop, frame_tx.is_closed());
                     break;
                 }
                 
                 // Continue looping immediately without redownloading
                 println!("Looping video playback...");
             }
+            println!("Video decoder task terminated");
         });
 
         Ok(())
