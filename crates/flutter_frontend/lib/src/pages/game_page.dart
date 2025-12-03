@@ -229,11 +229,11 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         return;
       }
       
+      // DON'T set _isLoading to true - keep showing previous frame until new one arrives
+      // This prevents flickering to fallback background
       setState(() {
-        _isLoading = true;
         _hasError = false;
-        _currentFrame = null;
-        _currentImage = null;
+        // Keep _currentFrame and _currentImage to display while loading new video
       });
       
       debugPrint('Starting video stream: ${widget.videoUrl}');
