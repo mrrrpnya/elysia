@@ -189,7 +189,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   
   void _startVideoStream() async {
     try {
-      // Cancel any existing subscription first
+      // Cancel any existing subscription first to stop the decoder
       await _frameSubscription?.cancel();
       _frameSubscription = null;
       _loopTimer?.cancel();
@@ -217,6 +217,21 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       _frameSubscription = stream.listen(
         (frame) async {
           if (!mounted) {
+            // Dispose the frame data immediately if widget is unmounted
+            try {
+              final buffer = await ui.ImmutableBuffer.fromUint8List(Uint8List.fromList(frame.data));
+              final descriptor = ui.ImageDescriptor.raw(
+                buffer,
+                width: frame.width.toInt(),
+                height: frame.height.toInt(),
+                pixelFormat: ui.PixelFormat.rgba8888,
+              );
+              final codec = await descriptor.instantiateCodec();
+              final frameInfo = await codec.getNextFrame();
+              frameInfo.image.dispose();
+            } catch (e) {
+              // Ignore errors when disposing unmounted frames
+            }
             return;
           }
           
