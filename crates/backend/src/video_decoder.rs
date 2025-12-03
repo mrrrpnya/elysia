@@ -230,6 +230,14 @@ impl VideoDecoder {
         let mut last_frame_time = Instant::now();
         
         for (stream, packet) in ictx.packets() {
+            // Check if receiver is closed at the start of each packet
+            // This ensures we stop as soon as possible when Flutter cancels
+            if frame_tx.is_closed() {
+                println!("Frame receiver closed during packet processing, stopping decoder");
+                let _ = std::fs::remove_file(&temp_path);
+                return Ok(());
+            }
+            
             if stream.index() == video_stream_index {
                 // Send packet to decoder, ignore minor errors
                 if let Err(e) = decoder.send_packet(&packet) {
