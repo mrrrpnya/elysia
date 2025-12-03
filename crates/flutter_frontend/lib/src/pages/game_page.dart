@@ -10,6 +10,8 @@ import '../rust/api.dart' as rust_api;
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:developer' as developer;
+
 
 
 /// Game page - displays game details with background, news, and action buttons
@@ -219,8 +221,13 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       // Cancel old subscription to close the channel
       await oldSubscription?.cancel();
       
-      // Give the Rust decoder more time to detect the closed channel and clean up
+      // Give the Rust decoder time to detect the closed channel and clean up
       await Future.delayed(const Duration(milliseconds: 150));
+      
+      // Strongly suggest garbage collection to free disposed image memory
+      // This helps ensure memory is freed before starting the next video
+      debugPrint('Requesting garbage collection after video switch');
+      developer.NativeRuntime.collectAllGarbage();
       
       if (!mounted) {
         debugPrint('Widget unmounted during stream restart, aborting');
