@@ -247,6 +247,19 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             return;
           }
           
+          // Dispose old image IMMEDIATELY when we receive a new frame
+          // This frees memory before we even start decoding the new frame
+          final oldImage = _currentImage;
+          _currentImage = null; // Clear reference immediately
+          
+          if (oldImage != null) {
+            try {
+              oldImage.dispose();
+            } catch (e) {
+              debugPrint('Error disposing old image: $e');
+            }
+          }
+          
           try {
             // Decode RGBA frame to ui.Image
             final buffer = await ui.ImmutableBuffer.fromUint8List(Uint8List.fromList(frame.data));
@@ -265,19 +278,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             buffer.dispose();
             
             if (mounted) {
-              // Dispose old image BEFORE setState to free memory immediately
-              final oldImage = _currentImage;
-              _currentImage = null; // Clear reference first
-              
-              if (oldImage != null) {
-                try {
-                  oldImage.dispose();
-                } catch (e) {
-                  debugPrint('Error disposing old image: $e');
-                }
-              }
-              
-              // Now set the new image
+              // Set the new image
               setState(() {
                 _currentFrame = frame;
                 _currentImage = frameInfo.image;
