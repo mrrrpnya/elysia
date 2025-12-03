@@ -708,11 +708,12 @@ pub async fn stream_video_frames(
             width: frame.width,
             height: frame.height,
             timestamp_ms: frame.timestamp_ms,
-        });
+        }).ok(); // Ignore errors if Flutter already closed
     }
     
     // When we exit the loop or function is cancelled,
-    // abort the decoder task
+    // abort the decoder task and close the sink
     decoder_task.abort();
-    println!("Video stream ended, decoder task aborted");
+    let _ = sink.close();
+    println!("Video stream ended, decoder task aborted, sink closed");
 }
