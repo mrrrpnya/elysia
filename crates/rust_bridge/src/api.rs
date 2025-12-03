@@ -712,26 +712,27 @@ pub async fn stream_video_frames(
             timestamp_ms: frame.timestamp_ms,
         }).is_err() {
             // Flutter closed the stream, stop immediately
-            println!("Flutter closed stream, draining remaining frames");
+            println!("Flutter closed stream, stopping decoder");
             
-            // Drain any remaining frames in the channel to free memory
+            // FIRST: Abort decoder task to stop it from sending more frames
+            // This must happen BEFORE we drain/close the channel
+            decoder_task.abort();
+            
+            // SECOND: Drain any remaining frames in the channel to free memory
             // This prevents memory accumulation when switching videos
             while frame_rx.try_recv().is_ok() {
                 // Discard the frame
             }
             
-            break;
+            // THIRD: Drop frame_rx to close the channel
+            // Since decoder is already aborted, it can't try to send after this
+            drop(frame_rx);
+            
+            println!("Video stream ended, decoder aborted and cleaned up");
+            return;
         }
     }
     
-    // Drop frame_rx to close the channel
-    // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
-    drop(frame_rx);
-    
-    // Wait for the decoder task to finish naturally
-    // The decoder checks is_closed() frequently and will stop on its own
-    // This prevents "Fail to post message to Dart" errors from racing abort
-    let _ = decoder_task.await;
-    
-    println!("Video stream ended, decoder task finished");
+    // If we get here, the decoder finished naturally (video ended)
+    println!("Video decoder finished naturally");
 }
