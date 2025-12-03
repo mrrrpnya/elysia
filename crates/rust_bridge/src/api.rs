@@ -687,6 +687,7 @@ pub async fn stream_video_frames(
 ) {
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
+    use futures::SinkExt; // For close() method
     
     let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
     
@@ -721,7 +722,7 @@ pub async fn stream_video_frames(
     drop(frame_rx);
     
     // Close sink to signal Flutter immediately
-    let _ = sink.close();
+    let _ = sink.close().await;
     println!("Closed frame channel and sink, waiting for decoder to stop...");
     
     // Give decoder a moment to detect the closed channel and stop gracefully
