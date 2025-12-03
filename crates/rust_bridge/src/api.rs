@@ -728,9 +728,10 @@ pub async fn stream_video_frames(
     // This signals the decoder that it should stop (frame_tx.is_closed() will return true)
     drop(frame_rx);
     
-    // Abort the decoder task immediately
-    // This prevents any more frames from being sent after we close the channel
-    decoder_task.abort();
+    // Wait for the decoder task to finish naturally
+    // The decoder checks is_closed() frequently and will stop on its own
+    // This prevents "Fail to post message to Dart" errors from racing abort
+    let _ = decoder_task.await;
     
-    println!("Video stream ended, decoder task aborted");
+    println!("Video stream ended, decoder task finished");
 }
