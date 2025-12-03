@@ -59,8 +59,8 @@ impl VideoDecoder {
 
     /// Start decoding video and streaming frames with looping
     pub async fn start(self) -> Result<()> {
-        // Download or get cached video
-        let video_data = Self::get_or_download_video(&self.url).await?;
+        // Get or download video to cache file
+        let cache_file = Self::get_or_download_video(&self.url).await?;
         
         // Decode frames in a blocking task since ffmpeg operations are CPU-bound
         let frame_tx = self.frame_tx;
@@ -73,7 +73,8 @@ impl VideoDecoder {
                     break;
                 }
                 
-                if let Err(e) = Self::decode_frames(&video_data, frame_tx.clone()) {
+                // Decode directly from file to avoid loading entire video into memory
+                if let Err(e) = Self::decode_frames_from_file(&cache_file, frame_tx.clone()) {
                     eprintln!("Video decoding error: {}", e);
                     break;
                 }
@@ -93,23 +94,15 @@ impl VideoDecoder {
         Ok(())
     }
     
-    /// Get video from cache or download it
-    async fn get_or_download_video(url: &str) -> Result<Vec<u8>> {
+    /// Get video from cache or download it, returns path to cached file
+    async fn get_or_download_video(url: &str) -> Result<PathBuf> {
         // Check disk cache
         let cache_dir = get_video_cache_dir()?;
         let cache_file = cache_dir.join(get_cache_filename(url));
         
         if cache_file.exists() {
-            match std::fs::read(&cache_file) {
-                Ok(cached_data) => {
-                    println!("Using disk cached video: {} bytes from {:?}", cached_data.len(), cache_file);
-                    return Ok(cached_data);
-                }
-                Err(e) => {
-                    eprintln!("Failed to read cached video file: {}", e);
-                    // Continue to download
-                }
-            }
+            println!("Using disk cached video from {:?}", cache_file);
+            return Ok(cache_file);
         }
         
         // Download video
@@ -117,13 +110,11 @@ impl VideoDecoder {
         let video_data = Self::download_video(url).await?;
         
         // Store in disk cache
-        if let Err(e) = std::fs::write(&cache_file, &video_data) {
-            eprintln!("Failed to cache video to disk: {}", e);
-        } else {
-            println!("Cached video to disk: {:?}", cache_file);
-        }
+        std::fs::write(&cache_file, &video_data)
+            .context("Failed to cache video to disk")?;
+        println!("Cached video to disk: {:?}", cache_file);
         
-        Ok(video_data)
+        Ok(cache_file)
     }
 
     /// Download video from URL
@@ -163,8 +154,8 @@ impl VideoDecoder {
         Ok(bytes.to_vec())
     }
 
-    /// Decode video frames using ffmpeg
-    fn decode_frames(video_data: &[u8], frame_tx: mpsc::Sender<VideoFrame>) -> Result<()> {
+    /// Decode video frames using ffmpeg from file path
+    fn decode_frames_from_file(file_path: &PathBuf, frame_tx: mpsc::Sender<VideoFrame>) -> Result<()> {
         use ffmpeg_next as ffmpeg;
         use std::time::{Duration, Instant};
 
@@ -174,13 +165,8 @@ impl VideoDecoder {
         // Suppress ffmpeg warnings for minor container issues
         ffmpeg::log::set_level(ffmpeg::log::Level::Error);
 
-        // Create a temporary file for ffmpeg to read from
-        let temp_dir = std::env::temp_dir();
-        let temp_path = temp_dir.join(format!("elysia_video_{}.webm", std::process::id()));
-        std::fs::write(&temp_path, video_data).context("Failed to write temp video file")?;
-
-        // Open input file with better error handling
-        let mut ictx = ffmpeg::format::input(&temp_path)
+        // Open input file directly from cache (no temp file or memory copy needed)
+        let mut ictx = ffmpeg::format::input(file_path)
             .context("Failed to open video file")?;
 
         // Find video stream
@@ -234,7 +220,7 @@ impl VideoDecoder {
             // This ensures we stop as soon as possible when Flutter cancels
             if frame_tx.is_closed() {
                 println!("Frame receiver closed during packet processing, stopping decoder");
-                let _ = std::fs::remove_file(&temp_path);
+                
                 return Ok(());
             }
             
@@ -289,7 +275,7 @@ impl VideoDecoder {
                         Err(tokio::sync::mpsc::error::TrySendError::Closed(_)) => {
                             // Receiver dropped, stop decoding immediately
                             println!("Video stream closed by receiver");
-                            let _ = std::fs::remove_file(&temp_path);
+                            
                             return Ok(());
                         }
                     }
@@ -299,7 +285,7 @@ impl VideoDecoder {
                     // Check if receiver is still connected every frame for immediate cleanup
                     if frame_tx.is_closed() {
                         println!("Video stream receiver closed");
-                        let _ = std::fs::remove_file(&temp_path);
+                        
                         return Ok(());
                     }
                 }
@@ -307,7 +293,7 @@ impl VideoDecoder {
             
             // Early exit if receiver closed
             if frame_tx.is_closed() {
-                let _ = std::fs::remove_file(&temp_path);
+                
                 return Ok(());
             }
         }
@@ -345,7 +331,7 @@ impl VideoDecoder {
         }
 
         // Clean up temp file
-        let _ = std::fs::remove_file(&temp_path);
+        
 
         println!("Video playback complete: {} frames in {:.2}s", 
                  frame_count, start_time.elapsed().as_secs_f64());
