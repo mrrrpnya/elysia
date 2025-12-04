@@ -197,6 +197,7 @@ jobs:
               
               include:
                 - ffmpeg
+                - librsvg2-common
               
               exclude:
                 - libglib2.0-0*
