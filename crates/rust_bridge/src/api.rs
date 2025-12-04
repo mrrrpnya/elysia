@@ -722,8 +722,9 @@ pub async fn stream_video_frames(
     
     // Wait for decoder to detect closed channel and stop naturally (max 100ms)
     // This gives it time to check is_closed() and exit cleanly
+    // Use select! to race without moving decoder_task
     tokio::select! {
-        _ = decoder_task => {
+        _ = &mut decoder_task => {
             println!("Video decoder stopped gracefully");
         }
         _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => {
