@@ -187,3 +187,33 @@ pub struct SocialMedia {
     pub enable_red_dot: bool,
     pub red_dot_content: String,
 }
+
+// Types for getAllGameBasicInfo API
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetAllGameBasicInfo {
+    pub game_info_list: Vec<GameBasicInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GameBasicInfo {
+    pub game: GameInfo,
+    pub backgrounds: Vec<BackgroundInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BackgroundInfo {
+    pub id: String,
+    pub background: ImageLink,
+    pub icon: Image,
+    pub video: VideoInfo,
+    pub theme: ImageLink,
+    #[serde(rename = "type")]
+    pub bg_type: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VideoInfo {
+    pub url: String,
+    #[serde(default)]
+    pub size: u64,
+}

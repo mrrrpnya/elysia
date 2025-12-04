@@ -153,6 +153,10 @@ class AppProvider extends ChangeNotifier {
         ),
         thumbnail: const ImageLink(url: '', link: ''),
         shortcut: const Image(url: '', hoverUrl: '', link: '', md5: '', size: 0),
+        // Video background fields from getAllGameBasicInfo API
+        videoBackgroundUrl: json['video_background_url'] as String? ?? '',
+        themeImageUrl: json['theme_image_url'] as String? ?? '',
+        backgroundType: json['background_type'] as String? ?? '',
       ),
       displayStatus: json['display_status'] as String,
     );

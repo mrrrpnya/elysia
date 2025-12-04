@@ -20,6 +20,10 @@ pub struct GameDto {
     pub background_url: String,
     pub logo_url: String,
     pub display_status: String,
+    // Video background fields from getAllGameBasicInfo API
+    pub video_background_url: String,
+    pub theme_image_url: String,
+    pub background_type: String,
 }
 
 /// Simple game content data for FFI
@@ -71,11 +75,41 @@ pub struct SettingsDto {
     pub cache_directory: String,
 }
 
+use backend::game_providers::hoyoplay::proto::BackgroundInfo;
+
 // ============================================================================
 // Conversion functions
 // ============================================================================
 
-fn game_to_dto(game: &backend::game_providers::hoyoplay::proto::Game) -> GameDto {
+fn game_to_dto(
+    game: &backend::game_providers::hoyoplay::proto::Game,
+    background_info: Option<&BackgroundInfo>,
+) -> GameDto {
+    // Use background info from getAllGameBasicInfo API if available
+    // This provides more up-to-date backgrounds including video backgrounds
+    let (background_url, video_url, theme_url, bg_type) = background_info
+        .map(|bg| {
+            (
+                // Use background from getAllGameBasicInfo if available, otherwise fallback to getGames
+                if bg.background.url.is_empty() {
+                    game.display.background.url.clone()
+                } else {
+                    bg.background.url.clone()
+                },
+                bg.video.url.clone(),
+                bg.theme.url.clone(),
+                bg.bg_type.clone(),
+            )
+        })
+        .unwrap_or_else(|| {
+            (
+                game.display.background.url.clone(),
+                String::new(),
+                String::new(),
+                String::new(),
+            )
+        });
+
     GameDto {
         id: game.id.clone(),
         biz: game.biz.clone(),
@@ -83,9 +117,12 @@ fn game_to_dto(game: &backend::game_providers::hoyoplay::proto::Game) -> GameDto
         title: game.display.title.clone(),
         subtitle: game.display.subtitle.clone(),
         icon_url: game.display.icon.url.clone(),
-        background_url: game.display.background.url.clone(),
+        background_url,
         logo_url: game.display.logo.url.clone(),
         display_status: game.display_status.clone(),
+        video_background_url: video_url,
+        theme_image_url: theme_url,
+        background_type: bg_type,
     }
 }
 
@@ -157,6 +194,8 @@ pub fn get_settings_json() -> String {
 
 /// Get all games as JSON array
 pub async fn get_all_games_json() -> String {
+    use std::collections::HashMap;
+
     let settings = match backend::settings::GlobalSettings::load() {
         Ok(s) => s,
         Err(_) => {
@@ -168,11 +207,29 @@ pub async fn get_all_games_json() -> String {
 
     let mut games: Vec<GameDto> = Vec::new();
 
+    // Fetch background info from getAllGameBasicInfo API
+    let background_map: HashMap<String, BackgroundInfo> =
+        match backend::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
+            Ok(response) => response
+                .game_info_list
+                .into_iter()
+                .filter_map(|info| {
+                    // Get the first background (usually the most relevant one)
+                    info.backgrounds.into_iter().next().map(|bg| (info.game.id, bg))
+                })
+                .collect(),
+            Err(e) => {
+                eprintln!("[WARN] Failed to load game basic info: {}", e);
+                HashMap::new()
+            }
+        };
+
     // Get HoYoPlay games
     match backend::game_providers::hoyoplay::get_games(&settings).await {
         Ok(response) => {
             for game in &response.games {
-                games.push(game_to_dto(game));
+                let bg_info = background_map.get(&game.id);
+                games.push(game_to_dto(game, bg_info));
             }
         }
         Err(e) => {
@@ -184,7 +241,8 @@ pub async fn get_all_games_json() -> String {
     match backend::game_providers::endfield::get_games().await {
         Ok(response) => {
             for game in &response.games {
-                games.push(game_to_dto(game));
+                let bg_info = background_map.get(&game.id);
+                games.push(game_to_dto(game, bg_info));
             }
         }
         Err(e) => {
@@ -602,4 +660,79 @@ pub async fn delete_jadeite() -> String {
     } else {
         "ok".to_string()
     }
+}
+
+// ============================================================================
+// Video Frame Streaming API
+// ============================================================================
+
+/// Video frame DTO for FFI
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct VideoFrameDto {
+    /// RGBA image data
+    pub data: Vec<u8>,
+    /// Image width
+    pub width: u32,
+    /// Image height
+    pub height: u32,
+    /// Frame timestamp in milliseconds
+    pub timestamp_ms: i64,
+}
+
+/// Start streaming video frames from a URL
+/// Streams video frames via the provided sink
+pub async fn stream_video_frames(
+    url: String,
+    sink: crate::frb_generated::StreamSink<VideoFrameDto>,
+) {
+    use backend::video_decoder::{VideoDecoder, VideoFrame};
+    use tokio::sync::mpsc;
+    
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
+    
+    // Start video decoder in background with abort handle
+    let url_clone = url.clone();
+    let mut decoder_task = tokio::spawn(async move {
+        let decoder = VideoDecoder::new(url_clone, frame_tx);
+        if let Err(e) = decoder.start().await {
+            eprintln!("[ERROR] Video decoder failed: {}", e);
+        }
+    });
+    
+    // Forward frames to Flutter via sink
+    // This runs in the current task, so when Flutter cancels the stream,
+    // this function is dropped/cancelled and the loop stops
+    while let Some(frame) = frame_rx.recv().await {
+        // Check if add() succeeds - if it fails, Flutter closed the stream
+        if sink.add(VideoFrameDto {
+            data: frame.data,
+            width: frame.width,
+            height: frame.height,
+            timestamp_ms: frame.timestamp_ms,
+        }).is_err() {
+            // Flutter closed the stream, stop immediately
+            println!("Flutter closed stream, stopping forwarding");
+            break;
+        }
+    }
+    
+    // Close the channel so decoder can detect it via is_closed()
+    drop(frame_rx);
+    println!("Frame channel closed, waiting for decoder to stop");
+    
+    // Wait for decoder to detect closed channel and stop naturally (max 100ms)
+    // This gives it time to check is_closed() and exit cleanly
+    // Use select! to race without moving decoder_task
+    tokio::select! {
+        _ = &mut decoder_task => {
+            println!("Video decoder stopped gracefully");
+        }
+        _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => {
+            // If decoder doesn't stop within 100ms, abort it
+            println!("Decoder timeout, aborting task");
+            decoder_task.abort();
+        }
+    }
+    
+    println!("Video stream ended, all cleanup done");
 }

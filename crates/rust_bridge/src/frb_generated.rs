@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueNom,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1604030145;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1223230641;
 
 // Section: executor
 
@@ -421,6 +421,36 @@ fn wire__crate__api__launch_game_impl(
         },
     )
 }
+fn wire__crate__api__stream_video_frames_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    url: impl CstDecode<String>,
+    sink: impl CstDecode<
+        StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>,
+    >,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "stream_video_frames",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_url = url.cst_decode();
+            let api_sink = sink.cst_decode();
+            move |context| async move {
+                transform_result_dco::<_, _, ()>(
+                    (move || async move {
+                        let output_ok = Result::<_, ()>::Ok({
+                            crate::api::stream_video_frames(api_url, api_sink).await;
+                        })?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 
 // Section: dart2rust
 
@@ -430,12 +460,42 @@ impl CstDecode<bool> for bool {
         self
     }
 }
+impl CstDecode<i64> for i64 {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> i64 {
+        self
+    }
+}
+impl CstDecode<u32> for u32 {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> u32 {
+        self
+    }
+}
 impl CstDecode<u8> for u8 {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> u8 {
         self
     }
 }
+impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::anyhow::anyhow!("{}", inner);
+    }
+}
+
+impl SseDecode
+    for StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -451,6 +511,13 @@ impl SseDecode for bool {
     }
 }
 
+impl SseDecode for i64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i64::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -460,6 +527,13 @@ impl SseDecode for Vec<u8> {
             ans_.push(<u8>::sse_decode(deserializer));
         }
         return ans_;
+    }
+}
+
+impl SseDecode for u32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u32::<NativeEndian>().unwrap()
     }
 }
 
@@ -473,6 +547,22 @@ impl SseDecode for u8 {
 impl SseDecode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {}
+}
+
+impl SseDecode for crate::api::VideoFrameDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_data = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_width = <u32>::sse_decode(deserializer);
+        let mut var_height = <u32>::sse_decode(deserializer);
+        let mut var_timestampMs = <i64>::sse_decode(deserializer);
+        return crate::api::VideoFrameDto {
+            data: var_data,
+            width: var_width,
+            height: var_height,
+            timestamp_ms: var_timestampMs,
+        };
+    }
 }
 
 impl SseDecode for i32 {
@@ -509,6 +599,41 @@ fn pde_ffi_dispatcher_sync_impl(
 
 // Section: rust2dart
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::VideoFrameDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.data.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+            self.timestamp_ms.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::VideoFrameDto {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::VideoFrameDto> for crate::api::VideoFrameDto {
+    fn into_into_dart(self) -> crate::api::VideoFrameDto {
+        self
+    }
+}
+
+impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(format!("{:?}", self), serializer);
+    }
+}
+
+impl SseEncode
+    for StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
 impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -523,6 +648,13 @@ impl SseEncode for bool {
     }
 }
 
+impl SseEncode for i64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i64::<NativeEndian>(self).unwrap();
+    }
+}
+
 impl SseEncode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -530,6 +662,13 @@ impl SseEncode for Vec<u8> {
         for item in self {
             <u8>::sse_encode(item, serializer);
         }
+    }
+}
+
+impl SseEncode for u32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u32::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -543,6 +682,16 @@ impl SseEncode for u8 {
 impl SseEncode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+}
+
+impl SseEncode for crate::api::VideoFrameDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<u8>>::sse_encode(self.data, serializer);
+        <u32>::sse_encode(self.width, serializer);
+        <u32>::sse_encode(self.height, serializer);
+        <i64>::sse_encode(self.timestamp_ms, serializer);
+    }
 }
 
 impl SseEncode for i32 {
@@ -572,6 +721,28 @@ mod io {
 
     // Section: dart2rust
 
+    impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
+        for *mut wire_cst_list_prim_u_8_strict
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+            unimplemented!()
+        }
+    }
+    impl
+        CstDecode<
+            StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>,
+        > for *mut wire_cst_list_prim_u_8_strict
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(
+            self,
+        ) -> StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>
+        {
+            let raw: String = self.cst_decode();
+            StreamSink::deserialize(raw)
+        }
+    }
     impl CstDecode<String> for *mut wire_cst_list_prim_u_8_strict {
         // Codec=Cst (C-struct based), see doc to use other codecs
         fn cst_decode(self) -> String {
@@ -586,6 +757,32 @@ mod io {
                 let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
                 flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
             }
+        }
+    }
+    impl CstDecode<crate::api::VideoFrameDto> for wire_cst_video_frame_dto {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> crate::api::VideoFrameDto {
+            crate::api::VideoFrameDto {
+                data: self.data.cst_decode(),
+                width: self.width.cst_decode(),
+                height: self.height.cst_decode(),
+                timestamp_ms: self.timestamp_ms.cst_decode(),
+            }
+        }
+    }
+    impl NewWithNullPtr for wire_cst_video_frame_dto {
+        fn new_with_null_ptr() -> Self {
+            Self {
+                data: core::ptr::null_mut(),
+                width: Default::default(),
+                height: Default::default(),
+                timestamp_ms: Default::default(),
+            }
+        }
+    }
+    impl Default for wire_cst_video_frame_dto {
+        fn default() -> Self {
+            Self::new_with_null_ptr()
         }
     }
 
@@ -708,6 +905,15 @@ mod io {
     }
 
     #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_elysia_wire__crate__api__stream_video_frames(
+        port_: i64,
+        url: *mut wire_cst_list_prim_u_8_strict,
+        sink: *mut wire_cst_list_prim_u_8_strict,
+    ) {
+        wire__crate__api__stream_video_frames_impl(port_, url, sink)
+    }
+
+    #[unsafe(no_mangle)]
     pub extern "C" fn frbgen_elysia_cst_new_list_prim_u_8_strict(
         len: i32,
     ) -> *mut wire_cst_list_prim_u_8_strict {
@@ -723,6 +929,14 @@ mod io {
     pub struct wire_cst_list_prim_u_8_strict {
         ptr: *mut u8,
         len: i32,
+    }
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    pub struct wire_cst_video_frame_dto {
+        data: *mut wire_cst_list_prim_u_8_strict,
+        width: u32,
+        height: u32,
+        timestamp_ms: i64,
     }
 }
 #[cfg(not(target_family = "wasm"))]
@@ -751,6 +965,25 @@ mod web {
 
     // Section: dart2rust
 
+    impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error> for String {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+            unimplemented!()
+        }
+    }
+    impl
+        CstDecode<
+            StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>,
+        > for String
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(
+            self,
+        ) -> StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>
+        {
+            StreamSink::deserialize(self)
+        }
+    }
     impl CstDecode<String> for String {
         // Codec=Cst (C-struct based), see doc to use other codecs
         fn cst_decode(self) -> String {
@@ -761,6 +994,49 @@ mod web {
         // Codec=Cst (C-struct based), see doc to use other codecs
         fn cst_decode(self) -> Vec<u8> {
             self.into_vec()
+        }
+    }
+    impl CstDecode<crate::api::VideoFrameDto>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> crate::api::VideoFrameDto {
+            let self_ = self
+                .dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+                .unwrap();
+            assert_eq!(
+                self_.length(),
+                4,
+                "Expected 4 elements, got {}",
+                self_.length()
+            );
+            crate::api::VideoFrameDto {
+                data: self_.get(0).cst_decode(),
+                width: self_.get(1).cst_decode(),
+                height: self_.get(2).cst_decode(),
+                timestamp_ms: self_.get(3).cst_decode(),
+            }
+        }
+    }
+    impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
+        for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+            unimplemented!()
+        }
+    }
+    impl
+        CstDecode<
+            StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>,
+        > for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+    {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(
+            self,
+        ) -> StreamSink<crate::api::VideoFrameDto, flutter_rust_bridge::for_generated::DcoCodec>
+        {
+            StreamSink::deserialize(self.as_string().expect("should be a string"))
         }
     }
     impl CstDecode<String> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
@@ -775,12 +1051,24 @@ mod web {
             self.is_truthy()
         }
     }
+    impl CstDecode<i64> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> i64 {
+            ::std::convert::TryInto::<i64>::try_into(self).unwrap() as _
+        }
+    }
     impl CstDecode<Vec<u8>> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
         // Codec=Cst (C-struct based), see doc to use other codecs
         fn cst_decode(self) -> Vec<u8> {
             self.unchecked_into::<flutter_rust_bridge::for_generated::js_sys::Uint8Array>()
                 .to_vec()
                 .into()
+        }
+    }
+    impl CstDecode<u32> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+        // Codec=Cst (C-struct based), see doc to use other codecs
+        fn cst_decode(self) -> u32 {
+            self.unchecked_into_f64() as _
         }
     }
     impl CstDecode<u8> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
@@ -916,6 +1204,15 @@ mod web {
         game_id: String,
     ) {
         wire__crate__api__launch_game_impl(port_, game_id)
+    }
+
+    #[wasm_bindgen]
+    pub fn wire__crate__api__stream_video_frames(
+        port_: flutter_rust_bridge::for_generated::MessagePort,
+        url: String,
+        sink: String,
+    ) {
+        wire__crate__api__stream_video_frames_impl(port_, url, sink)
     }
 }
 #[cfg(target_family = "wasm")]

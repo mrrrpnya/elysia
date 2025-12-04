@@ -21,13 +21,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  RustStreamSink<VideoFrameDto> dco_decode_StreamSink_video_frame_dto_Dco(
+      dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  int dco_decode_u_32(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -36,13 +49,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  VideoFrameDto dco_decode_video_frame_dto(dynamic raw);
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<VideoFrameDto> sse_decode_StreamSink_video_frame_dto_Dco(
+      SseDeserializer deserializer);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -51,12 +80,38 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  VideoFrameDto sse_decode_video_frame_dto(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  String cst_encode_AnyhowException(AnyhowException raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  String cst_encode_StreamSink_video_frame_dto_Dco(
+      RustStreamSink<VideoFrameDto> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_String(raw.setupAndSerialize(
+        codec: DcoCodec(
+      decodeSuccessData: dco_decode_video_frame_dto,
+      decodeErrorData: dco_decode_AnyhowException,
+    )));
+  }
 
   @protected
   String cst_encode_String(String raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw;
+  }
+
+  @protected
+  JSAny cst_encode_i_64(PlatformInt64 raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return castNativeBigInt(raw);
   }
 
   @protected
@@ -66,7 +121,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  JSAny cst_encode_video_frame_dto(VideoFrameDto raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [
+      cst_encode_list_prim_u_8_strict(raw.data),
+      cst_encode_u_32(raw.width),
+      cst_encode_u_32(raw.height),
+      cst_encode_i_64(raw.timestampMs)
+    ].jsify()!;
+  }
+
+  @protected
   bool cst_encode_bool(bool raw);
+
+  @protected
+  int cst_encode_u_32(int raw);
 
   @protected
   int cst_encode_u_8(int raw);
@@ -75,20 +144,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void cst_encode_unit(void raw);
 
   @protected
+  void sse_encode_AnyhowException(
+      AnyhowException self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_video_frame_dto_Dco(
+      RustStreamSink<VideoFrameDto> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_video_frame_dto(VideoFrameDto self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -164,6 +250,10 @@ class RustLibWire implements BaseWire {
 
   void wire__crate__api__launch_game(NativePortType port_, String game_id) =>
       wasmModule.wire__crate__api__launch_game(port_, game_id);
+
+  void wire__crate__api__stream_video_frames(
+          NativePortType port_, String url, String sink) =>
+      wasmModule.wire__crate__api__stream_video_frames(port_, url, sink);
 }
 
 @JS('wasm_bindgen')
@@ -220,4 +310,7 @@ extension type RustLibWasmModule._(JSObject _) implements JSObject {
 
   external void wire__crate__api__launch_game(
       NativePortType port_, String game_id);
+
+  external void wire__crate__api__stream_video_frames(
+      NativePortType port_, String url, String sink);
 }

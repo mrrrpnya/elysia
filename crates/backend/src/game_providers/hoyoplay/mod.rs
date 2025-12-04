@@ -14,7 +14,9 @@ use serde::{Deserialize, Serialize};
 use tokio::{fs::File, io::AsyncReadExt};
 
 use crate::{
-    game_providers::hoyoplay::proto::{GameExe, GameInfo, GetGameConfigs, GetGameScanInfo},
+    game_providers::hoyoplay::proto::{
+        GameExe, GameInfo, GetAllGameBasicInfo, GetGameConfigs, GetGameScanInfo,
+    },
     settings::GlobalSettings,
 };
 
@@ -50,6 +52,14 @@ pub async fn get_game_scan_info(settings: &GlobalSettings) -> Result<GetGameScan
 
 pub async fn get_game_configs(settings: &GlobalSettings) -> Result<GetGameConfigs, String> {
     let url = format!("{API_URL}/getGameConfigs?launcher_id={LAUNCHER_ID}&language=en-us");
+
+    return cached_request(settings, &url).await;
+}
+
+pub async fn get_all_game_basic_info(
+    settings: &GlobalSettings,
+) -> Result<GetAllGameBasicInfo, String> {
+    let url = format!("{API_URL}/getAllGameBasicInfo?launcher_id={LAUNCHER_ID}&language=en-us");
 
     return cached_request(settings, &url).await;
 }

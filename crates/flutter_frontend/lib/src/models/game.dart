@@ -33,6 +33,10 @@ class Display {
   final ImageLink logo;
   final ImageLink thumbnail;
   final Image shortcut;
+  // Video background fields from getAllGameBasicInfo API
+  final String videoBackgroundUrl;
+  final String themeImageUrl;
+  final String backgroundType;
   
   const Display({
     required this.language,
@@ -44,7 +48,14 @@ class Display {
     required this.logo,
     required this.thumbnail,
     required this.shortcut,
+    this.videoBackgroundUrl = '',
+    this.themeImageUrl = '',
+    this.backgroundType = '',
   });
+  
+  /// Check if this display has a video background available
+  bool get hasVideoBackground => 
+      backgroundType == 'BACKGROUND_TYPE_VIDEO' && videoBackgroundUrl.isNotEmpty;
   
   factory Display.fromJson(Map<String, dynamic> json) {
     return Display(
@@ -57,6 +68,9 @@ class Display {
       logo: ImageLink.fromJson(json['logo'] as Map<String, dynamic>),
       thumbnail: ImageLink.fromJson(json['thumbnail'] as Map<String, dynamic>),
       shortcut: Image.fromJson(json['shortcut'] as Map<String, dynamic>),
+      videoBackgroundUrl: json['video_background_url'] as String? ?? '',
+      themeImageUrl: json['theme_image_url'] as String? ?? '',
+      backgroundType: json['background_type'] as String? ?? '',
     );
   }
 }

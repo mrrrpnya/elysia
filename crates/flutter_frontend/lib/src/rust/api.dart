@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `content_to_dto`, `game_to_dto`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `AvailableComponentDto`, `AvailableRunnerDto`, `BannerDto`, `ContentDto`, `DownloadProgressDto`, `GameDto`, `PostDto`, `SettingsDto`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// Initialize the backend (call on app startup)
 String initBackend() => RustLib.instance.api.crateApiInitBackend();
@@ -85,3 +85,44 @@ Future<String> deleteUmuLauncher() =>
 /// Delete Jadeite component
 /// Returns "ok" if deletion succeeded, or an error message
 Future<String> deleteJadeite() => RustLib.instance.api.crateApiDeleteJadeite();
+
+/// Start streaming video frames from a URL
+/// Streams video frames via the provided sink
+Stream<VideoFrameDto> streamVideoFrames({required String url}) =>
+    RustLib.instance.api.crateApiStreamVideoFrames(url: url);
+
+/// Video frame DTO for FFI
+class VideoFrameDto {
+  /// RGBA image data
+  final Uint8List data;
+
+  /// Image width
+  final int width;
+
+  /// Image height
+  final int height;
+
+  /// Frame timestamp in milliseconds
+  final PlatformInt64 timestampMs;
+
+  const VideoFrameDto({
+    required this.data,
+    required this.width,
+    required this.height,
+    required this.timestampMs,
+  });
+
+  @override
+  int get hashCode =>
+      data.hashCode ^ width.hashCode ^ height.hashCode ^ timestampMs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VideoFrameDto &&
+          runtimeType == other.runtimeType &&
+          data == other.data &&
+          width == other.width &&
+          height == other.height &&
+          timestampMs == other.timestampMs;
+}

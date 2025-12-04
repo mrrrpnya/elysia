@@ -19,13 +19,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  RustStreamSink<VideoFrameDto> dco_decode_StreamSink_video_frame_dto_Dco(
+      dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  int dco_decode_u_32(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -34,13 +47,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  VideoFrameDto dco_decode_video_frame_dto(dynamic raw);
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<VideoFrameDto> sse_decode_StreamSink_video_frame_dto_Dco(
+      SseDeserializer deserializer);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -49,12 +78,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
+  VideoFrameDto sse_decode_video_frame_dto(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_AnyhowException(
+      AnyhowException raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  ffi.Pointer<wire_cst_list_prim_u_8_strict>
+      cst_encode_StreamSink_video_frame_dto_Dco(
+          RustStreamSink<VideoFrameDto> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_String(raw.setupAndSerialize(
+        codec: DcoCodec(
+      decodeSuccessData: dco_decode_video_frame_dto,
+      decodeErrorData: dco_decode_AnyhowException,
+    )));
+  }
 
   @protected
   ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_String(String raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return cst_encode_list_prim_u_8_strict(utf8.encoder.convert(raw));
+  }
+
+  @protected
+  int cst_encode_i_64(PlatformInt64 raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw.toInt();
   }
 
   @protected
@@ -67,7 +124,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  void cst_api_fill_to_wire_video_frame_dto(
+      VideoFrameDto apiObj, wire_cst_video_frame_dto wireObj) {
+    wireObj.data = cst_encode_list_prim_u_8_strict(apiObj.data);
+    wireObj.width = cst_encode_u_32(apiObj.width);
+    wireObj.height = cst_encode_u_32(apiObj.height);
+    wireObj.timestamp_ms = cst_encode_i_64(apiObj.timestampMs);
+  }
+
+  @protected
   bool cst_encode_bool(bool raw);
+
+  @protected
+  int cst_encode_u_32(int raw);
 
   @protected
   int cst_encode_u_8(int raw);
@@ -76,20 +145,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void cst_encode_unit(void raw);
 
   @protected
+  void sse_encode_AnyhowException(
+      AnyhowException self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_video_frame_dto_Dco(
+      RustStreamSink<VideoFrameDto> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_video_frame_dto(VideoFrameDto self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -419,6 +505,30 @@ class RustLibWire implements BaseWire {
       _wire__crate__api__launch_gamePtr.asFunction<
           void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
 
+  void wire__crate__api__stream_video_frames(
+    int port_,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> url,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> sink,
+  ) {
+    return _wire__crate__api__stream_video_frames(
+      port_,
+      url,
+      sink,
+    );
+  }
+
+  late final _wire__crate__api__stream_video_framesPtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(
+                  ffi.Int64,
+                  ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+                  ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
+      'frbgen_elysia_wire__crate__api__stream_video_frames');
+  late final _wire__crate__api__stream_video_frames =
+      _wire__crate__api__stream_video_framesPtr.asFunction<
+          void Function(int, ffi.Pointer<wire_cst_list_prim_u_8_strict>,
+              ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
+
   ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_new_list_prim_u_8_strict(
     int len,
   ) {
@@ -459,4 +569,17 @@ final class wire_cst_list_prim_u_8_strict extends ffi.Struct {
 
   @ffi.Int32()
   external int len;
+}
+
+final class wire_cst_video_frame_dto extends ffi.Struct {
+  external ffi.Pointer<wire_cst_list_prim_u_8_strict> data;
+
+  @ffi.Uint32()
+  external int width;
+
+  @ffi.Uint32()
+  external int height;
+
+  @ffi.Int64()
+  external int timestamp_ms;
 }
