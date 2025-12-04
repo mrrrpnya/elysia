@@ -259,6 +259,12 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             final codec = await descriptor.instantiateCodec();
             final frameInfo = await codec.getNextFrame();
             
+            // Dispose codec/descriptor/buffer immediately after getting the image
+            // This frees the temporary decoding memory (~8MB per frame)
+            codec.dispose();
+            descriptor.dispose();
+            buffer.dispose();
+            
             if (mounted) {
               // Dispose old image before setting new one
               final oldImage = _currentImage;
