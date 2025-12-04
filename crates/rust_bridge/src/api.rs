@@ -343,7 +343,7 @@ pub async fn install_game(game_id: String, biz: String) -> String {
     use backend::game_providers::installer::InstallerManager;
     
     let settings = match backend::settings::GlobalSettings::load() {
-        Ok(s) => s,changes
+        Ok(s) => s,
         Err(_) => {
             let mut s = backend::settings::GlobalSettings::default();
             s.validate();
