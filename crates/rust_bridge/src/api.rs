@@ -343,7 +343,7 @@ pub async fn install_game(game_id: String, biz: String) -> String {
     use backend::game_providers::installer::InstallerManager;
     
     let settings = match backend::settings::GlobalSettings::load() {
-        Ok(s) => s,
+        Ok(s) => s,changes
         Err(_) => {
             let mut s = backend::settings::GlobalSettings::default();
             s.validate();
@@ -719,6 +719,5 @@ pub async fn stream_video_frames(
     // When we exit the loop or function is cancelled,
     // abort the decoder task and close the sink
     decoder_task.abort();
-    let _ = sink.close();
-    println!("Video stream ended, decoder task aborted, sink closed");
+    println!("Video stream ended, decoder task aborted");
 }
