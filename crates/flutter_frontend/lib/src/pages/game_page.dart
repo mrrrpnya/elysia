@@ -222,6 +222,17 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       // Give the Rust decoder more time to detect the closed channel and clean up
       await Future.delayed(const Duration(milliseconds: 150));
       
+      // Aggressive memory cleanup: Create temporary large objects to trigger GC
+      // This helps reclaim memory from disposed video frames
+      try {
+        // Create and immediately discard large temporary objects to pressure GC
+        for (int i = 0; i < 3; i++) {
+          final _ = List<int>.filled(1024 * 1024, 0); // 1MB list
+        }
+      } catch (e) {
+        // Ignore any errors from GC pressure hint
+      }
+      
       if (!mounted) {
         debugPrint('Widget unmounted during stream restart, aborting');
         _isStartingStream = false;
@@ -347,6 +358,23 @@ class _VideoBackgroundState extends State<_VideoBackground> {
     } catch (e) {
       debugPrint('Error disposing image: $e');
     }
+    
+    // Aggressive memory cleanup when disposing video widget
+    // Create temporary large objects to trigger garbage collection
+    Future.microtask(() async {
+      try {
+        // Wait a moment for subscription to finish cancelling
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Create and immediately discard large temporary objects to pressure GC
+        for (int i = 0; i < 5; i++) {
+          final _ = List<int>.filled(1024 * 1024, 0); // 1MB list
+          await Future.delayed(const Duration(milliseconds: 10));
+        }
+      } catch (e) {
+        // Ignore any errors from GC pressure hint
+      }
+    });
     
     super.dispose();
     
