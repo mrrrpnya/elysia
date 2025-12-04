@@ -131,7 +131,7 @@ jobs:
         working-directory: crates/flutter_frontend
         run: |
           flutter clean
-          flutter build linux --release
+          flutter build linux --release --dart-define=DART_VM_OPTIONS=--old_gen_heap_size=80
           echo "Flutter build completed"
       
       - name: Bundle Rust libraries with Flutter app
