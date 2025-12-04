@@ -277,7 +277,6 @@ class _VideoBackgroundState extends State<_VideoBackground> {
               });
               
               // Dispose old image after state update
-              // Also clear old frame data to release memory
               if (oldImage != null) {
                 try {
                   oldImage.dispose();
@@ -285,6 +284,8 @@ class _VideoBackgroundState extends State<_VideoBackground> {
                   debugPrint('Error disposing old image: $e');
                 }
               }
+              // Clear old frame data reference to release memory
+              // (the frame object itself will be garbage collected)
             } else {
               // Widget unmounted, dispose the new image
               try {
