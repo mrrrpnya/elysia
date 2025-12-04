@@ -12,7 +12,6 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 
-
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
   final Game game;
@@ -170,14 +169,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
   bool _isLoading = true;
   bool _hasError = false;
   Timer? _loopTimer;
-  
-  // Use ValueNotifier to update image without calling setState
-  // This prevents flickering by avoiding full widget rebuilds
-  final ValueNotifier<ui.Image?> _imageNotifier = ValueNotifier<ui.Image?>(null);
-  
-  ui.Image? get _currentImage => _imageNotifier.value;
-  set _currentImage(ui.Image? value) => _imageNotifier.value = value;
-  
+  ui.Image? _currentImage;
   bool _isStartingStream = false;
   
   @override
@@ -227,7 +219,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       // Cancel old subscription to close the channel
       await oldSubscription?.cancel();
       
-      // Give the Rust decoder time to detect the closed channel and clean up
+      // Give the Rust decoder more time to detect the closed channel and clean up
       await Future.delayed(const Duration(milliseconds: 150));
       
       if (!mounted) {
@@ -236,11 +228,11 @@ class _VideoBackgroundState extends State<_VideoBackground> {
         return;
       }
       
-      // DON'T set _isLoading to true - keep showing previous frame until new one arrives
-      // This prevents flickering to fallback background
       setState(() {
+        _isLoading = true;
         _hasError = false;
-        // Keep _currentFrame and _currentImage to display while loading new video
+        _currentFrame = null;
+        _currentImage = null;
       });
       
       debugPrint('Starting video stream: ${widget.videoUrl}');
@@ -255,19 +247,6 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             return;
           }
           
-          // Dispose old image IMMEDIATELY when we receive a new frame
-          // This frees memory before we even start decoding the new frame
-          final oldImage = _currentImage;
-          _currentImage = null; // Clear reference immediately
-          
-          if (oldImage != null) {
-            try {
-              oldImage.dispose();
-            } catch (e) {
-              debugPrint('Error disposing old image: $e');
-            }
-          }
-          
           try {
             // Decode RGBA frame to ui.Image
             final buffer = await ui.ImmutableBuffer.fromUint8List(Uint8List.fromList(frame.data));
@@ -280,26 +259,25 @@ class _VideoBackgroundState extends State<_VideoBackground> {
             final codec = await descriptor.instantiateCodec();
             final frameInfo = await codec.getNextFrame();
             
-            // Clean up codec/descriptor/buffer immediately to free memory
-            codec.dispose();
-            descriptor.dispose();
-            buffer.dispose();
-            
             if (mounted) {
-              // Update image without calling setState to avoid flickering on every frame
-              // Only call setState for the first frame to clear loading state
-              final isFirstFrame = _currentImage == null;
-              _currentFrame = frame;
-              _currentImage = frameInfo.image; // This updates ValueNotifier
+              // Dispose old image before setting new one
+              final oldImage = _currentImage;
+              setState(() {
+                _currentFrame = frame;
+                _currentImage = frameInfo.image;
+                _isLoading = false;
+              });
               
-              // Only call setState for the first frame
-              if (isFirstFrame) {
-                setState(() {
-                  _isLoading = false;
-                });
+              // Dispose old image after state update
+              if (oldImage != null) {
+                try {
+                  oldImage.dispose();
+                } catch (e) {
+                  debugPrint('Error disposing old image: $e');
+                }
               }
             } else {
-              // Widget unmounted, dispose the new image immediately
+              // Widget unmounted, dispose the new image
               try {
                 frameInfo.image.dispose();
               } catch (e) {
@@ -388,18 +366,10 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Video frame layer - use ValueListenableBuilder to update without setState
-          ValueListenableBuilder<ui.Image?>(
-            valueListenable: _imageNotifier,
-            builder: (context, image, child) {
-              if (image == null) {
-                return const SizedBox.shrink();
-              }
-              return RawImage(
-                image: image,
-                fit: BoxFit.cover,
-              );
-            },
+          // Video frame layer - display current frame as image
+          RawImage(
+            image: _currentImage,
+            fit: BoxFit.cover,
           ),
           
           // Theme image overlay layer

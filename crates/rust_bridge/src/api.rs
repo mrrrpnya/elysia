@@ -681,7 +681,6 @@ pub struct VideoFrameDto {
 
 /// Start streaming video frames from a URL
 /// Streams video frames via the provided sink
-#[flutter_rust_bridge::frb(stream_dart_await)]
 pub async fn stream_video_frames(
     url: String,
     sink: crate::frb_generated::StreamSink<VideoFrameDto>,
@@ -689,7 +688,7 @@ pub async fn stream_video_frames(
     use backend::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
-    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Minimal buffering - 1 frame
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
     
     // Start video decoder in background with abort handle
     let url_clone = url.clone();
@@ -713,21 +712,13 @@ pub async fn stream_video_frames(
         }).is_err() {
             // Flutter closed the stream, stop immediately
             println!("Flutter closed stream, stopping decoder");
-            
-            // FIRST: Close the channel so decoder detects it and stops gracefully
-            drop(frame_rx);
-            
-            // SECOND: Wait a bit for decoder to detect closed channel and stop
-            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-            
-            // THIRD: Abort decoder task as fallback if it didn't stop
-            decoder_task.abort();
-            
-            println!("Video stream ended, decoder stopped");
-            return;
+            break;
         }
     }
     
-    // If we get here, the decoder finished naturally (video ended)
-    println!("Video decoder finished naturally");
+    // When we exit the loop or function is cancelled,
+    // abort the decoder task and close the sink
+    decoder_task.abort();
+    let _ = sink.close();
+    println!("Video stream ended, decoder task aborted, sink closed");
 }
