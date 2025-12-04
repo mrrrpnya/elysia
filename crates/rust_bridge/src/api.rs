@@ -692,7 +692,7 @@ pub async fn stream_video_frames(
     
     // Start video decoder in background with abort handle
     let url_clone = url.clone();
-    let decoder_task = tokio::spawn(async move {
+    let mut decoder_task = tokio::spawn(async move {
         let decoder = VideoDecoder::new(url_clone, frame_tx);
         if let Err(e) = decoder.start().await {
             eprintln!("[ERROR] Video decoder failed: {}", e);
