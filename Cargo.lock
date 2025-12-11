@@ -529,6 +529,7 @@ name = "backend"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-stream",
  "async-trait",
  "bytes",
  "cacache",
@@ -537,6 +538,8 @@ dependencies = [
  "enum-table",
  "ffmpeg-next",
  "flate2",
+ "flutter_rust_bridge",
+ "futures",
  "futures-util",
  "image",
  "lazy_static",
@@ -4111,20 +4114,6 @@ checksum = "93411e420bcd1a75ddd1dc3caf18c23155eda2c090631a85af21ba19e97093b5"
 dependencies = [
  "smallvec",
  "str_indices",
-]
-
-[[package]]
-name = "rust_bridge"
-version = "0.1.0"
-dependencies = [
- "async-stream",
- "backend",
- "common",
- "flutter_rust_bridge",
- "futures",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

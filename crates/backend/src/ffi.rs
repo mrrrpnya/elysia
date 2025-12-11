@@ -1,14 +1,14 @@
 // Flutter Rust Bridge API
 // This module exposes the backend APIs to Flutter via flutter_rust_bridge
-// Uses JSON serialization for complex types to ensure compatibility
+// Modern approach: Return structs directly, let FRB handle serialization
 
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
-// Simple DTO types for FFI (JSON serializable)
+// DTO types for FFI - FRB will auto-generate Dart classes for these
 // ============================================================================
 
-/// Simple game data for FFI
+/// Game data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameDto {
     pub id: String,
@@ -20,13 +20,12 @@ pub struct GameDto {
     pub background_url: String,
     pub logo_url: String,
     pub display_status: String,
-    // Video background fields from getAllGameBasicInfo API
     pub video_background_url: String,
     pub theme_image_url: String,
     pub background_type: String,
 }
 
-/// Simple game content data for FFI
+/// Game content data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ContentDto {
     pub game_id: String,
@@ -36,7 +35,7 @@ pub struct ContentDto {
     pub posts: Vec<PostDto>,
 }
 
-/// Simple banner data for FFI
+/// Banner data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BannerDto {
     pub id: String,
@@ -44,7 +43,7 @@ pub struct BannerDto {
     pub link: String,
 }
 
-/// Simple post data for FFI
+/// Post data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PostDto {
     pub id: String,
@@ -66,13 +65,40 @@ pub struct DownloadProgressDto {
     pub is_busy: bool,
 }
 
-/// Settings paths for display
+/// Settings paths
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SettingsDto {
     pub wineprefixes_directory: String,
     pub components_directory: String,
     pub temp_directory: String,
     pub cache_directory: String,
+}
+
+/// Available runner information
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AvailableRunnerDto {
+    pub name: String,
+    pub display_name: String,
+    pub version: String,
+    pub is_installed: bool,
+    pub install_path: String,
+}
+
+/// Available component information
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AvailableComponentDto {
+    pub name: String,
+    pub display_name: String,
+    pub is_installed: bool,
+}
+
+/// Video frame data for streaming
+#[derive(Clone, Debug)]
+pub struct VideoFrameDto {
+    pub data: Vec<u8>,
+    pub width: u32,
+    pub height: u32,
+    pub timestamp_ms: i64,
 }
 
 use crate::game_providers::hoyoplay::proto::BackgroundInfo;
@@ -85,12 +111,9 @@ fn game_to_dto(
     game: &crate::game_providers::hoyoplay::proto::Game,
     background_info: Option<&BackgroundInfo>,
 ) -> GameDto {
-    // Use background info from getAllGameBasicInfo API if available
-    // This provides more up-to-date backgrounds including video backgrounds
     let (background_url, video_url, theme_url, bg_type) = background_info
         .map(|bg| {
             (
-                // Use background from getAllGameBasicInfo if available, otherwise fallback to getGames
                 if bg.background.url.is_empty() {
                     game.display.background.url.clone()
                 } else {
@@ -98,7 +121,7 @@ fn game_to_dto(
                 },
                 bg.video.url.clone(),
                 bg.theme.url.clone(),
-                bg.bg_type.clone(),
+                bg.background_type.clone(),
             )
         })
         .unwrap_or_else(|| {
@@ -113,13 +136,13 @@ fn game_to_dto(
     GameDto {
         id: game.id.clone(),
         biz: game.biz.clone(),
-        name: game.display.name.clone(),
+        name: game.name.clone(),
         title: game.display.title.clone(),
         subtitle: game.display.subtitle.clone(),
         icon_url: game.display.icon.url.clone(),
         background_url,
         logo_url: game.display.logo.url.clone(),
-        display_status: game.display_status.clone(),
+        display_status: game.display.display_status.clone(),
         video_background_url: video_url,
         theme_image_url: theme_url,
         background_type: bg_type,
@@ -128,8 +151,8 @@ fn game_to_dto(
 
 fn content_to_dto(content: &crate::game_providers::hoyoplay::proto::Content) -> ContentDto {
     ContentDto {
-        game_id: content.game.id.clone(),
-        game_biz: content.game.biz.clone(),
+        game_id: content.game_id.clone(),
+        game_biz: content.game_biz.clone(),
         language: content.language.clone(),
         banners: content
             .banners
@@ -137,7 +160,7 @@ fn content_to_dto(content: &crate::game_providers::hoyoplay::proto::Content) -> 
             .map(|b| BannerDto {
                 id: b.id.clone(),
                 image_url: b.image.url.clone(),
-                link: b.image.link.clone(),
+                link: b.link.clone(),
             })
             .collect(),
         posts: content
@@ -155,173 +178,123 @@ fn content_to_dto(content: &crate::game_providers::hoyoplay::proto::Content) -> 
 }
 
 // ============================================================================
-// API Functions - All return JSON strings for maximum compatibility
+// FFI API Functions - Return structs directly!
 // ============================================================================
 
 /// Initialize the backend (call on app startup)
-#[flutter_rust_bridge::frb(sync)]
 pub fn init_backend() -> String {
     "ok".to_string()
 }
 
-/// Get settings as JSON
+/// Get settings - returns struct directly!
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_settings_json() -> String {
-    match crate::settings::GlobalSettings::load() {
-        Ok(settings) => {
-            let dto = SettingsDto {
-                wineprefixes_directory: settings.wineprefixes_directory.to_string_lossy().to_string(),
-                components_directory: settings.components_directory.to_string_lossy().to_string(),
-                temp_directory: settings.temp_directory.to_string_lossy().to_string(),
-                cache_directory: settings.cache_directory.to_string_lossy().to_string(),
-            };
-            serde_json::to_string(&dto).unwrap_or_else(|_| "{}".to_string())
-        }
-        Err(_) => {
-            // Return default settings
-            let mut settings = crate::settings::GlobalSettings::default();
-            settings.validate();
-            let dto = SettingsDto {
-                wineprefixes_directory: settings.wineprefixes_directory.to_string_lossy().to_string(),
-                components_directory: settings.components_directory.to_string_lossy().to_string(),
-                temp_directory: settings.temp_directory.to_string_lossy().to_string(),
-                cache_directory: settings.cache_directory.to_string_lossy().to_string(),
-            };
-            serde_json::to_string(&dto).unwrap_or_else(|_| "{}".to_string())
-        }
+pub fn get_settings() -> SettingsDto {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
+            let mut s = crate::settings::GlobalSettings::default();
+            s.validate();
+            s
+        });
+    
+    SettingsDto {
+        wineprefixes_directory: settings.wineprefixes_directory.to_string_lossy().to_string(),
+        components_directory: settings.components_directory.to_string_lossy().to_string(),
+        temp_directory: settings.temp_directory.to_string_lossy().to_string(),
+        cache_directory: settings.cache_directory.to_string_lossy().to_string(),
     }
 }
 
-/// Get all games as JSON array
-pub async fn get_all_games_json() -> String {
+/// Get all games - returns Vec<GameDto> directly!
+pub async fn get_all_games() -> Vec<GameDto> {
     use std::collections::HashMap;
 
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(_) => {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
             s.validate();
             s
-        }
-    };
+        });
 
-    let mut games: Vec<GameDto> = Vec::new();
+    let mut games = Vec::new();
+    let mut background_map: HashMap<String, BackgroundInfo> = HashMap::new();
 
     // Fetch background info from getAllGameBasicInfo API
-    let background_map: HashMap<String, BackgroundInfo> =
-        match crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
-            Ok(response) => response
-                .game_info_list
-                .into_iter()
-                .filter_map(|info| {
-                    // Get the first background (usually the most relevant one)
-                    info.backgrounds.into_iter().next().map(|bg| (info.game.id, bg))
-                })
-                .collect(),
-            Err(e) => {
-                eprintln!("[WARN] Failed to load game basic info: {}", e);
-                HashMap::new()
-            }
-        };
-
-    // Get HoYoPlay games
-    match crate::game_providers::hoyoplay::get_games(&settings).await {
-        Ok(response) => {
-            for game in &response.games {
-                let bg_info = background_map.get(&game.id);
-                games.push(game_to_dto(game, bg_info));
-            }
-        }
-        Err(e) => {
-            eprintln!("[WARN] Failed to load HoYoPlay games: {}", e);
+    if let Ok(basic_info) = crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
+        for game_info in basic_info.game_info_list {
+            background_map.insert(game_info.game_id.clone(), game_info.backgrounds);
         }
     }
 
-    // Get Endfield games
-    match crate::game_providers::endfield::get_games().await {
-        Ok(response) => {
-            for game in &response.games {
-                let bg_info = background_map.get(&game.id);
-                games.push(game_to_dto(game, bg_info));
-            }
-        }
-        Err(e) => {
-            eprintln!("[WARN] Failed to load Endfield games: {}", e);
+    // Fetch HoYoPlay games
+    if let Ok(hoyoplay_games) = crate::game_providers::hoyoplay::get_games(&settings).await {
+        for game in hoyoplay_games.game_info_list {
+            let background_info = background_map.get(&game.game.id);
+            games.push(game_to_dto(&game.game, background_info));
         }
     }
 
-    serde_json::to_string(&games).unwrap_or_else(|_| "[]".to_string())
+    // Fetch Endfield games
+    if let Ok(endfield_games) = crate::game_providers::endfield::get_games().await {
+        for game in endfield_games.game_list {
+            games.push(game_to_dto(&game.game, None));
+        }
+    }
+
+    games
 }
 
-/// Get game content as JSON
-pub async fn get_game_content_json(game_id: String, biz: String) -> String {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(_) => {
+/// Get game content - returns ContentDto or None
+pub async fn get_game_content(game_id: String, biz: String) -> Option<ContentDto> {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
             s.validate();
             s
-        }
-    };
+        });
 
-    let result = if biz == "endfield" {
+    let content = if biz.starts_with("nap") {
         crate::game_providers::endfield::get_game_content(&game_id).await
     } else {
         crate::game_providers::hoyoplay::get_game_content(&settings, &game_id).await
     };
 
-    match result {
-        Ok(response) => {
-            let dto = content_to_dto(&response.content);
-            serde_json::to_string(&dto).unwrap_or_else(|_| "null".to_string())
-        }
-        Err(e) => {
-            eprintln!("[WARN] Failed to get game content: {}", e);
-            "null".to_string()
-        }
-    }
+    content.ok().map(|c| content_to_dto(&c))
 }
 
 /// Check if a game is installed
 #[flutter_rust_bridge::frb(sync)]
 pub fn is_game_installed(game_id: String, biz: String) -> bool {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(_) => {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
             s.validate();
             s
-        }
-    };
+        });
 
+    let key = format!("{}_{}", biz, game_id);
     crate::game_providers::installer::InstallerManager::is_game_installed(
-        &settings,
-        &game_id,
-        &biz,
-        settings.temp_directory.clone(),
-        settings.components_directory.clone(),
+        &settings.wineprefixes_directory,
+        &key,
     )
 }
 
-/// Get download progress as JSON (returns "null" if no download in progress)
+/// Get download progress - returns DownloadProgressDto or None
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_download_progress_json(game_id: String) -> String {
-    let key = format!("{}_streaming", game_id);
-    match crate::game_providers::endfield::get_progress(&key) {
-        Some(p) => {
-            let dto = DownloadProgressDto {
-                downloaded: p.downloaded,
-                total: p.total,
-                mb_per_second: p.mb_s,
-                part_index: p.part_index,
-                parts_total: p.parts_total,
-                status: p.status,
-                is_busy: p.is_busy,
-            };
-            serde_json::to_string(&dto).unwrap_or_else(|_| "null".to_string())
-        }
-        None => "null".to_string(),
+pub fn get_download_progress(game_id: String) -> Option<DownloadProgressDto> {
+    let key = game_id;
+    
+    if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
+        return Some(DownloadProgressDto {
+            downloaded: progress.downloaded,
+            total: progress.total,
+            mb_per_second: progress.mb_per_second,
+            part_index: progress.part_index,
+            parts_total: progress.parts_total,
+            status: progress.status.clone(),
+            is_busy: progress.is_busy,
+        });
     }
+    None
 }
 
 /// Get data directory path
@@ -336,351 +309,203 @@ pub fn get_config_path() -> String {
     crate::globals::CONFIG_PATH.to_string_lossy().to_string()
 }
 
-/// Install/download a game
-/// Returns "ok" if installation started, or an error message
+/// Install/download a game - returns "ok" or error message
 pub async fn install_game(game_id: String, biz: String) -> String {
-    use std::sync::{Arc, RwLock};
-    use crate::game_providers::installer::InstallerManager;
-    
     let settings = match crate::settings::GlobalSettings::load() {
         Ok(s) => s,
-        Err(_) => {
-            let mut s = crate::settings::GlobalSettings::default();
-            s.validate();
-            s
-        }
+        Err(e) => return format!("Failed to load settings: {}", e),
     };
+
+    let key = format!("{}_{}", biz, game_id);
     
-    let temp_dir = settings.temp_directory.clone();
-    let components_dir = settings.components_directory.clone();
-    
-    // Create installer for this game
-    match InstallerManager::create_installer(&game_id, &biz, temp_dir, components_dir) {
-        Some(installer) => {
-            // Wrap settings in Arc<RwLock> for the async task
-            let settings_arc = Arc::new(RwLock::new(settings));
-            
-            // Spawn the installation task
-            InstallerManager::spawn_install(settings_arc, installer, game_id.clone());
-            
-            eprintln!("[INFO] Installation started for game: {}", game_id);
-            "ok".to_string()
-        }
-        None => {
-            let err = format!("No installer available for game {} with biz {}", game_id, biz);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
+    let result = if biz.starts_with("nap") {
+        crate::game_providers::endfield::install_game(
+            &settings.wineprefixes_directory,
+            &game_id,
+            &key,
+        ).await
+    } else {
+        crate::game_providers::hoyoplay::install_game(
+            &settings,
+            &game_id,
+            &key,
+        ).await
+    };
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Installation failed: {}", e),
     }
 }
 
-/// Launch an installed game
-/// Returns "ok" if launch started, or an error message
+/// Launch an installed game - returns "ok" or error message
 pub async fn launch_game(game_id: String) -> String {
-    use crate::runners::Runner;
-    
     let settings = match crate::settings::GlobalSettings::load() {
         Ok(s) => s,
-        Err(_) => {
+        Err(e) => return format!("Failed to load settings: {}", e),
+    };
+
+    let result = crate::game_providers::hoyoplay::launch_game(&settings, &game_id).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Launch failed: {}", e),
+    }
+}
+
+/// Get available runners - returns Vec<AvailableRunnerDto>
+#[flutter_rust_bridge::frb(sync)]
+pub fn get_available_runners() -> Vec<AvailableRunnerDto> {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
             s.validate();
             s
-        }
-    };
-    
-    // Get the installed game info
-    match settings.installed_games.get(&game_id) {
-        Some(installed_game) => {
-            match installed_game.runner.run_game(&settings, installed_game) {
-                Ok(_) => {
-                    eprintln!("[INFO] Game launched: {}", game_id);
-                    "ok".to_string()
-                }
-                Err(e) => {
-                    let err = format!("Failed to launch game: {}", e);
-                    eprintln!("[ERROR] {}", err);
-                    err
-                }
-            }
-        }
-        None => {
-            let err = format!("Game {} is not installed", game_id);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
-    }
-}
+        });
 
-// ============================================================================
-// Component Management APIs
-// ============================================================================
-
-/// Available runner DTO for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AvailableRunnerDto {
-    pub name: String,
-    pub display_name: String,
-    pub runner_type: String,
-    pub version: String,
-    pub download_url: String,
-    pub folder_name: String,
-    pub is_installed: bool,
-}
-
-/// Available component DTO for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AvailableComponentDto {
-    pub name: String,
-    pub display_name: String,
-    pub description: String,
-    pub component_type: String,
-    pub version: String,
-    pub is_installed: bool,
-}
-
-/// Get available runners as JSON
-#[flutter_rust_bridge::frb(sync)]
-pub fn get_available_runners_json() -> String {
-    use crate::components::runners::{get_available_runners, is_runner_installed, RunnerType};
-    
-    let runners = get_available_runners();
-    let dtos: Vec<AvailableRunnerDto> = runners
-        .iter()
+    crate::runners::list_available_runners(&settings.components_directory)
+        .into_iter()
         .map(|r| AvailableRunnerDto {
-            name: r.name.clone(),
-            display_name: r.display_name.clone(),
-            runner_type: match r.runner_type {
-                RunnerType::Wine => "wine".to_string(),
-                RunnerType::Proton => "proton".to_string(),
-            },
-            version: r.version.clone(),
-            download_url: r.download_url.clone(),
-            folder_name: r.folder_name.clone(),
-            is_installed: is_runner_installed(r),
+            name: r.name,
+            display_name: r.display_name,
+            version: r.version,
+            is_installed: r.is_installed,
+            install_path: r.install_path.to_string_lossy().to_string(),
         })
-        .collect();
-    
-    serde_json::to_string(&dtos).unwrap_or_else(|_| "[]".to_string())
+        .collect()
 }
 
-/// Get available components (umu-launcher, jadeite) as JSON
+/// Get available components - returns Vec<AvailableComponentDto>
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_available_components_json() -> String {
-    let components_dir = crate::globals::DATA_PATH.join("components");
-    
-    let mut components = Vec::new();
-    
-    // UMU Launcher
-    let umu_installed = components_dir.join("umu/umu-run").exists();
-    components.push(AvailableComponentDto {
-        name: "umu-launcher".to_string(),
-        display_name: "UMU Launcher".to_string(),
-        description: "Required for running games with Proton".to_string(),
-        component_type: "umu".to_string(),
-        version: "1.2.9".to_string(),
-        is_installed: umu_installed,
-    });
-    
-    // Jadeite
-    let jadeite_installed = components_dir.join("tweaks/jadeite/jadeite.exe").exists();
-    components.push(AvailableComponentDto {
-        name: "jadeite".to_string(),
-        display_name: "Jadeite".to_string(),
-        description: "Required for certain games (anti-cheat compatibility)".to_string(),
-        component_type: "jadeite".to_string(),
-        version: "v5.0.1".to_string(),
-        is_installed: jadeite_installed,
-    });
-    
-    serde_json::to_string(&components).unwrap_or_else(|_| "[]".to_string())
+pub fn get_available_components() -> Vec<AvailableComponentDto> {
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
+            let mut s = crate::settings::GlobalSettings::default();
+            s.validate();
+            s
+        });
+
+    let umu_installed = crate::components::runners::is_umu_installed(&settings.components_directory);
+    let jadeite_installed = crate::components::jadeite::is_installed(&settings.components_directory);
+
+    vec![
+        AvailableComponentDto {
+            name: "umu-launcher".to_string(),
+            display_name: "UMU Launcher".to_string(),
+            is_installed: umu_installed,
+        },
+        AvailableComponentDto {
+            name: "jadeite".to_string(),
+            display_name: "Jadeite".to_string(),
+            is_installed: jadeite_installed,
+        },
+    ]
 }
 
-/// Install a runner by name
-/// Returns "ok" if installation succeeded, or an error message
+/// Install a runner by name - returns "ok" or error message
 pub async fn install_runner(runner_name: String) -> String {
-    use crate::components::runners::{get_available_runners, install_runner as backend_install_runner};
-    
-    let runners = get_available_runners();
-    let runner = runners.iter().find(|r| r.name == runner_name);
-    
-    match runner {
-        Some(r) => {
-            match backend_install_runner(r).await {
-                Ok(_) => {
-                    eprintln!("[INFO] Runner installed: {}", runner_name);
-                    "ok".to_string()
-                }
-                Err(e) => {
-                    let err = format!("Failed to install runner: {}", e);
-                    eprintln!("[ERROR] {}", err);
-                    err
-                }
-            }
-        }
-        None => {
-            let err = format!("Runner not found: {}", runner_name);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
+    let settings = match crate::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(e) => return format!("Failed to load settings: {}", e),
+    };
+
+    let result = crate::components::runners::install_runner(
+        &runner_name,
+        &settings.components_directory,
+        &settings.temp_directory,
+    ).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Installation failed: {}", e),
     }
 }
 
-/// Delete a runner by name
-/// Returns "ok" if deletion succeeded, or an error message
+/// Delete a runner by name - returns "ok" or error message
 pub async fn delete_runner(runner_name: String) -> String {
-    use crate::components::runners::{get_available_runners, get_components_directory};
-    
-    let runners = get_available_runners();
-    let runner = runners.iter().find(|r| r.name == runner_name);
-    
-    match runner {
-        Some(r) => {
-            let components_dir = get_components_directory();
-            let runner_dir = components_dir
-                .join(r.runner_type.directory_name())
-                .join(&r.folder_name);
-            
-            if runner_dir.exists() {
-                match std::fs::remove_dir_all(&runner_dir) {
-                    Ok(_) => {
-                        eprintln!("[INFO] Runner deleted: {}", runner_name);
-                        "ok".to_string()
-                    }
-                    Err(e) => {
-                        let err = format!("Failed to delete runner: {}", e);
-                        eprintln!("[ERROR] {}", err);
-                        err
-                    }
-                }
-            } else {
-                "ok".to_string()
-            }
-        }
-        None => {
-            let err = format!("Runner not found: {}", runner_name);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
+    let settings = match crate::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(e) => return format!("Failed to load settings: {}", e),
+    };
+
+    let result = crate::components::runners::delete_runner(
+        &runner_name,
+        &settings.components_directory,
+    ).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Deletion failed: {}", e),
     }
 }
 
-/// Install UMU launcher component
-/// Returns "ok" if installation succeeded, or an error message
+/// Install UMU launcher component - returns "ok" or error message
 pub async fn install_umu_launcher() -> String {
     let settings = match crate::settings::GlobalSettings::load() {
         Ok(s) => s,
-        Err(_) => {
-            let mut s = crate::settings::GlobalSettings::default();
-            s.validate();
-            s
-        }
+        Err(e) => return format!("Failed to load settings: {}", e),
     };
-    
-    match crate::components::umu::setup_umu(&settings).await {
-        Ok(_) => {
-            eprintln!("[INFO] UMU Launcher installed");
-            "ok".to_string()
-        }
-        Err(e) => {
-            let err = format!("Failed to install UMU Launcher: {}", e);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
+
+    let result = crate::components::runners::install_umu_launcher(
+        &settings.components_directory,
+        &settings.temp_directory,
+    ).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Installation failed: {}", e),
     }
 }
 
-/// Install Jadeite component
-/// Returns "ok" if installation succeeded, or an error message
+/// Install Jadeite component - returns "ok" or error message
 pub async fn install_jadeite() -> String {
     let settings = match crate::settings::GlobalSettings::load() {
         Ok(s) => s,
-        Err(_) => {
-            let mut s = crate::settings::GlobalSettings::default();
-            s.validate();
-            s
-        }
+        Err(e) => return format!("Failed to load settings: {}", e),
     };
-    
-    let tweaks_dir = settings.components_directory.join("tweaks");
-    
-    match crate::components::tweaks::downloader::jade_download(tweaks_dir).await {
-        Ok(_) => {
-            eprintln!("[INFO] Jadeite installed");
-            "ok".to_string()
-        }
-        Err(e) => {
-            let err = format!("Failed to install Jadeite: {}", e);
-            eprintln!("[ERROR] {}", err);
-            err
-        }
+
+    let result = crate::components::jadeite::install(
+        &settings.components_directory,
+        &settings.temp_directory,
+    ).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Installation failed: {}", e),
     }
 }
 
-/// Delete UMU launcher component
-/// Returns "ok" if deletion succeeded, or an error message
+/// Delete UMU launcher component - returns "ok" or error message
 pub async fn delete_umu_launcher() -> String {
-    let components_dir = crate::globals::DATA_PATH.join("components");
-    let umu_dir = components_dir.join("umu");
-    
-    if umu_dir.exists() {
-        match std::fs::remove_dir_all(&umu_dir) {
-            Ok(_) => {
-                eprintln!("[INFO] UMU Launcher deleted");
-                "ok".to_string()
-            }
-            Err(e) => {
-                let err = format!("Failed to delete UMU Launcher: {}", e);
-                eprintln!("[ERROR] {}", err);
-                err
-            }
-        }
-    } else {
-        "ok".to_string()
+    let settings = match crate::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(e) => return format!("Failed to load settings: {}", e),
+    };
+
+    let result = crate::components::runners::delete_umu_launcher(&settings.components_directory).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Deletion failed: {}", e),
     }
 }
 
-/// Delete Jadeite component
-/// Returns "ok" if deletion succeeded, or an error message
+/// Delete Jadeite component - returns "ok" or error message
 pub async fn delete_jadeite() -> String {
-    let components_dir = crate::globals::DATA_PATH.join("components");
-    let jadeite_dir = components_dir.join("tweaks/jadeite");
-    
-    if jadeite_dir.exists() {
-        match std::fs::remove_dir_all(&jadeite_dir) {
-            Ok(_) => {
-                eprintln!("[INFO] Jadeite deleted");
-                "ok".to_string()
-            }
-            Err(e) => {
-                let err = format!("Failed to delete Jadeite: {}", e);
-                eprintln!("[ERROR] {}", err);
-                err
-            }
-        }
-    } else {
-        "ok".to_string()
+    let settings = match crate::settings::GlobalSettings::load() {
+        Ok(s) => s,
+        Err(e) => return format!("Failed to load settings: {}", e),
+    };
+
+    let result = crate::components::jadeite::delete(&settings.components_directory).await;
+
+    match result {
+        Ok(_) => "ok".to_string(),
+        Err(e) => format!("Deletion failed: {}", e),
     }
 }
 
-// ============================================================================
-// Video Frame Streaming API
-// ============================================================================
-
-/// Video frame DTO for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct VideoFrameDto {
-    /// RGBA image data
-    pub data: Vec<u8>,
-    /// Image width
-    pub width: u32,
-    /// Image height
-    pub height: u32,
-    /// Frame timestamp in milliseconds
-    pub timestamp_ms: i64,
-}
-
-/// Start streaming video frames from a URL
-/// Streams video frames via the provided sink
+/// Stream video frames from a URL
 pub async fn stream_video_frames(
     url: String,
     sink: crate::frb_generated::StreamSink<VideoFrameDto>,
@@ -688,9 +513,8 @@ pub async fn stream_video_frames(
     use crate::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
-    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1); // Buffer 1 frame
+    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1);
     
-    // Start video decoder in background with abort handle
     let url_clone = url.clone();
     let mut decoder_task = tokio::spawn(async move {
         let decoder = VideoDecoder::new(url_clone, frame_tx);
@@ -699,40 +523,23 @@ pub async fn stream_video_frames(
         }
     });
     
-    // Forward frames to Flutter via sink
-    // This runs in the current task, so when Flutter cancels the stream,
-    // this function is dropped/cancelled and the loop stops
     while let Some(frame) = frame_rx.recv().await {
-        // Check if add() succeeds - if it fails, Flutter closed the stream
         if sink.add(VideoFrameDto {
             data: frame.data,
             width: frame.width,
             height: frame.height,
             timestamp_ms: frame.timestamp_ms,
         }).is_err() {
-            // Flutter closed the stream, stop immediately
-            println!("Flutter closed stream, stopping forwarding");
             break;
         }
     }
     
-    // Close the channel so decoder can detect it via is_closed()
     drop(frame_rx);
-    println!("Frame channel closed, waiting for decoder to stop");
     
-    // Wait for decoder to detect closed channel and stop naturally (max 100ms)
-    // This gives it time to check is_closed() and exit cleanly
-    // Use select! to race without moving decoder_task
     tokio::select! {
-        _ = &mut decoder_task => {
-            println!("Video decoder stopped gracefully");
-        }
+        _ = &mut decoder_task => {}
         _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => {
-            // If decoder doesn't stop within 100ms, abort it
-            println!("Decoder timeout, aborting task");
             decoder_task.abort();
         }
     }
-    
-    println!("Video stream ended, all cleanup done");
 }
