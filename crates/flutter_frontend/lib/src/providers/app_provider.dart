@@ -94,10 +94,9 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Fetching games...');
       
-      final jsonStr = await rust_api.getAllGamesJson();
-      final List<dynamic> jsonList = json.decode(jsonStr);
-      
-      final games = jsonList.map((j) => _parseGameDto(j as Map<String, dynamic>)).toList();
+      // New: Returns List<GameDto> directly, no JSON parsing needed!
+      final gameDtos = await rust_api.getAllGames();
+      final games = gameDtos.map((dto) => _gameFromDto(dto)).toList();
       
       debugPrint('[AppProvider] Fetched ${games.length} games');
       return games;
@@ -112,81 +111,80 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
       
-      final jsonStr = await rust_api.getGameContentJson(gameId: gameId, biz: biz);
+      // New: Returns ContentDto? directly, no JSON parsing needed!
+      final contentDto = await rust_api.getGameContent(gameId: gameId, biz: biz);
       
-      if (jsonStr == 'null') {
+      if (contentDto == null) {
         return null;
       }
       
-      final jsonData = json.decode(jsonStr);
-      return _parseContentDto(jsonData as Map<String, dynamic>);
+      return _contentFromDto(contentDto);
     } catch (e) {
       debugPrint('[AppProvider] Error fetching game content: $e');
       return null;
     }
   }
   
-  /// Parse GameDto JSON to Game model
-  Game _parseGameDto(Map<String, dynamic> json) {
+  /// Convert GameDto to Game model
+  Game _gameFromDto(dynamic dto) {
     return Game(
-      id: json['id'] as String,
-      biz: json['biz'] as String,
+      id: dto.id,
+      biz: dto.biz,
       display: Display(
         language: 'en-us',
-        name: json['name'] as String,
+        name: dto.name,
         icon: Image(
-          url: json['icon_url'] as String,
+          url: dto.iconUrl,
           hoverUrl: '',
           link: '',
           md5: '',
           size: 0,
         ),
-        title: json['title'] as String,
-        subtitle: json['subtitle'] as String,
+        title: dto.title,
+        subtitle: dto.subtitle,
         background: ImageLink(
-          url: json['background_url'] as String,
+          url: dto.backgroundUrl,
           link: '',
         ),
         logo: ImageLink(
-          url: json['logo_url'] as String,
+          url: dto.logoUrl,
           link: '',
         ),
         thumbnail: const ImageLink(url: '', link: ''),
         shortcut: const Image(url: '', hoverUrl: '', link: '', md5: '', size: 0),
-        // Video background fields from getAllGameBasicInfo API
-        videoBackgroundUrl: json['video_background_url'] as String? ?? '',
-        themeImageUrl: json['theme_image_url'] as String? ?? '',
-        backgroundType: json['background_type'] as String? ?? '',
+        videoBackgroundUrl: dto.videoBackgroundUrl,
+        themeImageUrl: dto.themeImageUrl,
+        backgroundType: dto.backgroundType,
       ),
-      displayStatus: json['display_status'] as String,
+      displayStatus: dto.displayStatus,
     );
   }
   
-  /// Parse ContentDto JSON to Content model
-  Content _parseContentDto(Map<String, dynamic> json) {
-    final banners = (json['banners'] as List<dynamic>).map((b) => Banner(
-      id: (b as Map<String, dynamic>)['id'] as String,
+  /// Convert ContentDto to Content model
+  Content _contentFromDto(dynamic dto) {
+    final banners = dto.banners.map<Banner>((b) => Banner(
+      id: b.id,
       image: ImageLink(
-        url: b['image_url'] as String,
-        link: b['link'] as String,
+        url: b.imageUrl,
+        link: b.link,
       ),
       i18nIdentifier: '',
     )).toList();
     
-    final posts = (json['posts'] as List<dynamic>).map((p) => Post(
-      id: (p as Map<String, dynamic>)['id'] as String,
-      postType: p['post_type'] as String,
-      title: p['title'] as String,
-      link: p['link'] as String,
-      date: p['date'] as String,
+    final posts = dto.posts.map<Post>((p) => Post(
+      id: p.id,
+      postType: p.postType,
+      title: p.title,
+      link: p.link,
+      date: p.date,
     )).toList();
     
     return Content(
       game: GameInfo(
-        id: json['game_id'] as String,
-        biz: json['game_biz'] as String,
+        id: dto.gameId,
+        biz: dto.gameBiz,
       ),
-      language: json['language'] as String,
+      language: dto.language,
       banners: banners,
       posts: posts,
       socialMediaList: [],
@@ -252,21 +250,21 @@ class AppProvider extends ChangeNotifier {
     if (!_backendInitialized) return null;
     
     try {
-      final jsonStr = rust_api.getDownloadProgressJson(gameId: gameId);
+      // New: Returns DownloadProgressDto? directly!
+      final dto = rust_api.getDownloadProgress(gameId: gameId);
       
-      if (jsonStr == 'null') {
+      if (dto == null) {
         return null;
       }
       
-      final jsonData = json.decode(jsonStr);
       return DownloadProgress(
-        downloaded: jsonData['downloaded'] as int,
-        total: jsonData['total'] as int,
-        mbPerSecond: (jsonData['mb_per_second'] as num).toDouble(),
-        partIndex: jsonData['part_index'] as int,
-        partsTotal: jsonData['parts_total'] as int,
-        status: jsonData['status'] as String,
-        isBusy: jsonData['is_busy'] as bool,
+        downloaded: dto.downloaded,
+        total: dto.total,
+        mbPerSecond: dto.mbPerSecond.toDouble(),
+        partIndex: dto.partIndex,
+        partsTotal: dto.partsTotal,
+        status: dto.status,
+        isBusy: dto.isBusy,
       );
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');

@@ -32,10 +32,16 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadRunners() {
     try {
-      final runnersJson = rust_api.getAvailableRunnersJson();
-      final List<dynamic> runnersList = jsonDecode(runnersJson);
+      // New: Returns List<AvailableRunnerDto> directly!
+      final runnerDtos = rust_api.getAvailableRunners();
       setState(() {
-        _runners = runnersList.map((r) => _RunnerData.fromJson(r)).toList();
+        _runners = runnerDtos.map((dto) => _RunnerData(
+          name: dto.name,
+          displayName: dto.displayName,
+          version: dto.version,
+          isInstalled: dto.isInstalled,
+          installPath: dto.installPath,
+        )).toList();
       });
     } catch (e) {
       debugPrint('Failed to load runners: $e');
@@ -44,10 +50,14 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadComponents() {
     try {
-      final componentsJson = rust_api.getAvailableComponentsJson();
-      final List<dynamic> componentsList = jsonDecode(componentsJson);
+      // New: Returns List<AvailableComponentDto> directly!
+      final componentDtos = rust_api.getAvailableComponents();
       setState(() {
-        _components = componentsList.map((c) => _ComponentData.fromJson(c)).toList();
+        _components = componentDtos.map((dto) => _ComponentData(
+          name: dto.name,
+          displayName: dto.displayName,
+          isInstalled: dto.isInstalled,
+        )).toList();
       });
     } catch (e) {
       debugPrint('Failed to load components: $e');
