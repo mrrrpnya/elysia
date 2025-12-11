@@ -3,7 +3,13 @@ name = "backend"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
 [dependencies]
+flutter_rust_bridge = "=2.11.1"
+futures = "0.3"
+async-stream = "0.3"
 anyhow = { workspace = true }
 common = { workspace = true }
 reqwest = { workspace = true, features = ["stream"] }

@@ -5,8 +5,7 @@ A game launcher with a Flutter frontend and Rust backend.
 ## Architecture
 
 - **Flutter Frontend** (`crates/flutter_frontend/`): Cross-platform UI built with Flutter
-- **Rust Backend** (`crates/backend/`): Core game management logic
-- **Rust Bridge** (`crates/rust_bridge/`): FFI bridge using flutter_rust_bridge
+- **Rust Backend** (`crates/backend/`): Core game management logic with integrated FFI bridge
 - **Common** (`crates/common/`): Shared utilities
 
 ## Supported Game Providers
@@ -53,8 +52,10 @@ elysia/
 │   │   │       ├── theme/      # App theme
 │   │   │       └── widgets/    # Reusable widgets
 │   │   └── pubspec.yaml
-│   ├── rust_bridge/         # flutter_rust_bridge FFI
-│   ├── backend/             # Core Rust logic
+│   ├── backend/             # Core Rust logic with FFI
+│   │   └── src/
+│   │       ├── ffi.rs       # Flutter FFI bridge
+│   │       └── ...
 │   └── common/              # Shared utilities
 └── Cargo.toml
 ```
