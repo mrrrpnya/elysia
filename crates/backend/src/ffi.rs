@@ -174,10 +174,7 @@ fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) ->
             .iter()
             .map(|p| FfiPost {
                 id: p.id.clone(),
-                post_type: p.post_type.clone(),match r.runner_type {
-                RunnerType::Wine => "wine".to_string(),
-                RunnerType::Proton => "proton".to_string(),
-            },
+                post_type: p.post_type.clone(),
                 title: p.title.clone(),
                 link: p.link.clone(),
                 date: p.date.clone(),
