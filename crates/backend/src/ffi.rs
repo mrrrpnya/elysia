@@ -109,7 +109,7 @@ use crate::game_providers::hoyoplay::proto::BackgroundInfo;
 
 fn convert_game(
     game: &crate::game_providers::hoyoplay::proto::Game,
-    background_info: Option<&BackgroundInfo>,
+    background_info: Vec<&BackgroundInfo>,
 ) -> Game {
     let (background_url, video_url, theme_url, bg_type) = background_info
         .map(|bg| {
@@ -221,22 +221,22 @@ pub async fn get_all_games() -> Vec<Game> {
     // Fetch background info from getAllGameBasicInfo API
     if let Ok(basic_info) = crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
         for game_info in basic_info.game_info_list {
-            background_map.insert(game_info.game_id.clone(), game_info.backgrounds);
+            background_map.insert(game_info.game.id.clone(), game_info.backgrounds);
         }
     }
 
     // Fetch HoYoPlay games
     if let Ok(hoyoplay_games) = crate::game_providers::hoyoplay::get_games(&settings).await {
-        for game in hoyoplay_games.game_info_list {
-            let background_info = background_map.get(&game.game.id);
-            games.push(convert_game(&game.game, background_info));
+        for game in hoyoplay_games.games {
+            let background_info = background_map.get(&game.id);
+            games.push(convert_game(&game, background_info));
         }
     }
 
     // Fetch Endfield games
     if let Ok(endfield_games) = crate::game_providers::endfield::get_games().await {
-        for game in endfield_games.game_list {
-            games.push(convert_game(&game.game, None));
+        for game in endfield_games.games {
+            games.push(convert_game(&game, None));
         }
     }
 
