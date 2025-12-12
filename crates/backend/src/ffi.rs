@@ -7,6 +7,8 @@
 // Using Ffi prefix to avoid conflicts with internal structs
 // ============================================================================
 
+use crate::components::runners;
+
 /// Game data for FFI
 #[derive(Clone, Debug)]
 pub struct FfiGame {
@@ -80,7 +82,7 @@ pub struct FfiAvailableRunner {
     pub display_name: String,
     pub version: String,
     pub is_installed: bool,
-    pub runner_type: components::runners::RunnerType,
+    pub runner_type: runners::RunnerType,
     pub install_path: String,
 }
 
