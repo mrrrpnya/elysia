@@ -56,9 +56,10 @@ pub struct FfiPost {
 
 /// Download progress information
 #[derive(Clone, Debug)]
+#[flutter_rust_bridge::frb(type_64bit_int)]
 pub struct DownloadProgress {
-    pub downloaded: i64,
-    pub total: i64,
+    pub downloaded: u64,
+    pub total: u64,
     pub mb_per_second: f32,
     pub part_index: usize,
     pub parts_total: usize,
@@ -290,6 +291,7 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
 pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
     let key = game_id;
     
+    #[flutter_rust_bridge::frb(type_64bit_int)]
     if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
         return Some(DownloadProgress {
             downloaded: progress.downloaded,
