@@ -8,9 +8,9 @@ import 'package:elysia/frb_generated.dart';
 class AppProvider extends ChangeNotifier {
   static const String _lastSelectedGameKey = 'last_selected_game_id';
 
-  List<api.Game> _games = [];
-  final Map<String, api.Content> _gameContent = {};
-  api.Game? _selectedGame;
+  List<api.FfiGame> _games = [];
+  final Map<String, api.FfiContent> _gameContent = {};
+  api.FfiGame? _selectedGame;
   bool _isLoading = true;
   String? _error;
   Timer? _progressTimer;
@@ -19,13 +19,13 @@ class AppProvider extends ChangeNotifier {
   bool _backendInitialized = false;
 
   // Getters
-  List<api.Game> get games => _games;
-  Map<String, api.Content> get gameContent => _gameContent;
-  api.Game? get selectedGame => _selectedGame;
+  List<api.FfiGame> get games => _games;
+  Map<String, api.FfiContent> get gameContent => _gameContent;
+  api.FfiGame? get selectedGame => _selectedGame;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  api.Content? getContent(String gameId) => _gameContent[gameId];
+  api.FfiContent? getContent(String gameId) => _gameContent[gameId];
 
   /// Initialize app data
   Future<void> initialize() async {
@@ -88,7 +88,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   /// Get list of all games from Rust backend
-  Future<List<api.Game>> _getGames() async {
+  Future<List<api.FfiGame>> _getGames() async {
     try {
       debugPrint('[AppProvider] Fetching games...');
 
@@ -104,7 +104,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   /// Get game content (banners, news, etc.)
-  Future<api.Content?> _getGameContent(String gameId, String biz) async {
+  Future<api.FfiContent?> _getGameContent(String gameId, String biz) async {
     try {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
 
@@ -151,7 +151,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   /// Select a game
-  void selectGame(api.Game game) {
+  void selectGame(api.FfiGame game) {
     _selectedGame = game;
     // Fire and forget - don't block UI for persistence
     _saveSelectedGame(game.id);

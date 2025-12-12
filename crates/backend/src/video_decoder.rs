@@ -29,7 +29,7 @@ fn get_cache_filename(url: &str) -> String {
 
 /// Video frame data
 #[derive(Clone, Debug)]
-pub(crate) struct VideoFrame {
+pub struct VideoFrame {
     /// RGBA image data
     pub data: Vec<u8>,
     /// Image width

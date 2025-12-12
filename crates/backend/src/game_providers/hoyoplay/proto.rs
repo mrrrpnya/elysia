@@ -88,7 +88,7 @@ pub struct GameExe {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Game {
+pub struct Game {
     pub id: String,
     pub biz: String,
     pub display: Display,
@@ -143,7 +143,7 @@ pub struct GameServerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Content {
+pub struct Content {
     pub game: GameInfo,
     pub language: String,
     pub banners: Vec<Banner>,
@@ -158,14 +158,14 @@ pub struct GameInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Banner {
+pub struct Banner {
     pub id: String,
     pub image: ImageLink,
     pub i18n_identifier: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Post {
+pub struct Post {
     pub id: String,
     #[serde(rename = "type")]
     pub post_type: String,

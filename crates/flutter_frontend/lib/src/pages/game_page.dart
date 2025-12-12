@@ -12,7 +12,7 @@ import 'dart:typed_data';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
-  final api.Game game;
+  final api.FfiGame game;
 
   const GamePage({
     super.key,
@@ -123,7 +123,7 @@ class GamePage extends StatelessWidget {
 
 /// Combined background widget that handles both video and image backgrounds
 class _GameBackground extends StatelessWidget {
-  final api.Game game;
+  final api.FfiGame game;
 
   const _GameBackground({required this.game});
 
@@ -163,7 +163,7 @@ class _VideoBackground extends StatefulWidget {
 
 class _VideoBackgroundState extends State<_VideoBackground> {
   StreamSubscription? _frameSubscription;
-  api.VideoFrameDto? _currentFrame;
+  api.FfiVideoFrame? _currentFrame;
   bool _isLoading = true;
   bool _hasError = false;
   Timer? _loopTimer;
@@ -237,7 +237,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       debugPrint('Starting video stream: ${widget.videoUrl}');
 
       // Get video frame stream from Rust
-      final stream = api.streamVideoFrames(url: widget.videoUrl);
+      final stream = api.stream_video_frames(url: widget.videoUrl);
 
       _frameSubscription = stream.listen(
         (frame) async {

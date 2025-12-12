@@ -8,7 +8,7 @@ import '../services/cache_service.dart';
 
 /// News/Banner widget with carousel
 class NewsWidget extends StatefulWidget {
-  final api.Content? content;
+  final api.FfiContent? content;
 
   const NewsWidget({
     super.key,
@@ -24,7 +24,7 @@ class _NewsWidgetState extends State<NewsWidget> {
   Timer? _autoScrollTimer;
   late PageController _pageController;
 
-  List<api.Banner> get banners => widget.content?.banners ?? [];
+  List<api.FfiBanner> get banners => widget.content?.banners ?? [];
 
   @override
   void initState() {

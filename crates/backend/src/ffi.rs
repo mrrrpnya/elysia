@@ -4,12 +4,12 @@
 
 // ============================================================================
 // FFI data structures - FRB will auto-generate Dart classes for these
-// Note: Using unique names to avoid conflicts with internal structs
+// Using Ffi prefix to avoid conflicts with internal structs
 // ============================================================================
 
 /// Game data for FFI
 #[derive(Clone, Debug)]
-pub struct Game {
+pub struct FfiGame {
     pub id: String,
     pub biz: String,
     pub name: String,
@@ -26,17 +26,17 @@ pub struct Game {
 
 /// Game content data for FFI
 #[derive(Clone, Debug)]
-pub struct Content {
+pub struct FfiContent {
     pub game_id: String,
     pub game_biz: String,
     pub language: String,
-    pub banners: Vec<Banner>,
-    pub posts: Vec<Post>,
+    pub banners: Vec<FfiBanner>,
+    pub posts: Vec<FfiPost>,
 }
 
 /// Banner data for FFI
 #[derive(Clone, Debug)]
-pub struct Banner {
+pub struct FfiBanner {
     pub id: String,
     pub image_url: String,
     pub link: String,
@@ -44,7 +44,7 @@ pub struct Banner {
 
 /// Post data for FFI
 #[derive(Clone, Debug)]
-pub struct Post {
+pub struct FfiPost {
     pub id: String,
     pub post_type: String,
     pub title: String,
@@ -75,7 +75,7 @@ pub struct Settings {
 
 /// Available runner information
 #[derive(Clone, Debug)]
-pub struct AvailableRunner {
+pub struct FfiAvailableRunner {
     pub name: String,
     pub display_name: String,
     pub version: String,
@@ -93,7 +93,7 @@ pub struct AvailableComponent {
 
 /// Video frame data for streaming
 #[derive(Clone, Debug)]
-pub struct VideoFrame {
+pub struct FfiVideoFrame {
     pub data: Vec<u8>,
     pub width: u32,
     pub height: u32,
@@ -109,7 +109,7 @@ use crate::game_providers::hoyoplay::proto::BackgroundInfo;
 fn convert_game(
     game: &crate::game_providers::hoyoplay::proto::Game,
     background_info: Option<&Vec<BackgroundInfo>>,
-) -> Game {
+) -> FfiGame {
     let (background_url, video_url, theme_url, bg_type) = background_info
         .and_then(|bg_list| bg_list.first())
         .map(|bg| {
@@ -133,7 +133,7 @@ fn convert_game(
             )
         });
 
-    Game {
+    FfiGame {
         id: game.id.clone(),
         biz: game.biz.clone(),
         name: game.display.name.clone(),
@@ -149,15 +149,15 @@ fn convert_game(
     }
 }
 
-fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> Content {
-    Content {
+fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> FfiContent {
+    FfiContent {
         game_id: content.game.id.clone(),
         game_biz: content.game.biz.clone(),
         language: content.language.clone(),
         banners: content
             .banners
             .iter()
-            .map(|b| Banner {
+            .map(|b| FfiBanner {
                 id: b.id.clone(),
                 image_url: b.image.url.clone(),
                 link: b.image.link.clone(),
@@ -166,7 +166,7 @@ fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) ->
         posts: content
             .posts
             .iter()
-            .map(|p| Post {
+            .map(|p| FfiPost {
                 id: p.id.clone(),
                 post_type: p.post_type.clone(),
                 title: p.title.clone(),
@@ -204,8 +204,8 @@ pub fn get_settings() -> Settings {
     }
 }
 
-/// Get all games - returns Vec<Game> directly!
-pub async fn get_all_games() -> Vec<Game> {
+/// Get all games - returns Vec<FfiGame> directly!
+pub async fn get_all_games() -> Vec<FfiGame> {
     use std::collections::HashMap;
 
     let settings = crate::settings::GlobalSettings::load()
@@ -243,8 +243,8 @@ pub async fn get_all_games() -> Vec<Game> {
     games
 }
 
-/// Get game content - returns Content or None
-pub async fn get_game_content(game_id: String, biz: String) -> Option<Content> {
+/// Get game content - returns FfiContent or None
+pub async fn get_game_content(game_id: String, biz: String) -> Option<FfiContent> {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -323,9 +323,9 @@ pub async fn launch_game(_game_id: String) -> String {
     "Not implemented".to_string()
 }
 
-/// Get available runners - returns Vec<AvailableRunner>
+/// Get available runners - returns Vec<FfiAvailableRunner>
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_available_runners() -> Vec<AvailableRunner> {
+pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -342,7 +342,7 @@ pub fn get_available_runners() -> Vec<AvailableRunner> {
             let install_path = components_dir.join("runners").join(&r.folder_name);
             let is_installed = install_path.exists();
             
-            AvailableRunner {
+            FfiAvailableRunner {
                 name: r.name,
                 display_name: r.display_name,
                 version: r.version,
@@ -482,7 +482,7 @@ pub async fn delete_jadeite() -> String {
 /// Stream video frames from a URL
 pub async fn stream_video_frames(
     url: String,
-    sink: crate::frb_generated::StreamSink<VideoFrame>,
+    sink: crate::frb_generated::StreamSink<FfiVideoFrame>,
 ) {
     use tokio::sync::mpsc;
     
@@ -497,8 +497,8 @@ pub async fn stream_video_frames(
     });
     
     while let Some(frame) = frame_rx.recv().await {
-        // Convert from video_decoder::VideoFrame to ffi::VideoFrame
-        if sink.add(VideoFrame {
+        // Convert from video_decoder::VideoFrame to ffi::FfiVideoFrame
+        if sink.add(FfiVideoFrame {
             data: frame.data,
             width: frame.width,
             height: frame.height,

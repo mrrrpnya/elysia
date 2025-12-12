@@ -16,7 +16,7 @@ extension DownloadProgressExtensions on api.DownloadProgress {
 }
 
 /// Extensions for Game
-extension GameExtensions on api.Game {
+extension GameExtensions on api.FfiGame {
   /// Check if game has a video background
   bool get hasVideoBackground =>
       backgroundType == 'BACKGROUND_TYPE_VIDEO' &&
