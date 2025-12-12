@@ -160,7 +160,7 @@ fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) ->
             .map(|b| Banner {
                 id: b.id.clone(),
                 image_url: b.image.url.clone(),
-                link: b.link.clone(),
+                link: b.image.link.clone(),
             })
             .collect(),
         posts: content
@@ -271,10 +271,12 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
             s
         });
 
-    let key = format!("{}_{}", biz, game_id);
     crate::game_providers::installer::InstallerManager::is_game_installed(
-        &settings.wineprefixes_directory,
-        &key,
+        &settings,
+        &game_id,
+        &biz,
+        settings.temp_directory.clone(),
+        settings.components_directory.clone(),
     )
 }
 
@@ -287,7 +289,7 @@ pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
         return Some(DownloadProgress {
             downloaded: progress.downloaded,
             total: progress.total,
-            mb_per_second: progress.mb_per_second,
+            mb_per_second: progress.mb_s,
             part_index: progress.part_index,
             parts_total: progress.parts_total,
             status: progress.status.clone(),
