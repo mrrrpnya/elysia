@@ -287,7 +287,7 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
 }
 
 /// Get download progress - returns DownloadProgress or None
-#[flutter_rust_bridge::frb(sync)]
+#[flutter_rust_bridge::frb]
 pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
     let key = format!("{}_streaming", game_id);
     

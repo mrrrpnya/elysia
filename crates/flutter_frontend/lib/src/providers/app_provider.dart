@@ -174,12 +174,11 @@ class AppProvider extends ChangeNotifier {
   }
 
   /// Get download progress for a game
-  api.DownloadProgress? getDownloadProgress(String gameId) {
+  Future<api.DownloadProgress?> getDownloadProgress(String gameId) async {
     if (!_backendInitialized) return null;
 
     try {
-      // Returns DownloadProgress? directly!
-      return api.getDownloadProgress(gameId: gameId);
+      return await api.getDownloadProgress(gameId: gameId);
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');
       return null;
