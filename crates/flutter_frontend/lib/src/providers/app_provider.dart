@@ -1,18 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/models.dart';
 import 'package:elysia/api.dart' as rust_api;
 import 'package:elysia/frb_generated.dart';
+import '../extensions/rust_api_extensions.dart';
 
 /// Application state provider
 class AppProvider extends ChangeNotifier {
   static const String _lastSelectedGameKey = 'last_selected_game_id';
   
-  List<Game> _games = [];
-  final Map<String, Content> _gameContent = {};
-  Game? _selectedGame;
+  List<rust_api.Game> _games = [];
+  final Map<String, rust_api.Content> _gameContent = {};
+  rust_api.Game? _selectedGame;
   bool _isLoading = true;
   String? _error;
   Timer? _progressTimer;
@@ -21,13 +20,13 @@ class AppProvider extends ChangeNotifier {
   bool _backendInitialized = false;
   
   // Getters
-  List<Game> get games => _games;
-  Map<String, Content> get gameContent => _gameContent;
-  Game? get selectedGame => _selectedGame;
+  List<rust_api.Game> get games => _games;
+  Map<String, rust_api.Content> get gameContent => _gameContent;
+  rust_api.Game? get selectedGame => _selectedGame;
   bool get isLoading => _isLoading;
   String? get error => _error;
   
-  Content? getContent(String gameId) => _gameContent[gameId];
+  rust_api.Content? getContent(String gameId) => _gameContent[gameId];
   
   /// Initialize app data
   Future<void> initialize() async {
@@ -90,13 +89,12 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get list of all games from Rust backend
-  Future<List<Game>> _getGames() async {
+  Future<List<rust_api.Game>> _getGames() async {
     try {
       debugPrint('[AppProvider] Fetching games...');
       
-      // New: Returns List<GameDto> directly, no JSON parsing needed!
+      // Returns List<Game> directly - no conversion needed!
       final games = await rust_api.getAllGames();
-      final games = games.map((game) => _gameFromRust(game)).toList();
       
       debugPrint('[AppProvider] Fetched ${games.length} games');
       return games;
@@ -107,88 +105,19 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get game content (banners, news, etc.)
-  Future<Content?> _getGameContent(String gameId, String biz) async {
+  Future<rust_api.Content?> _getGameContent(String gameId, String biz) async {
     try {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
       
-      // New: Returns ContentDto? directly, no JSON parsing needed!
+      // Returns Content? directly - no conversion needed!
       final content = await rust_api.getGameContent(gameId: gameId, biz: biz);
       
-      if (content == null) {
-        return null;
-      }
-      
-      return _contentFromRust(content);
+      debugPrint('[AppProvider] Fetched content for game: $gameId');
+      return content;
     } catch (e) {
       debugPrint('[AppProvider] Error fetching game content: $e');
       return null;
     }
-  }
-  
-  /// Convert GameDto to Game model
-  Game _gameFromRust(dynamic game) {
-    return Game(
-      id: game.id,
-      biz: game.biz,
-      display: Display(
-        language: 'en-us',
-        name: game.name,
-        icon: Image(
-          url: game.iconUrl,
-          hoverUrl: '',
-          link: '',
-          md5: '',
-          size: 0,
-        ),
-        title: game.title,
-        subtitle: game.subtitle,
-        background: ImageLink(
-          url: game.backgroundUrl,
-          link: '',
-        ),
-        logo: ImageLink(
-          url: game.logoUrl,
-          link: '',
-        ),
-        thumbnail: const ImageLink(url: '', link: ''),
-        shortcut: const Image(url: '', hoverUrl: '', link: '', md5: '', size: 0),
-        videoBackgroundUrl: game.videoBackgroundUrl,
-        themeImageUrl: game.themeImageUrl,
-        backgroundType: game.backgroundType,
-      ),
-      displayStatus: game.displayStatus,
-    );
-  }
-  
-  /// Convert ContentDto to Content model
-  Content _contentFromRust(dynamic content) {
-    final banners = content.banners.map<Banner>((b) => Banner(
-      id: b.id,
-      image: ImageLink(
-        url: b.imageUrl,
-        link: b.link,
-      ),
-      i18nIdentifier: '',
-    )).toList();
-    
-    final posts = content.posts.map<Post>((p) => Post(
-      id: p.id,
-      postType: p.postType,
-      title: p.title,
-      link: p.link,
-      date: p.date,
-    )).toList();
-    
-    return Content(
-      game: GameInfo(
-        id: content.gameId,
-        biz: content.gameBiz,
-      ),
-      language: content.language,
-      banners: banners,
-      posts: posts,
-      socialMediaList: [],
-    );
   }
   
   /// Restore the last selected game from preferences
@@ -223,7 +152,7 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Select a game
-  void selectGame(Game game) {
+  void selectGame(rust_api.Game game) {
     _selectedGame = game;
     // Fire and forget - don't block UI for persistence
     _saveSelectedGame(game.id);
@@ -246,26 +175,12 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get download progress for a game
-  DownloadProgress? getDownloadProgress(String gameId) {
+  rust_api.DownloadProgress? getDownloadProgress(String gameId) {
     if (!_backendInitialized) return null;
     
     try {
-      // New: Returns DownloadProgressDto? directly!
-      final progress = rust_api.getDownloadProgress(gameId: gameId);
-      
-      if (progress == null) {
-        return null;
-      }
-      
-      return DownloadProgress(
-        downloaded: progress.downloaded,
-        total: progress.total,
-        mbPerSecond: progress.mbPerSecond.toDouble(),
-        partIndex: progress.partIndex,
-        partsTotal: progress.partsTotal,
-        status: progress.status,
-        isBusy: progress.isBusy,
-      );
+      // Returns DownloadProgress? directly!
+      return rust_api.getDownloadProgress(gameId: gameId);
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');
       return null;

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../models/models.dart' hide Image;
 import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
 import 'package:elysia/api.dart' as rust_api;
+import '../extensions/rust_api_extensions.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -14,7 +14,7 @@ import 'dart:typed_data';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
-  final Game game;
+  final rust_api.Game game;
   
   const GamePage({
     super.key,
@@ -32,7 +32,7 @@ class GamePage extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         // Background - video or image
-        _GameBackground(display: game.display),
+        _GameBackground(game: game),
         
         // Content overlay - isolated with RepaintBoundary to prevent video texture artifacts
         Positioned.fill(
@@ -125,23 +125,23 @@ class GamePage extends StatelessWidget {
 
 /// Combined background widget that handles both video and image backgrounds
 class _GameBackground extends StatelessWidget {
-  final Display display;
+  final rust_api.Game game;
   
-  const _GameBackground({required this.display});
+  const _GameBackground({required this.game});
   
   @override
   Widget build(BuildContext context) {
     // Use video background if available, otherwise fall back to image
-    if (display.hasVideoBackground) {
+    if (game.hasVideoBackground) {
       return _VideoBackground(
-        key: ValueKey(display.videoBackgroundUrl),
-        videoUrl: display.videoBackgroundUrl,
-        themeImageUrl: display.themeImageUrl,
-        fallbackImageUrl: display.background.url,
+        key: ValueKey(game.videoBackgroundUrl),
+        videoUrl: game.videoBackgroundUrl,
+        themeImageUrl: game.themeImageUrl,
+        fallbackImageUrl: game.backgroundUrl,
       );
     }
     
-    return _BackgroundImage(url: display.background.url);
+    return _BackgroundImage(url: game.backgroundUrl);
   }
 }
 

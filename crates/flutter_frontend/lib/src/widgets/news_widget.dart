@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide Banner;
 import 'package:flutter/gestures.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../models/models.dart';
+import 'package:elysia/api.dart' as rust_api;
 import '../theme/theme.dart';
 import '../services/cache_service.dart';
 
 /// News/Banner widget with carousel
 class NewsWidget extends StatefulWidget {
-  final Content? content;
+  final rust_api.Content? content;
   
   const NewsWidget({
     super.key,
@@ -24,7 +24,7 @@ class _NewsWidgetState extends State<NewsWidget> {
   Timer? _autoScrollTimer;
   late PageController _pageController;
   
-  List<Banner> get banners => widget.content?.banners ?? [];
+  List<rust_api.Banner> get banners => widget.content?.banners ?? [];
   
   @override
   void initState() {
@@ -114,7 +114,7 @@ class _NewsWidgetState extends State<NewsWidget> {
                       },
                       itemBuilder: (context, index) {
                         final banner = banners[index];
-                        return _BannerImage(imageUrl: banner.image.url);
+                        return _BannerImage(imageUrl: banner.imageUrl);
                       },
                     ),
                   ),
