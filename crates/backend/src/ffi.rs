@@ -84,7 +84,7 @@ pub struct FfiAvailableRunner {
     pub version: String,
     pub is_installed: bool,
     pub runner_type: String,
-    pub install_path: String,
+    pub folder_name: String,
 }
 
 /// Available component information
@@ -289,7 +289,7 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
 /// Get download progress - returns DownloadProgress or None
 #[flutter_rust_bridge::frb(sync)]
 pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
-    let key = game_id;
+    let key = format!("{}_streaming", game_id);
     
     if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
         return Some(DownloadProgress {
@@ -399,8 +399,7 @@ pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
         .into_iter()
         .map(|r| {
             // Check if runner is installed by looking for its folder
-            let install_path = components_dir.join("runners").join(&r.folder_name);
-            let is_installed = install_path.exists();
+            let is_installed = crate::runners::is_runner_installed(r);
             
             FfiAvailableRunner {
                 name: r.name,
@@ -411,7 +410,7 @@ pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
                 },
                 version: r.version,
                 is_installed,
-                install_path: install_path.to_string_lossy().to_string(),
+                folder_name: r.folder_name,
             }
         })
         .collect()
@@ -436,7 +435,7 @@ pub fn get_available_components() -> Vec<AvailableComponent> {
             display_name: "UMU Launcher".to_string(),
             is_installed: umu_installed,
             description: "Proton runtime".to_string(),
-            version: "1.2.8".to_string(),
+            version: "1.2.9".to_string(),
         },
         AvailableComponent {
             name: "jadeite".to_string(),
@@ -450,11 +449,6 @@ pub fn get_available_components() -> Vec<AvailableComponent> {
 
 /// Install a runner by name - returns "ok" or error message
 pub async fn install_runner(runner_name: String) -> String {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(e) => return format!("Failed to load settings: {}", e),
-    };
-
     // Find the runner by name
     let available_runners = crate::components::runners::get_available_runners();
     let runner = match available_runners.iter().find(|r| r.name == runner_name) {
@@ -472,11 +466,6 @@ pub async fn install_runner(runner_name: String) -> String {
 
 /// Delete a runner by name - returns "ok" or error message
 pub async fn delete_runner(runner_name: String) -> String {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(e) => return format!("Failed to load settings: {}", e),
-    };
-
     // Find installed runners
     let installed_runners = crate::components::runners::get_installed_runners();
     let runner = match installed_runners.iter().find(|r| r.name == runner_name) {
