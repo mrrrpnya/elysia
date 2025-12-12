@@ -56,10 +56,9 @@ pub struct FfiPost {
 
 /// Download progress information
 #[derive(Clone, Debug)]
-#[flutter_rust_bridge::frb(type_64bit_int)]
 pub struct DownloadProgress {
-    pub downloaded: u64,
-    pub total: u64,
+    pub downloaded: i64,
+    pub total: i64,
     pub mb_per_second: f32,
     pub part_index: usize,
     pub parts_total: usize,
