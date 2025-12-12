@@ -134,7 +134,7 @@ fn convert_game(
         });
 
     Game {
-        id: game.id.clone(),
+        id: game_id.clone(),
         biz: game.biz.clone(),
         name: game.display.name.clone(),
         title: game.display.title.clone(),
@@ -151,7 +151,7 @@ fn convert_game(
 
 fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> Content {
     Content {
-        game_id: content.game.id.clone(),
+        game_id: content.game_id.clone(),
         game_biz: content.game.biz.clone(),
         language: content.language.clone(),
         banners: content
@@ -221,22 +221,22 @@ pub async fn get_all_games() -> Vec<Game> {
     // Fetch background info from getAllGameBasicInfo API
     if let Ok(basic_info) = crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
         for game_info in basic_info.game_info_list {
-            background_map.insert(game_info.game.id.clone(), game_info.backgrounds);
+            background_map.insert(game_info.game_id.clone(), game_info.backgrounds);
         }
     }
 
     // Fetch HoYoPlay games
     if let Ok(hoyoplay_games) = crate::game_providers::hoyoplay::get_games(&settings).await {
-        for game in hoyoplay_games.games {
-            let background_info = background_map.get(&game.id);
-            games.push(convert_game(&game, background_info));
+        for game in hoyoplay_games.game_info_list {
+            let background_info = background_map.get(&game.game.id);
+            games.push(convert_game(&game.game, background_info));
         }
     }
 
     // Fetch Endfield games
     if let Ok(endfield_games) = crate::game_providers::endfield::get_games().await {
-        for game in endfield_games.games {
-            games.push(convert_game(&game, None));
+        for game in endfield_games.game_list {
+            games.push(convert_game(&game.game, None));
         }
     }
 
