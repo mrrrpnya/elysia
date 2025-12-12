@@ -291,7 +291,6 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
 pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
     let key = game_id;
     
-    #[flutter_rust_bridge::frb(type_64bit_int)]
     if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
         return Some(DownloadProgress {
             downloaded: progress.downloaded,
