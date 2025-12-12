@@ -206,7 +206,7 @@ class _Sidebar extends StatelessWidget {
                           isActive: isSelected,
                           onTap: () => onGameSelected(game),
                           child: _GameIcon(
-                            iconUrl: game.icon_url,
+                            iconUrl: game.iconUrl,
                             name: game.name,
                           ),
                         ),
