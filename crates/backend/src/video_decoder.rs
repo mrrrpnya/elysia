@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use bytes::Bytes;
 use tokio::sync::mpsc;
 use std::path::PathBuf;
+use flutter_rust_bridge::frb;
 
 /// Get the video cache directory path
 fn get_video_cache_dir() -> Result<PathBuf> {

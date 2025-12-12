@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use flutter_rust_bridge::frb;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiResponse<DataType> {

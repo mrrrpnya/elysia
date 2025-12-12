@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use common::utils::filesystem::ensure_dir;
 use serde::{Deserialize, Serialize};
+use flutter_rust_bridge::frb;
 
 use crate::globals::DATA_PATH;
 
