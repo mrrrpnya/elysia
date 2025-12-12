@@ -237,7 +237,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       debugPrint('Starting video stream: ${widget.videoUrl}');
 
       // Get video frame stream from Rust
-      final stream = api.stream_video_frames(url: widget.videoUrl);
+      final stream = api.streamVideoFrames(url: widget.videoUrl);
 
       _frameSubscription = stream.listen(
         (frame) async {

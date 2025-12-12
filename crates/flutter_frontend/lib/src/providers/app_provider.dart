@@ -93,7 +93,7 @@ class AppProvider extends ChangeNotifier {
       debugPrint('[AppProvider] Fetching games...');
 
       // Returns List<Game> directly - no conversion needed!
-      final games = await api.get_all_games();
+      final games = await api.getAllGames();
 
       debugPrint('[AppProvider] Fetched ${games.length} games');
       return games;
@@ -109,7 +109,7 @@ class AppProvider extends ChangeNotifier {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
 
       // Returns Content? directly - no conversion needed!
-      final content = await api.get_game_content(gameId: gameId, biz: biz);
+      final content = await api.getGameContent(gameId: gameId, biz: biz);
 
       debugPrint('[AppProvider] Fetched content for game: $gameId');
       return content;
@@ -166,7 +166,7 @@ class AppProvider extends ChangeNotifier {
     if (game == null) return false;
 
     try {
-      return api.is_game_installed(gameId: gameId, biz: game.biz);
+      return api.isGameInstalled(gameId: gameId, biz: game.biz);
     } catch (e) {
       debugPrint('[AppProvider] Error checking installation: $e');
       return false;
@@ -179,7 +179,7 @@ class AppProvider extends ChangeNotifier {
 
     try {
       // Returns DownloadProgress? directly!
-      return api.get_download_progress(gameId: gameId);
+      return api.getDownloadProgress(gameId: gameId);
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');
       return null;
@@ -197,7 +197,7 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Installing game: $gameId (biz: ${game.biz})');
 
-      final result = await api.install_game(gameId: gameId, biz: game.biz);
+      final result = await api.installGame(gameId: gameId, biz: game.biz);
       if (result != 'ok') {
         debugPrint('[AppProvider] Installation error: $result');
         throw Exception(result);
@@ -219,7 +219,7 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Launching game: $gameId');
 
-      final result = await api.launch_game(gameId: gameId);
+      final result = await api.launchGame(gameId: gameId);
       if (result != 'ok') {
         debugPrint('[AppProvider] Launch error: $result');
         throw Exception(result);
