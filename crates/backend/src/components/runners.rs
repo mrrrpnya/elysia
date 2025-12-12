@@ -26,6 +26,7 @@ impl RunnerType {
 
 /// A runner that can be downloaded and installed
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[frb(ignore)]
 pub struct AvailableRunner {
     pub name: String,
     pub display_name: String,
