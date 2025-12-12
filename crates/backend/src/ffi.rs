@@ -355,6 +355,7 @@ pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
             FfiAvailableRunner {
                 name: r.name,
                 display_name: r.display_name,
+                runner_type: r.runner_type,
                 version: r.version,
                 is_installed,
                 install_path: install_path.to_string_lossy().to_string(),
@@ -381,11 +382,15 @@ pub fn get_available_components() -> Vec<AvailableComponent> {
             name: "umu-launcher".to_string(),
             display_name: "UMU Launcher".to_string(),
             is_installed: umu_installed,
+            description: "Proton runtime".to_string(),
+            version: "1.2.8".to_string(),
         },
         AvailableComponent {
             name: "jadeite".to_string(),
             display_name: "Jadeite".to_string(),
             is_installed: jadeite_installed,
+            description: "Anti-Cheat workaround".to_string(),
+            version: "5.0.1".to_string(),
         },
     ]
 }
