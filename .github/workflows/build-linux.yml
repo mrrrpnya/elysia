@@ -87,13 +87,7 @@ jobs:
       - name: Install flutter_rust_bridge_codegen
         run: |
           cargo install flutter_rust_bridge_codegen || true
-      
-      - name: Build Rust backend (release)
-        run: |
-          cargo build --release -p backend
-          echo "Rust backend built successfully"
-          ls -la target/release/libbackend.so || echo "Library not found"
-      
+
       - name: Get Flutter dependencies
         working-directory: crates/flutter_frontend
         run: flutter pub get
@@ -108,6 +102,12 @@ jobs:
           # List generated files
           echo "Generated files in lib/src/rust/:"
           ls -la lib/src/rust/ || echo "No files generated"
+      
+      - name: Build Rust backend (release)
+        run: |
+          cargo build --release -p backend
+          echo "Rust backend built successfully"
+          ls -la target/release/libbackend.so || echo "Library not found"
       
       - name: Analyze Flutter code
         working-directory: crates/flutter_frontend
