@@ -13,3 +13,7 @@ enable_lifetime: true
 
 # Linux-only build - skip web generation
 web: false
+
+# Fix serde_json value issue
+rust_preamble: |
+  use serde_json::Value;
