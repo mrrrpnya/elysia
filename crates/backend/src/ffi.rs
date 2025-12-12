@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 // ============================================================================
 
 /// Game data for FFI
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     pub id: String,
     pub biz: String,
@@ -26,7 +26,7 @@ pub struct Game {
 }
 
 /// Game content data for FFI
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Content {
     pub game_id: String,
     pub game_biz: String,
@@ -36,7 +36,7 @@ pub struct Content {
 }
 
 /// Banner data for FFI
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Banner {
     pub id: String,
     pub image_url: String,
@@ -44,7 +44,7 @@ pub struct Banner {
 }
 
 /// Post data for FFI
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Post {
     pub id: String,
     pub post_type: String,
@@ -54,7 +54,7 @@ pub struct Post {
 }
 
 /// Download progress information
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DownloadProgress {
     pub downloaded: u64,
     pub total: u64,
@@ -66,7 +66,7 @@ pub struct DownloadProgress {
 }
 
 /// Settings paths
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub wineprefixes_directory: String,
     pub components_directory: String,
@@ -75,7 +75,7 @@ pub struct Settings {
 }
 
 /// Available runner information
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AvailableRunner {
     pub name: String,
     pub display_name: String,
@@ -85,7 +85,7 @@ pub struct AvailableRunner {
 }
 
 /// Available component information
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AvailableComponent {
     pub name: String,
     pub display_name: String,
@@ -93,7 +93,7 @@ pub struct AvailableComponent {
 }
 
 /// Video frame data for streaming
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VideoFrame {
     pub data: Vec<u8>,
     pub width: u32,
@@ -109,9 +109,10 @@ use crate::game_providers::hoyoplay::proto::BackgroundInfo;
 
 fn convert_game(
     game: &crate::game_providers::hoyoplay::proto::Game,
-    background_info: Vec<&BackgroundInfo>,
+    background_info: Option<&Vec<BackgroundInfo>>,
 ) -> Game {
     let (background_url, video_url, theme_url, bg_type) = background_info
+        .and_then(|bg_list| bg_list.first())
         .map(|bg| {
             (
                 if bg.background.url.is_empty() {
@@ -216,7 +217,7 @@ pub async fn get_all_games() -> Vec<Game> {
         });
 
     let mut games = Vec::new();
-    let mut background_map: HashMap<String, BackgroundInfo> = HashMap::new();
+    let mut background_map: HashMap<String, Vec<BackgroundInfo>> = HashMap::new();
 
     // Fetch background info from getAllGameBasicInfo API
     if let Ok(basic_info) = crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
@@ -258,7 +259,7 @@ pub async fn get_game_content(game_id: String, biz: String) -> Option<Content> {
         crate::game_providers::hoyoplay::get_game_content(&settings, &game_id).await
     };
 
-    content.ok().map(|c| convert_content(&c))
+    content.ok().map(|c| convert_content(&c.content))
 }
 
 /// Check if a game is installed
@@ -333,14 +334,22 @@ pub fn get_available_runners() -> Vec<AvailableRunner> {
             s
         });
 
+    let components_dir = &settings.components_directory;
+    
     crate::components::runners::get_available_runners()
         .into_iter()
-        .map(|r| AvailableRunner {
-            name: r.name,
-            display_name: r.display_name,
-            version: r.version,
-            is_installed: r.is_installed,
-            install_path: r.install_path.to_string_lossy().to_string(),
+        .map(|r| {
+            // Check if runner is installed by looking for its folder
+            let install_path = components_dir.join("runners").join(&r.folder_name);
+            let is_installed = install_path.exists();
+            
+            AvailableRunner {
+                name: r.name,
+                display_name: r.display_name,
+                version: r.version,
+                is_installed,
+                install_path: install_path.to_string_lossy().to_string(),
+            }
         })
         .collect()
 }
@@ -379,11 +388,14 @@ pub async fn install_runner(runner_name: String) -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::runners::install_runner(
-        &runner_name,
-        &settings.components_directory,
-        &settings.temp_directory,
-    ).await;
+    // Find the runner by name
+    let available_runners = crate::components::runners::get_available_runners();
+    let runner = match available_runners.iter().find(|r| r.name == runner_name) {
+        Some(r) => r,
+        None => return format!("Runner '{}' not found", runner_name),
+    };
+
+    let result = crate::components::runners::install_runner(runner).await;
 
     match result {
         Ok(_) => "ok".to_string(),
@@ -398,10 +410,14 @@ pub async fn delete_runner(runner_name: String) -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::runners::delete_runner(
-        &runner_name,
-        &settings.components_directory,
-    ).await;
+    // Find installed runners
+    let installed_runners = crate::components::runners::get_installed_runners(&settings.components_directory);
+    let runner = match installed_runners.iter().find(|r| r.name == runner_name) {
+        Some(r) => r,
+        None => return format!("Installed runner '{}' not found", runner_name),
+    };
+
+    let result = crate::components::runners::delete_runner(runner);
 
     match result {
         Ok(_) => "ok".to_string(),
@@ -469,20 +485,20 @@ pub async fn stream_video_frames(
     url: String,
     sink: crate::frb_generated::StreamSink<VideoFrame>,
 ) {
-    use crate::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
     
-    let (frame_tx, mut frame_rx) = mpsc::channel::<VideoFrame>(1);
+    let (frame_tx, mut frame_rx) = mpsc::channel::<crate::video_decoder::VideoFrame>(1);
     
     let url_clone = url.clone();
     let mut decoder_task = tokio::spawn(async move {
-        let decoder = VideoDecoder::new(url_clone, frame_tx);
+        let decoder = crate::video_decoder::VideoDecoder::new(url_clone, frame_tx);
         if let Err(e) = decoder.start().await {
             eprintln!("[ERROR] Video decoder failed: {}", e);
         }
     });
     
     while let Some(frame) = frame_rx.recv().await {
+        // Convert from video_decoder::VideoFrame to ffi::VideoFrame
         if sink.add(VideoFrame {
             data: frame.data,
             width: frame.width,
