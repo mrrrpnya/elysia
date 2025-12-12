@@ -235,7 +235,8 @@ class _ComponentsPageState extends State<ComponentsPage> {
   @override
   Widget build(BuildContext context) {
     final wineRunners = _runners.where((r) => r.runnerType == 'wine').toList();
-    final protonRunners = _runners.where((r) => r.runnerType == 'proton').toList();
+    final protonRunners =
+        _runners.where((r) => r.runnerType == 'proton').toList();
 
     return SizedBox.expand(
       child: Container(
@@ -275,66 +276,72 @@ class _ComponentsPageState extends State<ComponentsPage> {
                   style: TextStyle(
                     color: ElysiaTheme.textSecondary,
                     fontSize: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Required Components Section
-              _buildSection(
-                title: 'Required Components',
-                icon: Icons.extension,
-                children: _components.map((component) => _ComponentListItem(
-                  name: component.name,
-                  displayName: component.displayName,
-                  description: component.description,
-                  version: component.version,
-                  isInstalled: component.isInstalled,
-                  isLoading: _isLoading[component.name] ?? false,
-                  onInstall: () => _installComponent(component.name),
-                  onDelete: () => _deleteComponent(component.name),
-                )).toList(),
-              ),
+                // Required Components Section
+                _buildSection(
+                  title: 'Required Components',
+                  icon: Icons.extension,
+                  children: _components
+                      .map((component) => _ComponentListItem(
+                            name: component.name,
+                            displayName: component.displayName,
+                            description: component.description,
+                            version: component.version,
+                            isInstalled: component.isInstalled,
+                            isLoading: _isLoading[component.name] ?? false,
+                            onInstall: () => _installComponent(component.name),
+                            onDelete: () => _deleteComponent(component.name),
+                          ))
+                      .toList(),
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Wine Runners Section
-              _buildSection(
-                title: 'Wine Runners',
-                icon: Icons.wine_bar,
-                children: wineRunners.map((runner) => _RunnerListItem(
-                  name: runner.name,
-                  displayName: runner.displayName,
-                  version: runner.version,
-                  runnerType: runner.runnerType,
-                  isInstalled: runner.isInstalled,
-                  isLoading: _isLoading[runner.name] ?? false,
-                  onInstall: () => _installRunner(runner.name),
-                  onDelete: () => _deleteRunner(runner.name),
-                )).toList(),
-              ),
-              
-              const SizedBox(height: 24),
+                // Wine Runners Section
+                _buildSection(
+                  title: 'Wine Runners',
+                  icon: Icons.wine_bar,
+                  children: wineRunners
+                      .map((runner) => _RunnerListItem(
+                            name: runner.name,
+                            displayName: runner.displayName,
+                            version: runner.version,
+                            runnerType: runner.runnerType,
+                            isInstalled: runner.isInstalled,
+                            isLoading: _isLoading[runner.name] ?? false,
+                            onInstall: () => _installRunner(runner.name),
+                            onDelete: () => _deleteRunner(runner.name),
+                          ))
+                      .toList(),
+                ),
 
-              // Proton Runners Section
-              _buildSection(
-                title: 'Proton Runners',
-                icon: Icons.science,
-                children: protonRunners.map((runner) => _RunnerListItem(
-                  name: runner.name,
-                  displayName: runner.displayName,
-                  version: runner.version,
-                  runnerType: runner.runnerType,
-                  isInstalled: runner.isInstalled,
-                  isLoading: _isLoading[runner.name] ?? false,
-                  onInstall: () => _installRunner(runner.name),
-                  onDelete: () => _deleteRunner(runner.name),
-                )).toList(),
-              ),
-            ],
+                const SizedBox(height: 24),
+
+                // Proton Runners Section
+                _buildSection(
+                  title: 'Proton Runners',
+                  icon: Icons.science,
+                  children: protonRunners
+                      .map((runner) => _RunnerListItem(
+                            name: runner.name,
+                            displayName: runner.displayName,
+                            version: runner.version,
+                            runnerType: runner.runnerType,
+                            isInstalled: runner.isInstalled,
+                            isLoading: _isLoading[runner.name] ?? false,
+                            onInstall: () => _installRunner(runner.name),
+                            onDelete: () => _deleteRunner(runner.name),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -426,7 +433,9 @@ class _ComponentListItemState extends State<_ComponentListItem> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                widget.name == 'umu-launcher' ? Icons.rocket_launch : Icons.shield,
+                widget.name == 'umu-launcher'
+                    ? Icons.rocket_launch
+                    : Icons.shield,
                 color: ElysiaTheme.accentColor,
                 size: 24,
               ),

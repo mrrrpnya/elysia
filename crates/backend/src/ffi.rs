@@ -121,7 +121,7 @@ fn convert_game(
                 },
                 bg.video.url.clone(),
                 bg.theme.url.clone(),
-                bg.background_type.clone(),
+                bg.bg_type.clone(),
             )
         })
         .unwrap_or_else(|| {
@@ -136,13 +136,13 @@ fn convert_game(
     Game {
         id: game.id.clone(),
         biz: game.biz.clone(),
-        name: game.name.clone(),
+        name: game.display.name.clone(),
         title: game.display.title.clone(),
         subtitle: game.display.subtitle.clone(),
         icon_url: game.display.icon.url.clone(),
         background_url,
         logo_url: game.display.logo.url.clone(),
-        display_status: game.display.display_status.clone(),
+        display_status: game.display_status.clone(),
         video_background_url: video_url,
         theme_image_url: theme_url,
         background_type: bg_type,
@@ -151,8 +151,8 @@ fn convert_game(
 
 fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> Content {
     Content {
-        game_id: content.game_id.clone(),
-        game_biz: content.game_biz.clone(),
+        game_id: content.game.id.clone(),
+        game_biz: content.game.biz.clone(),
         language: content.language.clone(),
         banners: content
             .banners

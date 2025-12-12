@@ -9,7 +9,7 @@ class ElysiaCacheManager {
   static const key = 'elysiaImageCache';
   static CacheManager? _instance;
   static bool _initialized = false;
-  
+
   static CacheManager get instance {
     // Return default cache manager if not initialized yet
     // This prevents crashes if images try to load before initialization
@@ -18,21 +18,21 @@ class ElysiaCacheManager {
     }
     return _instance!;
   }
-  
+
   /// Initialize cache manager with custom directory in app's data folder
   static Future<void> initialize() async {
     if (_initialized) return;
-    
+
     try {
       // Get the app's support directory
       final appDir = await getApplicationSupportDirectory();
       final cacheDir = Directory(p.join(appDir.path, 'image_cache'));
-      
+
       // Create cache directory if it doesn't exist
       if (!await cacheDir.exists()) {
         await cacheDir.create(recursive: true);
       }
-      
+
       _instance = CacheManager(
         Config(
           key,
@@ -50,7 +50,7 @@ class ElysiaCacheManager {
       _initialized = false;
     }
   }
-  
+
   /// Clear the image cache
   static Future<void> clearCache() async {
     await instance.emptyCache();

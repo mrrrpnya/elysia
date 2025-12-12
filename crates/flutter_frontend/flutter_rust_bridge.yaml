@@ -9,6 +9,7 @@ dart_root: .
 # Code generation options
 default_dart_async: true
 full_dep: true
+enable_lifetime: true
 
 # Linux-only build - skip web generation
 web: false

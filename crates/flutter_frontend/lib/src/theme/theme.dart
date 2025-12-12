@@ -13,17 +13,17 @@ class ElysiaTheme {
   static const Color textSecondary = Color(0xFFB3B3B3);
   static const Color borderColor = Color(0xFF404040);
   static const Color shadowColor = Color(0x4D000000);
-  
+
   // Sizing
   static const double sidebarWidth = 84.0;
   static const double buttonRadius = 99.0;
   static const double cardRadius = 16.0;
   static const double itemRadius = 8.0;
-  
+
   // Padding
   static const EdgeInsets pagePadding = EdgeInsets.all(32.0);
   static const EdgeInsets cardPadding = EdgeInsets.all(12.0);
-  
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -38,7 +38,7 @@ class ElysiaTheme {
       scaffoldBackgroundColor: backgroundColor,
       cardColor: cardColor,
       dividerColor: borderColor,
-      
+
       // AppBar
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -49,20 +49,27 @@ class ElysiaTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-      
+
       // Text
       textTheme: const TextTheme(
-        displayLarge: TextStyle(color: textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
-        displayMedium: TextStyle(color: textPrimary, fontSize: 28, fontWeight: FontWeight.bold),
-        displaySmall: TextStyle(color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
-        headlineMedium: TextStyle(color: textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
-        titleLarge: TextStyle(color: textPrimary, fontSize: 18, fontWeight: FontWeight.w500),
-        titleMedium: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.w500),
+        displayLarge: TextStyle(
+            color: textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(
+            color: textPrimary, fontSize: 28, fontWeight: FontWeight.bold),
+        displaySmall: TextStyle(
+            color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(
+            color: textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
+        titleLarge: TextStyle(
+            color: textPrimary, fontSize: 18, fontWeight: FontWeight.w500),
+        titleMedium: TextStyle(
+            color: textPrimary, fontSize: 16, fontWeight: FontWeight.w500),
         bodyLarge: TextStyle(color: textPrimary, fontSize: 16),
         bodyMedium: TextStyle(color: textSecondary, fontSize: 14),
-        labelLarge: TextStyle(color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+        labelLarge: TextStyle(
+            color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
       ),
-      
+
       // Buttons
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -76,7 +83,7 @@ class ElysiaTheme {
           elevation: 0,
         ),
       ),
-      
+
       // Cards
       cardTheme: CardThemeData(
         color: cardColor,
@@ -86,13 +93,13 @@ class ElysiaTheme {
           side: BorderSide(color: borderColor),
         ),
       ),
-      
+
       // Icons
       iconTheme: const IconThemeData(
         color: textPrimary,
         size: 24,
       ),
-      
+
       // Progress indicators
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryColor,
@@ -108,15 +115,15 @@ class GlassDecoration extends BoxDecoration {
     Color? color,
     double borderRadius = ElysiaTheme.cardRadius,
   }) : super(
-    color: color ?? ElysiaTheme.surfaceColor.withValues(alpha: 0.4),
-    borderRadius: BorderRadius.circular(borderRadius),
-    border: Border.all(color: ElysiaTheme.borderColor),
-    boxShadow: const [
-      BoxShadow(
-        color: ElysiaTheme.shadowColor,
-        blurRadius: 8,
-        offset: Offset(2, 2),
-      ),
-    ],
-  );
+          color: color ?? ElysiaTheme.surfaceColor.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(borderRadius),
+          border: Border.all(color: ElysiaTheme.borderColor),
+          boxShadow: const [
+            BoxShadow(
+              color: ElysiaTheme.shadowColor,
+              blurRadius: 8,
+              offset: Offset(2, 2),
+            ),
+          ],
+        );
 }

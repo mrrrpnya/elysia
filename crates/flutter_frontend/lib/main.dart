@@ -10,10 +10,10 @@ import 'src/services/cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize the image cache manager
   await ElysiaCacheManager.initialize();
-  
+
   runApp(const ElysiaApp());
 }
 
@@ -46,11 +46,11 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   bool _showSettings = false;
   bool _showComponents = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    
+
     if (provider.isLoading) {
       return const Scaffold(
         body: Center(
@@ -68,7 +68,7 @@ class _AppShellState extends State<AppShell> {
         ),
       );
     }
-    
+
     if (provider.error != null) {
       return Scaffold(
         body: Center(
@@ -95,7 +95,7 @@ class _AppShellState extends State<AppShell> {
         ),
       );
     }
-    
+
     return Scaffold(
       body: Stack(
         children: [
@@ -113,7 +113,7 @@ class _AppShellState extends State<AppShell> {
                           )
                         : const HomePage(),
           ),
-          
+
           // Sidebar
           _Sidebar(
             games: provider.games,
@@ -155,7 +155,7 @@ class _Sidebar extends StatelessWidget {
   final Function(dynamic) onGameSelected;
   final VoidCallback onComponentsPressed;
   final VoidCallback onSettingsPressed;
-  
+
   const _Sidebar({
     required this.games,
     required this.selectedGame,
@@ -165,7 +165,7 @@ class _Sidebar extends StatelessWidget {
     required this.onComponentsPressed,
     required this.onSettingsPressed,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -196,8 +196,10 @@ class _Sidebar extends StatelessWidget {
                     itemCount: games.length,
                     itemBuilder: (context, index) {
                       final game = games[index];
-                      final isSelected = selectedGame?.id == game.id && !showSettings && !showComponents;
-                      
+                      final isSelected = selectedGame?.id == game.id &&
+                          !showSettings &&
+                          !showComponents;
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: SidebarItem(
@@ -212,7 +214,7 @@ class _Sidebar extends StatelessWidget {
                     },
                   ),
                 ),
-                
+
                 // Components button (wine bottle icon)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -226,9 +228,9 @@ class _Sidebar extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Settings button
                 Padding(
                   padding: const EdgeInsets.all(8),
@@ -255,12 +257,12 @@ class _Sidebar extends StatelessWidget {
 class _GameIcon extends StatelessWidget {
   final String iconUrl;
   final String name;
-  
+
   const _GameIcon({
     required this.iconUrl,
     required this.name,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     if (iconUrl.isEmpty) {
@@ -283,7 +285,7 @@ class _GameIcon extends StatelessWidget {
         ),
       );
     }
-    
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: CachedNetworkImage(

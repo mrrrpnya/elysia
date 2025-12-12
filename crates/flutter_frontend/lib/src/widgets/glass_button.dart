@@ -8,7 +8,7 @@ class GlassButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final bool enabled;
   final double? width;
-  
+
   const GlassButton({
     super.key,
     required this.child,
@@ -16,7 +16,7 @@ class GlassButton extends StatefulWidget {
     this.enabled = true,
     this.width,
   });
-  
+
   @override
   State<GlassButton> createState() => _GlassButtonState();
 }
@@ -24,7 +24,7 @@ class GlassButton extends StatefulWidget {
 class _GlassButtonState extends State<GlassButton> {
   bool _isHovering = false;
   bool _isPressed = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = !widget.enabled
@@ -34,11 +34,12 @@ class _GlassButtonState extends State<GlassButton> {
             : _isHovering
                 ? ElysiaTheme.surfaceColor.withValues(alpha: 0.7)
                 : ElysiaTheme.surfaceColor.withValues(alpha: 0.6);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
-      cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      cursor:
+          widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),
@@ -66,8 +67,8 @@ class _GlassButtonState extends State<GlassButton> {
               ),
               child: DefaultTextStyle(
                 style: TextStyle(
-                  color: widget.enabled 
-                      ? ElysiaTheme.textPrimary 
+                  color: widget.enabled
+                      ? ElysiaTheme.textPrimary
                       : ElysiaTheme.textSecondary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -88,7 +89,7 @@ class AccentButton extends StatefulWidget {
   final VoidCallback? onPressed;
   final bool enabled;
   final double? width;
-  
+
   const AccentButton({
     super.key,
     required this.child,
@@ -96,7 +97,7 @@ class AccentButton extends StatefulWidget {
     this.enabled = true,
     this.width,
   });
-  
+
   @override
   State<AccentButton> createState() => _AccentButtonState();
 }
@@ -104,7 +105,7 @@ class AccentButton extends StatefulWidget {
 class _AccentButtonState extends State<AccentButton> {
   bool _isHovering = false;
   bool _isPressed = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final baseColor = ElysiaTheme.primaryColor;
@@ -115,11 +116,12 @@ class _AccentButtonState extends State<AccentButton> {
             : _isHovering
                 ? baseColor.withValues(alpha: 0.8)
                 : baseColor.withValues(alpha: 0.7);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
-      cursor: widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      cursor:
+          widget.enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
         onTapUp: (_) => setState(() => _isPressed = false),

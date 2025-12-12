@@ -9,12 +9,12 @@ import '../services/cache_service.dart';
 /// News/Banner widget with carousel
 class NewsWidget extends StatefulWidget {
   final api.Content? content;
-  
+
   const NewsWidget({
     super.key,
     this.content,
   });
-  
+
   @override
   State<NewsWidget> createState() => _NewsWidgetState();
 }
@@ -23,23 +23,23 @@ class _NewsWidgetState extends State<NewsWidget> {
   int _currentIndex = 0;
   Timer? _autoScrollTimer;
   late PageController _pageController;
-  
+
   List<api.Banner> get banners => widget.content?.banners ?? [];
-  
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _startAutoScroll();
   }
-  
+
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
-  
+
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
     if (banners.length > 1) {
@@ -55,11 +55,11 @@ class _NewsWidgetState extends State<NewsWidget> {
       });
     }
   }
-  
+
   void _resetAutoScroll() {
     _startAutoScroll();
   }
-  
+
   void _goToPage(int page) {
     if (_pageController.hasClients) {
       _pageController.animateToPage(
@@ -70,13 +70,13 @@ class _NewsWidgetState extends State<NewsWidget> {
     }
     _resetAutoScroll();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (banners.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,7 +95,8 @@ class _NewsWidgetState extends State<NewsWidget> {
                       final nextPage = (_currentIndex + 1) % banners.length;
                       _goToPage(nextPage);
                     } else if (event.scrollDelta.dy < 0) {
-                      final prevPage = (_currentIndex - 1 + banners.length) % banners.length;
+                      final prevPage =
+                          (_currentIndex - 1 + banners.length) % banners.length;
                       _goToPage(prevPage);
                     }
                   }
@@ -120,7 +121,7 @@ class _NewsWidgetState extends State<NewsWidget> {
                   ),
                 ),
               ),
-              
+
               // Page indicators overlay at bottom with background for visibility
               if (banners.length > 1)
                 Positioned(
@@ -129,7 +130,8 @@ class _NewsWidgetState extends State<NewsWidget> {
                   bottom: 8,
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(16),
@@ -140,7 +142,8 @@ class _NewsWidgetState extends State<NewsWidget> {
                           banners.length,
                           (index) => GestureDetector(
                             onTap: () => _goToPage(index),
-                            child: _PageIndicator(isActive: index == _currentIndex),
+                            child: _PageIndicator(
+                                isActive: index == _currentIndex),
                           ),
                         ),
                       ),
@@ -157,9 +160,9 @@ class _NewsWidgetState extends State<NewsWidget> {
 
 class _BannerImage extends StatelessWidget {
   final String imageUrl;
-  
+
   const _BannerImage({required this.imageUrl});
-  
+
   @override
   Widget build(BuildContext context) {
     if (imageUrl.isEmpty) {
@@ -174,7 +177,7 @@ class _BannerImage extends StatelessWidget {
         ),
       );
     }
-    
+
     // Use BoxFit.contain to show full image without cropping
     // The image will fill the width and maintain aspect ratio
     return CachedNetworkImage(
@@ -211,9 +214,9 @@ class _BannerImage extends StatelessWidget {
 
 class _PageIndicator extends StatelessWidget {
   final bool isActive;
-  
+
   const _PageIndicator({required this.isActive});
-  
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -222,8 +225,8 @@ class _PageIndicator extends StatelessWidget {
       width: isActive ? 20 : 6,
       height: 6,
       decoration: BoxDecoration(
-        color: isActive 
-            ? ElysiaTheme.primaryColor 
+        color: isActive
+            ? ElysiaTheme.primaryColor
             : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(3),
       ),
