@@ -2,6 +2,20 @@ import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import 'package:elysia/ffi.dart' as api;
 
+enum RunnerType {
+  wine,
+  proton;
+
+  String get directoryName {
+    switch (this) {
+      case RunnerType.wine:
+        return 'wine';
+      case RunnerType.proton:
+        return 'proton';
+    }
+  }
+}
+
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
   const ComponentsPage({super.key});
@@ -309,7 +323,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
                             name: runner.name,
                             displayName: runner.displayName,
                             version: runner.version,
-                            runnerType: runner.runnerType.toString(),
+                            runnerType: runner.runnerType,
                             isInstalled: runner.isInstalled,
                             isLoading: _isLoading[runner.name] ?? false,
                             onInstall: () => _installRunner(runner.name),
@@ -329,7 +343,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
                             name: runner.name,
                             displayName: runner.displayName,
                             version: runner.version,
-                            runnerType: runner.runnerType.toString(),
+                            runnerType: runner.runnerType,
                             isInstalled: runner.isInstalled,
                             isLoading: _isLoading[runner.name] ?? false,
                             onInstall: () => _installRunner(runner.name),
@@ -546,7 +560,7 @@ class _RunnerListItem extends StatefulWidget {
   final String name;
   final String displayName;
   final String version;
-  final String runnerType;
+  final RunnerType runnerType;
   final bool isInstalled;
   final bool isLoading;
   final VoidCallback onInstall;
