@@ -19,21 +19,27 @@ A game launcher with a Flutter frontend and Rust backend.
 
 - [Flutter](https://flutter.dev/docs/get-started/install) 3.38+
 - [Rust](https://rustup.rs/) 1.75+
-- Linux: `clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev`
+- [flutter_rust_bridge_codegen](https://cjycode.com/flutter_rust_bridge/) 2.11.1
+- Linux: `clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libavcodec-dev libavformat-dev libavutil-dev`
 
-### Build Commands
+### Quick Start with Makefile
 
 ```bash
-# Get Flutter dependencies
-cd crates/flutter_frontend
-flutter pub get
+# Complete build from scratch
+make all
 
-# Build for Linux
-flutter build linux --release
+# Or step by step:
+make install-deps  # Install dependencies
+make gen          # Generate FFI bindings
+make build        # Build everything
 
-# Build Rust components
-cargo build --release
+# Development
+make run          # Run in debug mode with hot-reload
 ```
+
+### Manual Build Commands
+
+See [BUILDING.md](BUILDING.md) for detailed build instructions.
 
 ## Development
 
