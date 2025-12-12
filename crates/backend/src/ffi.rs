@@ -352,6 +352,8 @@ pub async fn install_game(game_id: String, biz: String) -> String {
 
 /// Launch an installed game - returns "ok" or error message
 pub async fn launch_game(game_id: String) -> String {
+    use crate::runners::Runner;
+    
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
