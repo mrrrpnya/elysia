@@ -88,6 +88,7 @@ pub struct GameExe {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[frb(ignore)]
 pub struct Game {
     pub id: String,
     pub biz: String,
@@ -143,6 +144,7 @@ pub struct GameServerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[frb(ignore)]
 pub struct Content {
     pub game: GameInfo,
     pub language: String,
@@ -158,6 +160,7 @@ pub struct GameInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[frb(ignore)]
 pub struct Banner {
     pub id: String,
     pub image: ImageLink,
@@ -165,6 +168,7 @@ pub struct Banner {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[frb(ignore)]
 pub struct Post {
     pub id: String,
     #[serde(rename = "type")]
