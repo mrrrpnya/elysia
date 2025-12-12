@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use flutter_rust_bridge::frb;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApiResponse<DataType> {
@@ -89,8 +88,7 @@ pub struct GameExe {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[frb(ignore)]
-pub struct Game {
+pub(crate) struct Game {
     pub id: String,
     pub biz: String,
     pub display: Display,
@@ -145,8 +143,7 @@ pub struct GameServerConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[frb(ignore)]
-pub struct Content {
+pub(crate) struct Content {
     pub game: GameInfo,
     pub language: String,
     pub banners: Vec<Banner>,
@@ -161,16 +158,14 @@ pub struct GameInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[frb(ignore)]
-pub struct Banner {
+pub(crate) struct Banner {
     pub id: String,
     pub image: ImageLink,
     pub i18n_identifier: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[frb(ignore)]
-pub struct Post {
+pub(crate) struct Post {
     pub id: String,
     #[serde(rename = "type")]
     pub post_type: String,

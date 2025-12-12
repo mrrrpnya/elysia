@@ -5,7 +5,6 @@ use anyhow::{Context, Result};
 use bytes::Bytes;
 use tokio::sync::mpsc;
 use std::path::PathBuf;
-use flutter_rust_bridge::frb;
 
 /// Get the video cache directory path
 fn get_video_cache_dir() -> Result<PathBuf> {
@@ -30,8 +29,7 @@ fn get_cache_filename(url: &str) -> String {
 
 /// Video frame data
 #[derive(Clone, Debug)]
-#[frb(ignore)]
-pub struct VideoFrame {
+pub(crate) struct VideoFrame {
     /// RGBA image data
     pub data: Vec<u8>,
     /// Image width
