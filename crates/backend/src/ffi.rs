@@ -42,13 +42,6 @@ pub struct FfiBanner {
     pub link: String,
 }
 
-/// RunnerType data for FFI
-#[derive(Clone, Debug)]
-pub enum RunnerType {
-    Wine,
-    Proton,
-}
-
 /// Post data for FFI
 #[derive(Clone, Debug)]
 pub struct FfiPost {
@@ -87,7 +80,7 @@ pub struct FfiAvailableRunner {
     pub display_name: String,
     pub version: String,
     pub is_installed: bool,
-    pub runner_type: RunnerType,
+    pub runner_type: components::runners::RunnerType,
     pub install_path: String,
 }
 
