@@ -29,7 +29,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
   void _loadRunners() {
     try {
       // Use generated classes directly - no conversion!
-      final runners = api.getAvailableRunners();
+      final runners = api.get_available_runners();
       setState(() {
         _runners = runners;
       });
@@ -41,7 +41,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
   void _loadComponents() {
     try {
       // Use generated classes directly - no conversion!
-      final components = api.getAvailableComponents();
+      final components = api.get_available_components();
       setState(() {
         _components = components;
       });
@@ -56,7 +56,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await api.installRunner(runnerName: runnerName);
+      final result = await api.install_runner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +99,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await api.deleteRunner(runnerName: runnerName);
+      final result = await api.delete_runner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -141,9 +141,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await api.installUmuLauncher();
+        result = await api.install_umu_launcher();
       } else if (componentName == 'jadeite') {
-        result = await api.installJadeite();
+        result = await api.install_jadeite();
       } else {
         result = 'Unknown component';
       }
@@ -192,9 +192,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await api.deleteUmuLauncher();
+        result = await api.delete_umu_launcher();
       } else if (componentName == 'jadeite') {
-        result = await api.deleteJadeite();
+        result = await api.delete_jadeite();
       } else {
         result = 'Unknown component';
       }
