@@ -318,15 +318,67 @@ pub fn get_config_path() -> String {
 }
 
 /// Install/download a game - returns "ok" or error message
-pub async fn install_game(_game_id: String, _biz: String) -> String {
-    // TODO: Implement using InstallerManager::create_installer and spawn_install
-    "Not implemented - use InstallerManager".to_string()
+pub async fn install_game(game_id: String, biz: String) -> String {
+    use std::sync::{Arc, RwLock};
+
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
+            let mut s = crate::settings::GlobalSettings::default();
+            s.validate();
+            s
+        });
+
+    let temp_dir = settings.temp_directory.clone();
+    let components_dir = settings.components_directory.clone();
+
+    match crate::game_providers::installer::InstallerManager::create_installer(&game_id, &biz, temp_dir, components_dir) {
+        Some(installer) => {
+            // Wrap settings in Arc<RwLock> for the async task
+            let settings_arc = Arc::new(RwLock::new(settings));
+            
+            // Spawn the installation task
+            crate::game_providers::installer::InstallerManager::spawn_install(settings_arc, installer, game_id.clone());
+            
+            eprintln!("[INFO] Installation started for game: {}", game_id);
+            "ok".to_string()
+        }
+        None => {
+            let err = format!("No installer available for game {} with biz {}", game_id, biz);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
 }
 
 /// Launch an installed game - returns "ok" or error message
 pub async fn launch_game(_game_id: String) -> String {
-    // TODO: Implement game launching
-    "Not implemented".to_string()
+    let settings = crate::settings::GlobalSettings::load()
+        .unwrap_or_else(|_| {
+            let mut s = crate::settings::GlobalSettings::default();
+            s.validate();
+            s
+        });
+
+    match settings.installed_games.get(&game_id) {
+        Some(installed_game) => {
+            match installed_game.runner.run_game(&settings, installed_game) {
+                Ok(_) => {
+                    eprintln!("[INFO] Game launched: {}", game_id);
+                    "ok".to_string()
+                }
+                Err(e) => {
+                    let err = format!("Failed to launch game: {}", e);
+                    eprintln!("[ERROR] {}", err);
+                    err
+                }
+            }
+        }
+        None => {
+            let err = format!("Game {} is not installed", game_id);
+            eprintln!("[ERROR] {}", err);
+            err
+        }
+    }
 }
 
 /// Get available runners - returns Vec<FfiAvailableRunner>

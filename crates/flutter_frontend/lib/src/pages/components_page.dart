@@ -2,6 +2,20 @@ import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import 'package:elysia/ffi.dart' as api;
 
+enum DartRunnerType {
+  wine,
+  proton;
+
+  String get directoryName {
+    switch (this) {
+      case DartRunnerType.wine:
+        return 'wine';
+      case DartRunnerType.proton:
+        return 'proton';
+    }
+  }
+}
+
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
   const ComponentsPage({super.key});
@@ -546,7 +560,7 @@ class _RunnerListItem extends StatefulWidget {
   final String name;
   final String displayName;
   final String version;
-  final RunnerType runnerType;
+  final DartRunnerType runnerType;
   final bool isInstalled;
   final bool isLoading;
   final VoidCallback onInstall;
