@@ -2,20 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import 'package:elysia/ffi.dart' as api;
 
-enum RunnerType {
-  wine,
-  proton;
-
-  String get directoryName {
-    switch (this) {
-      case RunnerType.wine:
-        return 'wine';
-      case RunnerType.proton:
-        return 'proton';
-    }
-  }
-}
-
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
   const ComponentsPage({super.key});
