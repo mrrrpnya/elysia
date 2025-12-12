@@ -44,7 +44,7 @@ pub struct FfiBanner {
 
 /// RunnerType data for FFI
 #[derive(Clone, Debug)]
-pub enum FfiRunnerType {
+pub enum RunnerType {
     Wine,
     Proton,
 }
@@ -87,7 +87,7 @@ pub struct FfiAvailableRunner {
     pub display_name: String,
     pub version: String,
     pub is_installed: bool,
-    pub runner_type: FfiRunnerType,
+    pub runner_type: RunnerType,
     pub install_path: String,
 }
 
