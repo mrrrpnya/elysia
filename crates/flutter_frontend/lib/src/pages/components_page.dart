@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {

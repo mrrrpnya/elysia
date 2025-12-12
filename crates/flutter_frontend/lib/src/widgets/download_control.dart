@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 
 /// Download control widget showing progress and action button
 class DownloadControl extends StatelessWidget {

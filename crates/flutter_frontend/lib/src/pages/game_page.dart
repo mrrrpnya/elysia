@@ -5,7 +5,7 @@ import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';

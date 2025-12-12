@@ -1,7 +1,7 @@
 // Extensions for auto-generated API types
 // Adds computed properties and helper methods
 
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 
 /// Extensions for DownloadProgress
 extension DownloadProgressExtensions on api.DownloadProgress {

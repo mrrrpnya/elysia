@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart' hide Banner;
 import 'package:flutter/gestures.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 import '../theme/theme.dart';
 import '../services/cache_service.dart';
 

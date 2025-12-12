@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:elysia/api.dart' as api;
+import 'package:elysia/ffi.dart' as api;
 import 'package:elysia/frb_generated.dart';
 
 /// Application state provider
