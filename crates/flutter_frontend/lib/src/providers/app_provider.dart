@@ -74,6 +74,7 @@ class AppProvider extends ChangeNotifier {
 
     try {
       debugPrint('[AppProvider] Initializing Rust backend...');
+      await RustLib.init();
 
       final result = await api.initBackend();
       debugPrint('[AppProvider] Init result: $result');
