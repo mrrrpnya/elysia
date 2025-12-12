@@ -99,9 +99,6 @@ jobs:
           flutter_rust_bridge_codegen generate 2>&1 || {
             echo "Warning: Codegen had issues, checking if build can continue..."
           }
-          # List generated files
-          echo "Generated files in lib/src/rust/:"
-          ls -la lib/src/rust/ || echo "No files generated"
       
       - name: Build Rust backend (release)
         run: |
