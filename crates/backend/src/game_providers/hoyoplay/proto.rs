@@ -88,7 +88,6 @@ pub struct GameExe {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[flutter_rust_bridge::frb(opaque)]
 pub struct Game {
     pub id: String,
     pub biz: String,
@@ -100,7 +99,6 @@ pub struct Game {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[flutter_rust_bridge::frb(opaque)]
 pub struct Display {
     pub language: String,
     pub name: String,
@@ -179,7 +177,6 @@ pub struct Post {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[flutter_rust_bridge::frb(opaque)]
 pub struct SocialMedia {
     pub id: String,
     pub icon: Image,
