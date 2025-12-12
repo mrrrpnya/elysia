@@ -399,7 +399,7 @@ pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
         .into_iter()
         .map(|r| {
             // Check if runner is installed by looking for its folder
-            let is_installed = crate::runners::is_runner_installed(r);
+            let is_installed = crate::components::runners::is_runner_installed(r);
             
             FfiAvailableRunner {
                 name: r.name,
