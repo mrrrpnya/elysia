@@ -6,7 +6,7 @@ import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
-import '../rust/api.dart' as rust_api;
+import 'package:elysia/api.dart' as rust_api;
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';

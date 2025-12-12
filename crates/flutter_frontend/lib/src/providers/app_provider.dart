@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
-import '../rust/api.dart' as rust_api;
-import '../rust/frb_generated.dart';
+import 'package:elysia/api.dart' as rust_api;
+import 'package:elysia/frb_generated.dart';
 
 /// Application state provider
 class AppProvider extends ChangeNotifier {
@@ -95,8 +95,8 @@ class AppProvider extends ChangeNotifier {
       debugPrint('[AppProvider] Fetching games...');
       
       // New: Returns List<GameDto> directly, no JSON parsing needed!
-      final gameDtos = await rust_api.getAllGames();
-      final games = gameDtos.map((dto) => _gameFromDto(dto)).toList();
+      final games = await rust_api.getAllGames();
+      final games = games.map((game) => _gameFromRust(game)).toList();
       
       debugPrint('[AppProvider] Fetched ${games.length} games');
       return games;
@@ -112,13 +112,13 @@ class AppProvider extends ChangeNotifier {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
       
       // New: Returns ContentDto? directly, no JSON parsing needed!
-      final contentDto = await rust_api.getGameContent(gameId: gameId, biz: biz);
+      final content = await rust_api.getGameContent(gameId: gameId, biz: biz);
       
-      if (contentDto == null) {
+      if (content == null) {
         return null;
       }
       
-      return _contentFromDto(contentDto);
+      return _contentFromRust(content);
     } catch (e) {
       debugPrint('[AppProvider] Error fetching game content: $e');
       return null;
@@ -126,43 +126,43 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Convert GameDto to Game model
-  Game _gameFromDto(dynamic dto) {
+  Game _gameFromRust(dynamic game) {
     return Game(
-      id: dto.id,
-      biz: dto.biz,
+      id: game.id,
+      biz: game.biz,
       display: Display(
         language: 'en-us',
-        name: dto.name,
+        name: game.name,
         icon: Image(
-          url: dto.iconUrl,
+          url: game.iconUrl,
           hoverUrl: '',
           link: '',
           md5: '',
           size: 0,
         ),
-        title: dto.title,
-        subtitle: dto.subtitle,
+        title: game.title,
+        subtitle: game.subtitle,
         background: ImageLink(
-          url: dto.backgroundUrl,
+          url: game.backgroundUrl,
           link: '',
         ),
         logo: ImageLink(
-          url: dto.logoUrl,
+          url: game.logoUrl,
           link: '',
         ),
         thumbnail: const ImageLink(url: '', link: ''),
         shortcut: const Image(url: '', hoverUrl: '', link: '', md5: '', size: 0),
-        videoBackgroundUrl: dto.videoBackgroundUrl,
-        themeImageUrl: dto.themeImageUrl,
-        backgroundType: dto.backgroundType,
+        videoBackgroundUrl: game.videoBackgroundUrl,
+        themeImageUrl: game.themeImageUrl,
+        backgroundType: game.backgroundType,
       ),
-      displayStatus: dto.displayStatus,
+      displayStatus: game.displayStatus,
     );
   }
   
   /// Convert ContentDto to Content model
-  Content _contentFromDto(dynamic dto) {
-    final banners = dto.banners.map<Banner>((b) => Banner(
+  Content _contentFromRust(dynamic content) {
+    final banners = content.banners.map<Banner>((b) => Banner(
       id: b.id,
       image: ImageLink(
         url: b.imageUrl,
@@ -171,7 +171,7 @@ class AppProvider extends ChangeNotifier {
       i18nIdentifier: '',
     )).toList();
     
-    final posts = dto.posts.map<Post>((p) => Post(
+    final posts = content.posts.map<Post>((p) => Post(
       id: p.id,
       postType: p.postType,
       title: p.title,
@@ -181,10 +181,10 @@ class AppProvider extends ChangeNotifier {
     
     return Content(
       game: GameInfo(
-        id: dto.gameId,
-        biz: dto.gameBiz,
+        id: content.gameId,
+        biz: content.gameBiz,
       ),
-      language: dto.language,
+      language: content.language,
       banners: banners,
       posts: posts,
       socialMediaList: [],
@@ -251,20 +251,20 @@ class AppProvider extends ChangeNotifier {
     
     try {
       // New: Returns DownloadProgressDto? directly!
-      final dto = rust_api.getDownloadProgress(gameId: gameId);
+      final progress = rust_api.getDownloadProgress(gameId: gameId);
       
-      if (dto == null) {
+      if (progress == null) {
         return null;
       }
       
       return DownloadProgress(
-        downloaded: dto.downloaded,
-        total: dto.total,
-        mbPerSecond: dto.mbPerSecond.toDouble(),
-        partIndex: dto.partIndex,
-        partsTotal: dto.partsTotal,
-        status: dto.status,
-        isBusy: dto.isBusy,
+        downloaded: progress.downloaded,
+        total: progress.total,
+        mbPerSecond: progress.mbPerSecond.toDouble(),
+        partIndex: progress.partIndex,
+        partsTotal: progress.partsTotal,
+        status: progress.status,
+        isBusy: progress.isBusy,
       );
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');

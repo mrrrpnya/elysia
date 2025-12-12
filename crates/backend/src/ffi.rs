@@ -5,12 +5,12 @@
 use serde::{Deserialize, Serialize};
 
 // ============================================================================
-// DTO types for FFI - FRB will auto-generate Dart classes for these
+// FFI data structures - FRB will auto-generate Dart classes for these
 // ============================================================================
 
 /// Game data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GameDto {
+pub struct Game {
     pub id: String,
     pub biz: String,
     pub name: String,
@@ -27,17 +27,17 @@ pub struct GameDto {
 
 /// Game content data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ContentDto {
+pub struct Content {
     pub game_id: String,
     pub game_biz: String,
     pub language: String,
-    pub banners: Vec<BannerDto>,
-    pub posts: Vec<PostDto>,
+    pub banners: Vec<Banner>,
+    pub posts: Vec<Post>,
 }
 
 /// Banner data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BannerDto {
+pub struct Banner {
     pub id: String,
     pub image_url: String,
     pub link: String,
@@ -45,7 +45,7 @@ pub struct BannerDto {
 
 /// Post data for FFI
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct PostDto {
+pub struct Post {
     pub id: String,
     pub post_type: String,
     pub title: String,
@@ -55,7 +55,7 @@ pub struct PostDto {
 
 /// Download progress information
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct DownloadProgressDto {
+pub struct DownloadProgress {
     pub downloaded: u64,
     pub total: u64,
     pub mb_per_second: f32,
@@ -67,7 +67,7 @@ pub struct DownloadProgressDto {
 
 /// Settings paths
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SettingsDto {
+pub struct Settings {
     pub wineprefixes_directory: String,
     pub components_directory: String,
     pub temp_directory: String,
@@ -76,7 +76,7 @@ pub struct SettingsDto {
 
 /// Available runner information
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AvailableRunnerDto {
+pub struct AvailableRunner {
     pub name: String,
     pub display_name: String,
     pub version: String,
@@ -86,7 +86,7 @@ pub struct AvailableRunnerDto {
 
 /// Available component information
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AvailableComponentDto {
+pub struct AvailableComponent {
     pub name: String,
     pub display_name: String,
     pub is_installed: bool,
@@ -94,7 +94,7 @@ pub struct AvailableComponentDto {
 
 /// Video frame data for streaming
 #[derive(Clone, Debug)]
-pub struct VideoFrameDto {
+pub struct VideoFrame {
     pub data: Vec<u8>,
     pub width: u32,
     pub height: u32,
@@ -107,10 +107,10 @@ use crate::game_providers::hoyoplay::proto::BackgroundInfo;
 // Conversion functions
 // ============================================================================
 
-fn game_to_dto(
+fn convert_game(
     game: &crate::game_providers::hoyoplay::proto::Game,
     background_info: Option<&BackgroundInfo>,
-) -> GameDto {
+) -> Game {
     let (background_url, video_url, theme_url, bg_type) = background_info
         .map(|bg| {
             (
@@ -133,7 +133,7 @@ fn game_to_dto(
             )
         });
 
-    GameDto {
+    Game {
         id: game.id.clone(),
         biz: game.biz.clone(),
         name: game.name.clone(),
@@ -149,15 +149,15 @@ fn game_to_dto(
     }
 }
 
-fn content_to_dto(content: &crate::game_providers::hoyoplay::proto::Content) -> ContentDto {
-    ContentDto {
+fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> Content {
+    Content {
         game_id: content.game_id.clone(),
         game_biz: content.game_biz.clone(),
         language: content.language.clone(),
         banners: content
             .banners
             .iter()
-            .map(|b| BannerDto {
+            .map(|b| Banner {
                 id: b.id.clone(),
                 image_url: b.image.url.clone(),
                 link: b.link.clone(),
@@ -166,7 +166,7 @@ fn content_to_dto(content: &crate::game_providers::hoyoplay::proto::Content) -> 
         posts: content
             .posts
             .iter()
-            .map(|p| PostDto {
+            .map(|p| Post {
                 id: p.id.clone(),
                 post_type: p.post_type.clone(),
                 title: p.title.clone(),
@@ -188,7 +188,7 @@ pub fn init_backend() -> String {
 
 /// Get settings - returns struct directly!
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_settings() -> SettingsDto {
+pub fn get_settings() -> Settings {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -196,7 +196,7 @@ pub fn get_settings() -> SettingsDto {
             s
         });
     
-    SettingsDto {
+    Settings {
         wineprefixes_directory: settings.wineprefixes_directory.to_string_lossy().to_string(),
         components_directory: settings.components_directory.to_string_lossy().to_string(),
         temp_directory: settings.temp_directory.to_string_lossy().to_string(),
@@ -204,8 +204,8 @@ pub fn get_settings() -> SettingsDto {
     }
 }
 
-/// Get all games - returns Vec<GameDto> directly!
-pub async fn get_all_games() -> Vec<GameDto> {
+/// Get all games - returns Vec<Game> directly!
+pub async fn get_all_games() -> Vec<Game> {
     use std::collections::HashMap;
 
     let settings = crate::settings::GlobalSettings::load()
@@ -229,22 +229,22 @@ pub async fn get_all_games() -> Vec<GameDto> {
     if let Ok(hoyoplay_games) = crate::game_providers::hoyoplay::get_games(&settings).await {
         for game in hoyoplay_games.game_info_list {
             let background_info = background_map.get(&game.game.id);
-            games.push(game_to_dto(&game.game, background_info));
+            games.push(convert_game(&game.game, background_info));
         }
     }
 
     // Fetch Endfield games
     if let Ok(endfield_games) = crate::game_providers::endfield::get_games().await {
         for game in endfield_games.game_list {
-            games.push(game_to_dto(&game.game, None));
+            games.push(convert_game(&game.game, None));
         }
     }
 
     games
 }
 
-/// Get game content - returns ContentDto or None
-pub async fn get_game_content(game_id: String, biz: String) -> Option<ContentDto> {
+/// Get game content - returns Content or None
+pub async fn get_game_content(game_id: String, biz: String) -> Option<Content> {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -258,7 +258,7 @@ pub async fn get_game_content(game_id: String, biz: String) -> Option<ContentDto
         crate::game_providers::hoyoplay::get_game_content(&settings, &game_id).await
     };
 
-    content.ok().map(|c| content_to_dto(&c))
+    content.ok().map(|c| convert_content(&c))
 }
 
 /// Check if a game is installed
@@ -278,13 +278,13 @@ pub fn is_game_installed(game_id: String, biz: String) -> bool {
     )
 }
 
-/// Get download progress - returns DownloadProgressDto or None
+/// Get download progress - returns DownloadProgress or None
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_download_progress(game_id: String) -> Option<DownloadProgressDto> {
+pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
     let key = game_id;
     
     if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
-        return Some(DownloadProgressDto {
+        return Some(DownloadProgress {
             downloaded: progress.downloaded,
             total: progress.total,
             mb_per_second: progress.mb_per_second,
@@ -353,9 +353,9 @@ pub async fn launch_game(game_id: String) -> String {
     }
 }
 
-/// Get available runners - returns Vec<AvailableRunnerDto>
+/// Get available runners - returns Vec<AvailableRunner>
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_available_runners() -> Vec<AvailableRunnerDto> {
+pub fn get_available_runners() -> Vec<AvailableRunner> {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -365,7 +365,7 @@ pub fn get_available_runners() -> Vec<AvailableRunnerDto> {
 
     crate::runners::list_available_runners(&settings.components_directory)
         .into_iter()
-        .map(|r| AvailableRunnerDto {
+        .map(|r| AvailableRunner {
             name: r.name,
             display_name: r.display_name,
             version: r.version,
@@ -375,9 +375,9 @@ pub fn get_available_runners() -> Vec<AvailableRunnerDto> {
         .collect()
 }
 
-/// Get available components - returns Vec<AvailableComponentDto>
+/// Get available components - returns Vec<AvailableComponent>
 #[flutter_rust_bridge::frb(sync)]
-pub fn get_available_components() -> Vec<AvailableComponentDto> {
+pub fn get_available_components() -> Vec<AvailableComponent> {
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -389,12 +389,12 @@ pub fn get_available_components() -> Vec<AvailableComponentDto> {
     let jadeite_installed = crate::components::jadeite::is_installed(&settings.components_directory);
 
     vec![
-        AvailableComponentDto {
+        AvailableComponent {
             name: "umu-launcher".to_string(),
             display_name: "UMU Launcher".to_string(),
             is_installed: umu_installed,
         },
-        AvailableComponentDto {
+        AvailableComponent {
             name: "jadeite".to_string(),
             display_name: "Jadeite".to_string(),
             is_installed: jadeite_installed,
@@ -508,7 +508,7 @@ pub async fn delete_jadeite() -> String {
 /// Stream video frames from a URL
 pub async fn stream_video_frames(
     url: String,
-    sink: crate::frb_generated::StreamSink<VideoFrameDto>,
+    sink: crate::frb_generated::StreamSink<VideoFrame>,
 ) {
     use crate::video_decoder::{VideoDecoder, VideoFrame};
     use tokio::sync::mpsc;
@@ -524,7 +524,7 @@ pub async fn stream_video_frames(
     });
     
     while let Some(frame) = frame_rx.recv().await {
-        if sink.add(VideoFrameDto {
+        if sink.add(VideoFrame {
             data: frame.data,
             width: frame.width,
             height: frame.height,

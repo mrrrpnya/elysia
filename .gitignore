@@ -9,6 +9,14 @@ crates/flutter_frontend/.pub/
 *.flutter-plugins
 *.flutter-plugins-dependencies
 
+# Flutter Rust Bridge generated files (auto-generated during build)
+**/frb_generated.dart
+**/frb_generated.io.dart
+**/frb_generated.web.dart
+**/frb_generated.rs
+crates/flutter_frontend/lib/api.dart
+crates/backend/src/frb_generated.rs
+
 # IDE
 .idea/
 *.iml

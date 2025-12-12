@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../theme/theme.dart';
 import '../models/runner.dart';
 import '../models/component.dart';
-import '../rust/api.dart' as rust_api;
+import 'package:elysia/api.dart' as rust_api;
 
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
@@ -33,14 +33,14 @@ class _ComponentsPageState extends State<ComponentsPage> {
   void _loadRunners() {
     try {
       // New: Returns List<AvailableRunnerDto> directly!
-      final runnerDtos = rust_api.getAvailableRunners();
+      final runners = rust_api.getAvailableRunners();
       setState(() {
-        _runners = runnerDtos.map((dto) => _RunnerData(
-          name: dto.name,
-          displayName: dto.displayName,
-          version: dto.version,
-          isInstalled: dto.isInstalled,
-          installPath: dto.installPath,
+        _runners = _runners = runners.map((runner) => _RunnerData(
+          name: runner.name,
+          displayName: runner.displayName,
+          version: runner.version,
+          isInstalled: runner.isInstalled,
+          installPath: runner.installPath,
         )).toList();
       });
     } catch (e) {
@@ -51,12 +51,12 @@ class _ComponentsPageState extends State<ComponentsPage> {
   void _loadComponents() {
     try {
       // New: Returns List<AvailableComponentDto> directly!
-      final componentDtos = rust_api.getAvailableComponents();
+      final components = rust_api.getAvailableComponents();
       setState(() {
-        _components = componentDtos.map((dto) => _ComponentData(
-          name: dto.name,
-          displayName: dto.displayName,
-          isInstalled: dto.isInstalled,
+        _components = _components = components.map((component) => _ComponentData(
+          name: runner.name,
+          displayName: runner.displayName,
+          isInstalled: runner.isInstalled,
         )).toList();
       });
     } catch (e) {

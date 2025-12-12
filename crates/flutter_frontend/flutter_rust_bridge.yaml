@@ -2,7 +2,7 @@
 # See: https://cjycode.com/flutter_rust_bridge/
 
 rust_input: crate::ffi
-dart_output: lib/src/rust
+dart_output: lib
 rust_root: ../backend/
 dart_root: .
 
