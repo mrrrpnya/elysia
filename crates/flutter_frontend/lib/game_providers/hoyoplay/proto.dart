@@ -4,8 +4,13 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../../frb_generated.dart';
-import '../../lib.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+
+// Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Game>>
+abstract class Game implements RustOpaqueInterface {}
+
+// Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<SocialMedia>>
+abstract class SocialMedia implements RustOpaqueInterface {}
 
 class Banner {
   final String id;
@@ -66,104 +71,6 @@ class Content {
           socialMediaList == other.socialMediaList;
 }
 
-class Display {
-  final String language;
-  final String name;
-  final Image icon;
-  final String title;
-  final String subtitle;
-  final ImageLink background;
-  final ImageLink logo;
-  final ImageLink thumbnail;
-  final Value? koreaRating;
-  final Image shortcut;
-  final Image? wpfIcon;
-
-  const Display({
-    required this.language,
-    required this.name,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.background,
-    required this.logo,
-    required this.thumbnail,
-    this.koreaRating,
-    required this.shortcut,
-    this.wpfIcon,
-  });
-
-  @override
-  int get hashCode =>
-      language.hashCode ^
-      name.hashCode ^
-      icon.hashCode ^
-      title.hashCode ^
-      subtitle.hashCode ^
-      background.hashCode ^
-      logo.hashCode ^
-      thumbnail.hashCode ^
-      koreaRating.hashCode ^
-      shortcut.hashCode ^
-      wpfIcon.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Display &&
-          runtimeType == other.runtimeType &&
-          language == other.language &&
-          name == other.name &&
-          icon == other.icon &&
-          title == other.title &&
-          subtitle == other.subtitle &&
-          background == other.background &&
-          logo == other.logo &&
-          thumbnail == other.thumbnail &&
-          koreaRating == other.koreaRating &&
-          shortcut == other.shortcut &&
-          wpfIcon == other.wpfIcon;
-}
-
-class Game {
-  final String id;
-  final String biz;
-  final Display display;
-  final Value? reservation;
-  final String displayStatus;
-  final List<GameServerConfig> gameServerConfigs;
-
-  const Game({
-    required this.id,
-    required this.biz,
-    required this.display,
-    this.reservation,
-    required this.displayStatus,
-    required this.gameServerConfigs,
-  });
-
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      biz.hashCode ^
-      display.hashCode ^
-      reservation.hashCode ^
-      displayStatus.hashCode ^
-      gameServerConfigs.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Game &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          biz == other.biz &&
-          display == other.display &&
-          reservation == other.reservation &&
-          displayStatus == other.displayStatus &&
-          gameServerConfigs == other.gameServerConfigs;
-}
-
 class GameInfo {
   final String id;
   final String biz;
@@ -183,92 +90,6 @@ class GameInfo {
           runtimeType == other.runtimeType &&
           id == other.id &&
           biz == other.biz;
-}
-
-class GameServerConfig {
-  final String i18NName;
-  final String i18NDescription;
-  final String packageName;
-  final String autoScanRegistryKey;
-  final String packageDetectionInfo;
-  final String gameId;
-  final Value? reservation;
-  final String displayStatus;
-
-  const GameServerConfig({
-    required this.i18NName,
-    required this.i18NDescription,
-    required this.packageName,
-    required this.autoScanRegistryKey,
-    required this.packageDetectionInfo,
-    required this.gameId,
-    this.reservation,
-    required this.displayStatus,
-  });
-
-  @override
-  int get hashCode =>
-      i18NName.hashCode ^
-      i18NDescription.hashCode ^
-      packageName.hashCode ^
-      autoScanRegistryKey.hashCode ^
-      packageDetectionInfo.hashCode ^
-      gameId.hashCode ^
-      reservation.hashCode ^
-      displayStatus.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GameServerConfig &&
-          runtimeType == other.runtimeType &&
-          i18NName == other.i18NName &&
-          i18NDescription == other.i18NDescription &&
-          packageName == other.packageName &&
-          autoScanRegistryKey == other.autoScanRegistryKey &&
-          packageDetectionInfo == other.packageDetectionInfo &&
-          gameId == other.gameId &&
-          reservation == other.reservation &&
-          displayStatus == other.displayStatus;
-}
-
-class Image {
-  final String url;
-  final String hoverUrl;
-  final String link;
-  final bool loginStateInLink;
-  final String md5;
-  final BigInt size;
-
-  const Image({
-    required this.url,
-    required this.hoverUrl,
-    required this.link,
-    required this.loginStateInLink,
-    required this.md5,
-    required this.size,
-  });
-
-  @override
-  int get hashCode =>
-      url.hashCode ^
-      hoverUrl.hashCode ^
-      link.hashCode ^
-      loginStateInLink.hashCode ^
-      md5.hashCode ^
-      size.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Image &&
-          runtimeType == other.runtimeType &&
-          url == other.url &&
-          hoverUrl == other.hoverUrl &&
-          link == other.link &&
-          loginStateInLink == other.loginStateInLink &&
-          md5 == other.md5 &&
-          size == other.size;
 }
 
 class ImageLink {
@@ -336,47 +157,4 @@ class Post {
           date == other.date &&
           loginStateInLink == other.loginStateInLink &&
           i18NIdentifier == other.i18NIdentifier;
-}
-
-class SocialMedia {
-  final String id;
-  final Image icon;
-  final ImageLink qrImage;
-  final String qrDesc;
-  final List<Value> links;
-  final bool enableRedDot;
-  final String redDotContent;
-
-  const SocialMedia({
-    required this.id,
-    required this.icon,
-    required this.qrImage,
-    required this.qrDesc,
-    required this.links,
-    required this.enableRedDot,
-    required this.redDotContent,
-  });
-
-  @override
-  int get hashCode =>
-      id.hashCode ^
-      icon.hashCode ^
-      qrImage.hashCode ^
-      qrDesc.hashCode ^
-      links.hashCode ^
-      enableRedDot.hashCode ^
-      redDotContent.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SocialMedia &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          icon == other.icon &&
-          qrImage == other.qrImage &&
-          qrDesc == other.qrDesc &&
-          links == other.links &&
-          enableRedDot == other.enableRedDot &&
-          redDotContent == other.redDotContent;
 }

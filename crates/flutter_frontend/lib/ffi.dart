@@ -6,7 +6,6 @@
 import 'components/runners.dart';
 import 'frb_generated.dart';
 import 'game_providers/hoyoplay/proto.dart';
-import 'lib.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'video_decoder.dart';
 

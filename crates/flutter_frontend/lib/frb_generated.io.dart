@@ -10,7 +10,6 @@ import 'dart:ffi' as ffi;
 import 'ffi.dart';
 import 'frb_generated.dart';
 import 'game_providers/hoyoplay/proto.dart';
-import 'lib.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 import 'video_decoder.dart';
 
@@ -22,20 +21,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ValuePtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr;
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_GamePtr => wire
+      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr;
+
+  CrossPlatformFinalizerArg
+      get rust_arc_decrement_strong_count_SocialMediaPtr => wire
+          ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr;
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
 
   @protected
-  Value
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  Game
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
           dynamic raw);
 
   @protected
-  Value
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  SocialMedia
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          dynamic raw);
+
+  @protected
+  Game
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          dynamic raw);
+
+  @protected
+  SocialMedia
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
           dynamic raw);
 
   @protected
@@ -57,24 +70,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
-  Value
-      dco_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          dynamic raw);
-
-  @protected
   Content dco_decode_box_autoadd_content(dynamic raw);
 
   @protected
   DownloadProgress dco_decode_box_autoadd_download_progress(dynamic raw);
 
   @protected
-  Image dco_decode_box_autoadd_image(dynamic raw);
-
-  @protected
   Content dco_decode_content(dynamic raw);
-
-  @protected
-  Display dco_decode_display(dynamic raw);
 
   @protected
   DownloadProgress dco_decode_download_progress(dynamic raw);
@@ -83,13 +85,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double dco_decode_f_32(dynamic raw);
 
   @protected
-  Game dco_decode_game(dynamic raw);
-
-  @protected
   GameInfo dco_decode_game_info(dynamic raw);
-
-  @protected
-  GameServerConfig dco_decode_game_server_config(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -98,14 +94,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
-  Image dco_decode_image(dynamic raw);
-
-  @protected
   ImageLink dco_decode_image_link(dynamic raw);
 
   @protected
-  List<Value>
-      dco_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  List<Game>
+      dco_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          dynamic raw);
+
+  @protected
+  List<SocialMedia>
+      dco_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
           dynamic raw);
 
   @protected
@@ -118,33 +116,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Banner> dco_decode_list_banner(dynamic raw);
 
   @protected
-  List<Game> dco_decode_list_game(dynamic raw);
-
-  @protected
-  List<GameServerConfig> dco_decode_list_game_server_config(dynamic raw);
-
-  @protected
   List<Post> dco_decode_list_post(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
-  List<SocialMedia> dco_decode_list_social_media(dynamic raw);
-
-  @protected
-  Value?
-      dco_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          dynamic raw);
-
-  @protected
   Content? dco_decode_opt_box_autoadd_content(dynamic raw);
 
   @protected
   DownloadProgress? dco_decode_opt_box_autoadd_download_progress(dynamic raw);
-
-  @protected
-  Image? dco_decode_opt_box_autoadd_image(dynamic raw);
 
   @protected
   Post dco_decode_post(dynamic raw);
@@ -154,9 +135,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Settings dco_decode_settings(dynamic raw);
-
-  @protected
-  SocialMedia dco_decode_social_media(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -180,13 +158,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
-  Value
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  Game
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
           SseDeserializer deserializer);
 
   @protected
-  Value
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  SocialMedia
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          SseDeserializer deserializer);
+
+  @protected
+  Game
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          SseDeserializer deserializer);
+
+  @protected
+  SocialMedia
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
           SseDeserializer deserializer);
 
   @protected
@@ -210,11 +198,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  Value
-      sse_decode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          SseDeserializer deserializer);
-
-  @protected
   Content sse_decode_box_autoadd_content(SseDeserializer deserializer);
 
   @protected
@@ -222,13 +205,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SseDeserializer deserializer);
 
   @protected
-  Image sse_decode_box_autoadd_image(SseDeserializer deserializer);
-
-  @protected
   Content sse_decode_content(SseDeserializer deserializer);
-
-  @protected
-  Display sse_decode_display(SseDeserializer deserializer);
 
   @protected
   DownloadProgress sse_decode_download_progress(SseDeserializer deserializer);
@@ -237,13 +214,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   double sse_decode_f_32(SseDeserializer deserializer);
 
   @protected
-  Game sse_decode_game(SseDeserializer deserializer);
-
-  @protected
   GameInfo sse_decode_game_info(SseDeserializer deserializer);
-
-  @protected
-  GameServerConfig sse_decode_game_server_config(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -252,14 +223,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
-  Image sse_decode_image(SseDeserializer deserializer);
-
-  @protected
   ImageLink sse_decode_image_link(SseDeserializer deserializer);
 
   @protected
-  List<Value>
-      sse_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+  List<Game>
+      sse_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          SseDeserializer deserializer);
+
+  @protected
+  List<SocialMedia>
+      sse_decode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
           SseDeserializer deserializer);
 
   @protected
@@ -274,25 +247,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Banner> sse_decode_list_banner(SseDeserializer deserializer);
 
   @protected
-  List<Game> sse_decode_list_game(SseDeserializer deserializer);
-
-  @protected
-  List<GameServerConfig> sse_decode_list_game_server_config(
-      SseDeserializer deserializer);
-
-  @protected
   List<Post> sse_decode_list_post(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
-
-  @protected
-  List<SocialMedia> sse_decode_list_social_media(SseDeserializer deserializer);
-
-  @protected
-  Value?
-      sse_decode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          SseDeserializer deserializer);
 
   @protected
   Content? sse_decode_opt_box_autoadd_content(SseDeserializer deserializer);
@@ -302,9 +260,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SseDeserializer deserializer);
 
   @protected
-  Image? sse_decode_opt_box_autoadd_image(SseDeserializer deserializer);
-
-  @protected
   Post sse_decode_post(SseDeserializer deserializer);
 
   @protected
@@ -312,9 +267,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Settings sse_decode_settings(SseDeserializer deserializer);
-
-  @protected
-  SocialMedia sse_decode_social_media(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -359,17 +311,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<ffi.UintPtr>
-      cst_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return wire
-        .cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-                raw));
-  }
-
-  @protected
   ffi.Pointer<wire_cst_content> cst_encode_box_autoadd_content(Content raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     final ptr = wire.cst_new_box_autoadd_content();
@@ -387,14 +328,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<wire_cst_image> cst_encode_box_autoadd_image(Image raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    final ptr = wire.cst_new_box_autoadd_image();
-    cst_api_fill_to_wire_image(raw, ptr.ref);
-    return ptr;
-  }
-
-  @protected
   int cst_encode_i_64(PlatformInt64 raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw.toInt();
@@ -402,16 +335,33 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ffi.Pointer<
-          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue>
-      cst_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          List<Value> raw) {
+          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame>
+      cst_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          List<Game> raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     final ans = wire
-        .cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+        .cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
             raw.length);
     for (var i = 0; i < raw.length; ++i) {
       ans.ref.ptr[i] =
-          cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+          cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+              raw[i]);
+    }
+    return ans;
+  }
+
+  @protected
+  ffi.Pointer<
+          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia>
+      cst_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          List<SocialMedia> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    final ans = wire
+        .cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+            raw.length);
+    for (var i = 0; i < raw.length; ++i) {
+      ans.ref.ptr[i] =
+          cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
               raw[i]);
     }
     return ans;
@@ -450,27 +400,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<wire_cst_list_game> cst_encode_list_game(List<Game> raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    final ans = wire.cst_new_list_game(raw.length);
-    for (var i = 0; i < raw.length; ++i) {
-      cst_api_fill_to_wire_game(raw[i], ans.ref.ptr[i]);
-    }
-    return ans;
-  }
-
-  @protected
-  ffi.Pointer<wire_cst_list_game_server_config>
-      cst_encode_list_game_server_config(List<GameServerConfig> raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    final ans = wire.cst_new_list_game_server_config(raw.length);
-    for (var i = 0; i < raw.length; ++i) {
-      cst_api_fill_to_wire_game_server_config(raw[i], ans.ref.ptr[i]);
-    }
-    return ans;
-  }
-
-  @protected
   ffi.Pointer<wire_cst_list_post> cst_encode_list_post(List<Post> raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     final ans = wire.cst_new_list_post(raw.length);
@@ -490,28 +419,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  ffi.Pointer<wire_cst_list_social_media> cst_encode_list_social_media(
-      List<SocialMedia> raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    final ans = wire.cst_new_list_social_media(raw.length);
-    for (var i = 0; i < raw.length; ++i) {
-      cst_api_fill_to_wire_social_media(raw[i], ans.ref.ptr[i]);
-    }
-    return ans;
-  }
-
-  @protected
-  ffi.Pointer<ffi.UintPtr>
-      cst_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value? raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw == null
-        ? ffi.nullptr
-        : cst_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            raw);
-  }
-
-  @protected
   ffi.Pointer<wire_cst_content> cst_encode_opt_box_autoadd_content(
       Content? raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
@@ -525,12 +432,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     return raw == null
         ? ffi.nullptr
         : cst_encode_box_autoadd_download_progress(raw);
-  }
-
-  @protected
-  ffi.Pointer<wire_cst_image> cst_encode_opt_box_autoadd_image(Image? raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw == null ? ffi.nullptr : cst_encode_box_autoadd_image(raw);
   }
 
   @protected
@@ -585,36 +486,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_box_autoadd_image(
-      Image apiObj, ffi.Pointer<wire_cst_image> wireObj) {
-    cst_api_fill_to_wire_image(apiObj, wireObj.ref);
-  }
-
-  @protected
   void cst_api_fill_to_wire_content(Content apiObj, wire_cst_content wireObj) {
     cst_api_fill_to_wire_game_info(apiObj.game, wireObj.game);
     wireObj.language = cst_encode_String(apiObj.language);
     wireObj.banners = cst_encode_list_banner(apiObj.banners);
     wireObj.posts = cst_encode_list_post(apiObj.posts);
     wireObj.social_media_list =
-        cst_encode_list_social_media(apiObj.socialMediaList);
-  }
-
-  @protected
-  void cst_api_fill_to_wire_display(Display apiObj, wire_cst_display wireObj) {
-    wireObj.language = cst_encode_String(apiObj.language);
-    wireObj.name = cst_encode_String(apiObj.name);
-    cst_api_fill_to_wire_image(apiObj.icon, wireObj.icon);
-    wireObj.title = cst_encode_String(apiObj.title);
-    wireObj.subtitle = cst_encode_String(apiObj.subtitle);
-    cst_api_fill_to_wire_image_link(apiObj.background, wireObj.background);
-    cst_api_fill_to_wire_image_link(apiObj.logo, wireObj.logo);
-    cst_api_fill_to_wire_image_link(apiObj.thumbnail, wireObj.thumbnail);
-    wireObj.korea_rating =
-        cst_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            apiObj.koreaRating);
-    cst_api_fill_to_wire_image(apiObj.shortcut, wireObj.shortcut);
-    wireObj.wpf_icon = cst_encode_opt_box_autoadd_image(apiObj.wpfIcon);
+        cst_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+            apiObj.socialMediaList);
   }
 
   @protected
@@ -630,50 +509,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_game(Game apiObj, wire_cst_game wireObj) {
-    wireObj.id = cst_encode_String(apiObj.id);
-    wireObj.biz = cst_encode_String(apiObj.biz);
-    cst_api_fill_to_wire_display(apiObj.display, wireObj.display);
-    wireObj.reservation =
-        cst_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            apiObj.reservation);
-    wireObj.display_status = cst_encode_String(apiObj.displayStatus);
-    wireObj.game_server_configs =
-        cst_encode_list_game_server_config(apiObj.gameServerConfigs);
-  }
-
-  @protected
   void cst_api_fill_to_wire_game_info(
       GameInfo apiObj, wire_cst_game_info wireObj) {
     wireObj.id = cst_encode_String(apiObj.id);
     wireObj.biz = cst_encode_String(apiObj.biz);
-  }
-
-  @protected
-  void cst_api_fill_to_wire_game_server_config(
-      GameServerConfig apiObj, wire_cst_game_server_config wireObj) {
-    wireObj.i18n_name = cst_encode_String(apiObj.i18NName);
-    wireObj.i18n_description = cst_encode_String(apiObj.i18NDescription);
-    wireObj.package_name = cst_encode_String(apiObj.packageName);
-    wireObj.auto_scan_registry_key =
-        cst_encode_String(apiObj.autoScanRegistryKey);
-    wireObj.package_detection_info =
-        cst_encode_String(apiObj.packageDetectionInfo);
-    wireObj.game_id = cst_encode_String(apiObj.gameId);
-    wireObj.reservation =
-        cst_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            apiObj.reservation);
-    wireObj.display_status = cst_encode_String(apiObj.displayStatus);
-  }
-
-  @protected
-  void cst_api_fill_to_wire_image(Image apiObj, wire_cst_image wireObj) {
-    wireObj.url = cst_encode_String(apiObj.url);
-    wireObj.hover_url = cst_encode_String(apiObj.hoverUrl);
-    wireObj.link = cst_encode_String(apiObj.link);
-    wireObj.login_state_in_link = cst_encode_bool(apiObj.loginStateInLink);
-    wireObj.md5 = cst_encode_String(apiObj.md5);
-    wireObj.size = cst_encode_u_64(apiObj.size);
   }
 
   @protected
@@ -707,20 +546,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_social_media(
-      SocialMedia apiObj, wire_cst_social_media wireObj) {
-    wireObj.id = cst_encode_String(apiObj.id);
-    cst_api_fill_to_wire_image(apiObj.icon, wireObj.icon);
-    cst_api_fill_to_wire_image_link(apiObj.qrImage, wireObj.qr_image);
-    wireObj.qr_desc = cst_encode_String(apiObj.qrDesc);
-    wireObj.links =
-        cst_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-            apiObj.links);
-    wireObj.enable_red_dot = cst_encode_bool(apiObj.enableRedDot);
-    wireObj.red_dot_content = cst_encode_String(apiObj.redDotContent);
-  }
-
-  @protected
   void cst_api_fill_to_wire_video_frame(
       VideoFrame apiObj, wire_cst_video_frame wireObj) {
     wireObj.data = cst_encode_list_prim_u_8_strict(apiObj.data);
@@ -730,12 +555,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-      Value raw);
+  int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+      Game raw);
 
   @protected
-  int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-      Value raw);
+  int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+      SocialMedia raw);
+
+  @protected
+  int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+      Game raw);
+
+  @protected
+  int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+      SocialMedia raw);
 
   @protected
   bool cst_encode_bool(bool raw);
@@ -764,13 +597,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value self, SseSerializer serializer);
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          Game self, SseSerializer serializer);
 
   @protected
   void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value self, SseSerializer serializer);
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          SocialMedia self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          Game self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          SocialMedia self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_video_frame_Dco(
@@ -794,11 +637,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void
-      sse_encode_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value self, SseSerializer serializer);
-
-  @protected
   void sse_encode_box_autoadd_content(Content self, SseSerializer serializer);
 
   @protected
@@ -806,13 +644,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       DownloadProgress self, SseSerializer serializer);
 
   @protected
-  void sse_encode_box_autoadd_image(Image self, SseSerializer serializer);
-
-  @protected
   void sse_encode_content(Content self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_display(Display self, SseSerializer serializer);
 
   @protected
   void sse_encode_download_progress(
@@ -822,14 +654,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_f_32(double self, SseSerializer serializer);
 
   @protected
-  void sse_encode_game(Game self, SseSerializer serializer);
-
-  @protected
   void sse_encode_game_info(GameInfo self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_game_server_config(
-      GameServerConfig self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -838,15 +663,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
-  void sse_encode_image(Image self, SseSerializer serializer);
-
-  @protected
   void sse_encode_image_link(ImageLink self, SseSerializer serializer);
 
   @protected
   void
-      sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          List<Value> self, SseSerializer serializer);
+      sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
+          List<Game> self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+          List<SocialMedia> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_available_component(
@@ -860,27 +687,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_banner(List<Banner> self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_game(List<Game> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_game_server_config(
-      List<GameServerConfig> self, SseSerializer serializer);
-
-  @protected
   void sse_encode_list_post(List<Post> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_social_media(
-      List<SocialMedia> self, SseSerializer serializer);
-
-  @protected
-  void
-      sse_encode_opt_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-          Value? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_content(
@@ -891,9 +702,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       DownloadProgress? self, SseSerializer serializer);
 
   @protected
-  void sse_encode_opt_box_autoadd_image(Image? self, SseSerializer serializer);
-
-  @protected
   void sse_encode_post(Post self, SseSerializer serializer);
 
   @protected
@@ -901,9 +709,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_settings(Settings self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_social_media(SocialMedia self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);
@@ -1140,13 +945,13 @@ class RustLibWire implements BaseWire {
 
   void wire__crate__ffi__install_game(
     int port_,
-    ffi.Pointer<wire_cst_list_prim_u_8_strict> game_id,
-    ffi.Pointer<wire_cst_list_prim_u_8_strict> biz,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> _game_id,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> _biz,
   ) {
     return _wire__crate__ffi__install_game(
       port_,
-      game_id,
-      biz,
+      _game_id,
+      _biz,
     );
   }
 
@@ -1234,11 +1039,11 @@ class RustLibWire implements BaseWire {
 
   void wire__crate__ffi__launch_game(
     int port_,
-    ffi.Pointer<wire_cst_list_prim_u_8_strict> game_id,
+    ffi.Pointer<wire_cst_list_prim_u_8_strict> _game_id,
   ) {
     return _wire__crate__ffi__launch_game(
       port_,
-      game_id,
+      _game_id,
     );
   }
 
@@ -1276,54 +1081,68 @@ class RustLibWire implements BaseWire {
               ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
 
   void
-      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
       ptr,
     );
   }
 
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr =
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'frbgen_elysia_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue');
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr
+          'frbgen_elysia_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame');
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   void
-      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
     ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
       ptr,
     );
   }
 
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr =
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'frbgen_elysia_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue');
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr
+          'frbgen_elysia_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame');
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr
           .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
-  ffi.Pointer<ffi.UintPtr>
-      cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-    int value,
+  void
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+    ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
-      value,
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+      ptr,
     );
   }
 
-  late final _cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr =
-      _lookup<
-              ffi
-              .NativeFunction<ffi.Pointer<ffi.UintPtr> Function(ffi.UintPtr)>>(
-          'frbgen_elysia_cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue');
-  late final _cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue =
-      _cst_new_box_autoadd_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr
-          .asFunction<ffi.Pointer<ffi.UintPtr> Function(int)>();
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'frbgen_elysia_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia');
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'frbgen_elysia_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia');
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   ffi.Pointer<wire_cst_content> cst_new_box_autoadd_content() {
     return _cst_new_box_autoadd_content();
@@ -1348,38 +1167,52 @@ class RustLibWire implements BaseWire {
       _cst_new_box_autoadd_download_progressPtr
           .asFunction<ffi.Pointer<wire_cst_download_progress> Function()>();
 
-  ffi.Pointer<wire_cst_image> cst_new_box_autoadd_image() {
-    return _cst_new_box_autoadd_image();
-  }
-
-  late final _cst_new_box_autoadd_imagePtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<wire_cst_image> Function()>>(
-          'frbgen_elysia_cst_new_box_autoadd_image');
-  late final _cst_new_box_autoadd_image = _cst_new_box_autoadd_imagePtr
-      .asFunction<ffi.Pointer<wire_cst_image> Function()>();
-
   ffi.Pointer<
-          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue>
-      cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame>
+      cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
     int len,
   ) {
-    return _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue(
+    return _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame(
       len,
     );
   }
 
-  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr =
+  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr =
       _lookup<
               ffi.NativeFunction<
                   ffi.Pointer<
-                          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue>
+                          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame>
                       Function(ffi.Int32)>>(
-          'frbgen_elysia_cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue');
-  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue =
-      _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValuePtr
+          'frbgen_elysia_cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame');
+  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame =
+      _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGamePtr
           .asFunction<
               ffi.Pointer<
-                      wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue>
+                      wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame>
+                  Function(int)>();
+
+  ffi.Pointer<
+          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia>
+      cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+    int len,
+  ) {
+    return _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia(
+      len,
+    );
+  }
+
+  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr =
+      _lookup<
+              ffi.NativeFunction<
+                  ffi.Pointer<
+                          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia>
+                      Function(ffi.Int32)>>(
+          'frbgen_elysia_cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia');
+  late final _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia =
+      _cst_new_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMediaPtr
+          .asFunction<
+              ffi.Pointer<
+                      wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia>
                   Function(int)>();
 
   ffi.Pointer<wire_cst_list_available_component>
@@ -1429,37 +1262,6 @@ class RustLibWire implements BaseWire {
   late final _cst_new_list_banner = _cst_new_list_bannerPtr
       .asFunction<ffi.Pointer<wire_cst_list_banner> Function(int)>();
 
-  ffi.Pointer<wire_cst_list_game> cst_new_list_game(
-    int len,
-  ) {
-    return _cst_new_list_game(
-      len,
-    );
-  }
-
-  late final _cst_new_list_gamePtr = _lookup<
-          ffi
-          .NativeFunction<ffi.Pointer<wire_cst_list_game> Function(ffi.Int32)>>(
-      'frbgen_elysia_cst_new_list_game');
-  late final _cst_new_list_game = _cst_new_list_gamePtr
-      .asFunction<ffi.Pointer<wire_cst_list_game> Function(int)>();
-
-  ffi.Pointer<wire_cst_list_game_server_config> cst_new_list_game_server_config(
-    int len,
-  ) {
-    return _cst_new_list_game_server_config(
-      len,
-    );
-  }
-
-  late final _cst_new_list_game_server_configPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<wire_cst_list_game_server_config> Function(
-              ffi.Int32)>>('frbgen_elysia_cst_new_list_game_server_config');
-  late final _cst_new_list_game_server_config =
-      _cst_new_list_game_server_configPtr.asFunction<
-          ffi.Pointer<wire_cst_list_game_server_config> Function(int)>();
-
   ffi.Pointer<wire_cst_list_post> cst_new_list_post(
     int len,
   ) {
@@ -1489,21 +1291,6 @@ class RustLibWire implements BaseWire {
               ffi.Int32)>>('frbgen_elysia_cst_new_list_prim_u_8_strict');
   late final _cst_new_list_prim_u_8_strict = _cst_new_list_prim_u_8_strictPtr
       .asFunction<ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(int)>();
-
-  ffi.Pointer<wire_cst_list_social_media> cst_new_list_social_media(
-    int len,
-  ) {
-    return _cst_new_list_social_media(
-      len,
-    );
-  }
-
-  late final _cst_new_list_social_mediaPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<wire_cst_list_social_media> Function(
-              ffi.Int32)>>('frbgen_elysia_cst_new_list_social_media');
-  late final _cst_new_list_social_media = _cst_new_list_social_mediaPtr
-      .asFunction<ffi.Pointer<wire_cst_list_social_media> Function(int)>();
 
   int dummy_method_to_enforce_bundling() {
     return _dummy_method_to_enforce_bundling();
@@ -1586,51 +1373,9 @@ final class wire_cst_list_post extends ffi.Struct {
   external int len;
 }
 
-final class wire_cst_image extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> url;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> hover_url;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> link;
-
-  @ffi.Bool()
-  external bool login_state_in_link;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> md5;
-
-  @ffi.Uint64()
-  external int size;
-}
-
-final class wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue
+final class wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia
     extends ffi.Struct {
   external ffi.Pointer<ffi.UintPtr> ptr;
-
-  @ffi.Int32()
-  external int len;
-}
-
-final class wire_cst_social_media extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> id;
-
-  external wire_cst_image icon;
-
-  external wire_cst_image_link qr_image;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> qr_desc;
-
-  external ffi.Pointer<
-          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerValue>
-      links;
-
-  @ffi.Bool()
-  external bool enable_red_dot;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> red_dot_content;
-}
-
-final class wire_cst_list_social_media extends ffi.Struct {
-  external ffi.Pointer<wire_cst_social_media> ptr;
 
   @ffi.Int32()
   external int len;
@@ -1645,7 +1390,9 @@ final class wire_cst_content extends ffi.Struct {
 
   external ffi.Pointer<wire_cst_list_post> posts;
 
-  external ffi.Pointer<wire_cst_list_social_media> social_media_list;
+  external ffi.Pointer<
+          wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerSocialMedia>
+      social_media_list;
 }
 
 final class wire_cst_download_progress extends ffi.Struct {
@@ -1668,6 +1415,14 @@ final class wire_cst_download_progress extends ffi.Struct {
 
   @ffi.Bool()
   external bool is_busy;
+}
+
+final class wire_cst_list_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerGame
+    extends ffi.Struct {
+  external ffi.Pointer<ffi.UintPtr> ptr;
+
+  @ffi.Int32()
+  external int len;
 }
 
 final class wire_cst_available_component extends ffi.Struct {
@@ -1703,76 +1458,6 @@ final class wire_cst_available_runner extends ffi.Struct {
 
 final class wire_cst_list_available_runner extends ffi.Struct {
   external ffi.Pointer<wire_cst_available_runner> ptr;
-
-  @ffi.Int32()
-  external int len;
-}
-
-final class wire_cst_display extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> language;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> name;
-
-  external wire_cst_image icon;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> title;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> subtitle;
-
-  external wire_cst_image_link background;
-
-  external wire_cst_image_link logo;
-
-  external wire_cst_image_link thumbnail;
-
-  external ffi.Pointer<ffi.UintPtr> korea_rating;
-
-  external wire_cst_image shortcut;
-
-  external ffi.Pointer<wire_cst_image> wpf_icon;
-}
-
-final class wire_cst_game_server_config extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> i18n_name;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> i18n_description;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> package_name;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> auto_scan_registry_key;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> package_detection_info;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> game_id;
-
-  external ffi.Pointer<ffi.UintPtr> reservation;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> display_status;
-}
-
-final class wire_cst_list_game_server_config extends ffi.Struct {
-  external ffi.Pointer<wire_cst_game_server_config> ptr;
-
-  @ffi.Int32()
-  external int len;
-}
-
-final class wire_cst_game extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> id;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> biz;
-
-  external wire_cst_display display;
-
-  external ffi.Pointer<ffi.UintPtr> reservation;
-
-  external ffi.Pointer<wire_cst_list_prim_u_8_strict> display_status;
-
-  external ffi.Pointer<wire_cst_list_game_server_config> game_server_configs;
-}
-
-final class wire_cst_list_game extends ffi.Struct {
-  external ffi.Pointer<wire_cst_game> ptr;
 
   @ffi.Int32()
   external int len;

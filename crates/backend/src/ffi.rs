@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 // ============================================================================
 
 /// Game data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Game {
     pub id: String,
     pub biz: String,
@@ -26,7 +26,7 @@ pub struct Game {
 }
 
 /// Game content data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Content {
     pub game_id: String,
     pub game_biz: String,
@@ -36,7 +36,7 @@ pub struct Content {
 }
 
 /// Banner data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Banner {
     pub id: String,
     pub image_url: String,
@@ -44,7 +44,7 @@ pub struct Banner {
 }
 
 /// Post data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Post {
     pub id: String,
     pub post_type: String,
@@ -54,7 +54,7 @@ pub struct Post {
 }
 
 /// Download progress information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct DownloadProgress {
     pub downloaded: u64,
     pub total: u64,
@@ -66,7 +66,7 @@ pub struct DownloadProgress {
 }
 
 /// Settings paths
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Settings {
     pub wineprefixes_directory: String,
     pub components_directory: String,
@@ -75,7 +75,7 @@ pub struct Settings {
 }
 
 /// Available runner information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct AvailableRunner {
     pub name: String,
     pub display_name: String,
@@ -85,7 +85,7 @@ pub struct AvailableRunner {
 }
 
 /// Available component information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct AvailableComponent {
     pub name: String,
     pub display_name: String,
@@ -221,22 +221,22 @@ pub async fn get_all_games() -> Vec<Game> {
     // Fetch background info from getAllGameBasicInfo API
     if let Ok(basic_info) = crate::game_providers::hoyoplay::get_all_game_basic_info(&settings).await {
         for game_info in basic_info.game_info_list {
-            background_map.insert(game_info.game_id.clone(), game_info.backgrounds);
+            background_map.insert(game_info.game.id.clone(), game_info.backgrounds);
         }
     }
 
     // Fetch HoYoPlay games
     if let Ok(hoyoplay_games) = crate::game_providers::hoyoplay::get_games(&settings).await {
-        for game in hoyoplay_games.game_info_list {
-            let background_info = background_map.get(&game.game.id);
-            games.push(convert_game(&game.game, background_info));
+        for game in hoyoplay_games.games {
+            let background_info = background_map.get(&game.id);
+            games.push(convert_game(&game, background_info));
         }
     }
 
     // Fetch Endfield games
     if let Ok(endfield_games) = crate::game_providers::endfield::get_games().await {
-        for game in endfield_games.game_list {
-            games.push(convert_game(&game.game, None));
+        for game in endfield_games.games {
+            games.push(convert_game(&game, None));
         }
     }
 
@@ -312,47 +312,15 @@ pub fn get_config_path() -> String {
 }
 
 /// Install/download a game - returns "ok" or error message
-pub async fn install_game(game_id: String, biz: String) -> String {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(e) => return format!("Failed to load settings: {}", e),
-    };
-
-    let key = format!("{}_{}", biz, game_id);
-    
-    let result = if biz.starts_with("nap") {
-        crate::game_providers::endfield::install_game(
-            &settings.wineprefixes_directory,
-            &game_id,
-            &key,
-        ).await
-    } else {
-        crate::game_providers::hoyoplay::install_game(
-            &settings,
-            &game_id,
-            &key,
-        ).await
-    };
-
-    match result {
-        Ok(_) => "ok".to_string(),
-        Err(e) => format!("Installation failed: {}", e),
-    }
+pub async fn install_game(_game_id: String, _biz: String) -> String {
+    // TODO: Implement using InstallerManager::create_installer and spawn_install
+    "Not implemented - use InstallerManager".to_string()
 }
 
 /// Launch an installed game - returns "ok" or error message
-pub async fn launch_game(game_id: String) -> String {
-    let settings = match crate::settings::GlobalSettings::load() {
-        Ok(s) => s,
-        Err(e) => return format!("Failed to load settings: {}", e),
-    };
-
-    let result = crate::game_providers::hoyoplay::launch_game(&settings, &game_id).await;
-
-    match result {
-        Ok(_) => "ok".to_string(),
-        Err(e) => format!("Launch failed: {}", e),
-    }
+pub async fn launch_game(_game_id: String) -> String {
+    // TODO: Implement game launching
+    "Not implemented".to_string()
 }
 
 /// Get available runners - returns Vec<AvailableRunner>
@@ -365,7 +333,7 @@ pub fn get_available_runners() -> Vec<AvailableRunner> {
             s
         });
 
-    crate::runners::list_available_runners(&settings.components_directory)
+    crate::components::runners::get_available_runners()
         .into_iter()
         .map(|r| AvailableRunner {
             name: r.name,
@@ -387,8 +355,8 @@ pub fn get_available_components() -> Vec<AvailableComponent> {
             s
         });
 
-    let umu_installed = crate::components::runners::is_umu_installed(&settings.components_directory);
-    let jadeite_installed = crate::components::jadeite::is_installed(&settings.components_directory);
+    let umu_installed = settings.components_directory.join("umu").join("umu-run").exists();
+    let jadeite_installed = settings.components_directory.join("tweaks").join("jadeite").exists();
 
     vec![
         AvailableComponent {
@@ -448,12 +416,7 @@ pub async fn install_umu_launcher() -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::runners::install_umu_launcher(
-        &settings.components_directory,
-        &settings.temp_directory,
-    ).await;
-
-    match result {
+    match crate::components::umu::setup_umu(&settings).await {
         Ok(_) => "ok".to_string(),
         Err(e) => format!("Installation failed: {}", e),
     }
@@ -466,12 +429,8 @@ pub async fn install_jadeite() -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::jadeite::install(
-        &settings.components_directory,
-        &settings.temp_directory,
-    ).await;
-
-    match result {
+    let tweaks_dir = settings.components_directory.join("tweaks");
+    match crate::components::tweaks::downloader::jade_download(tweaks_dir).await {
         Ok(_) => "ok".to_string(),
         Err(e) => format!("Installation failed: {}", e),
     }
@@ -484,9 +443,8 @@ pub async fn delete_umu_launcher() -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::runners::delete_umu_launcher(&settings.components_directory).await;
-
-    match result {
+    let umu_dir = settings.components_directory.join("umu");
+    match tokio::fs::remove_dir_all(&umu_dir).await {
         Ok(_) => "ok".to_string(),
         Err(e) => format!("Deletion failed: {}", e),
     }
@@ -499,9 +457,8 @@ pub async fn delete_jadeite() -> String {
         Err(e) => return format!("Failed to load settings: {}", e),
     };
 
-    let result = crate::components::jadeite::delete(&settings.components_directory).await;
-
-    match result {
+    let jadeite_dir = settings.components_directory.join("tweaks").join("jadeite");
+    match tokio::fs::remove_dir_all(&jadeite_dir).await {
         Ok(_) => "ok".to_string(),
         Err(e) => format!("Deletion failed: {}", e),
     }
