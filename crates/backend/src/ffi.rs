@@ -134,7 +134,7 @@ fn convert_game(
         });
 
     Game {
-        id: game_id.clone(),
+        id: game.id.clone(),
         biz: game.biz.clone(),
         name: game.display.name.clone(),
         title: game.display.title.clone(),
@@ -151,7 +151,7 @@ fn convert_game(
 
 fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) -> Content {
     Content {
-        game_id: content.game_id.clone(),
+        game_id: content.game.id.clone(),
         game_biz: content.game.biz.clone(),
         language: content.language.clone(),
         banners: content
