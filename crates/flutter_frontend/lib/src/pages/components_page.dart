@@ -546,7 +546,7 @@ class _RunnerListItem extends StatefulWidget {
   final String name;
   final String displayName;
   final String version;
-  final api.RunnerType runnerType;
+  final String runnerType;
   final bool isInstalled;
   final bool isLoading;
   final VoidCallback onInstall;

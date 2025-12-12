@@ -83,7 +83,7 @@ pub struct FfiAvailableRunner {
     pub display_name: String,
     pub version: String,
     pub is_installed: bool,
-    pub runner_type: runners::RunnerType,
+    pub runner_type: String,
     pub install_path: String,
 }
 
@@ -174,7 +174,10 @@ fn convert_content(content: &crate::game_providers::hoyoplay::proto::Content) ->
             .iter()
             .map(|p| FfiPost {
                 id: p.id.clone(),
-                post_type: p.post_type.clone(),
+                post_type: p.post_type.clone(),match r.runner_type {
+                RunnerType::Wine => "wine".to_string(),
+                RunnerType::Proton => "proton".to_string(),
+            },
                 title: p.title.clone(),
                 link: p.link.clone(),
                 date: p.date.clone(),
@@ -353,7 +356,7 @@ pub async fn install_game(game_id: String, biz: String) -> String {
 /// Launch an installed game - returns "ok" or error message
 pub async fn launch_game(game_id: String) -> String {
     use crate::runners::Runner;
-    
+
     let settings = crate::settings::GlobalSettings::load()
         .unwrap_or_else(|_| {
             let mut s = crate::settings::GlobalSettings::default();
@@ -405,7 +408,10 @@ pub fn get_available_runners() -> Vec<FfiAvailableRunner> {
             FfiAvailableRunner {
                 name: r.name,
                 display_name: r.display_name,
-                runner_type: r.runner_type,
+                runner_type: match r.runner_type {
+                    runners::RunnerType::Wine => "wine".to_string(),
+                    runners::RunnerType::Proton => "proton".to_string(),
+                },
                 version: r.version,
                 is_installed,
                 install_path: install_path.to_string_lossy().to_string(),
