@@ -2,14 +2,13 @@
 // This module exposes the backend APIs to Flutter via flutter_rust_bridge
 // Modern approach: Return structs directly, let FRB handle serialization
 
-use serde::{Deserialize, Serialize};
-
 // ============================================================================
 // FFI data structures - FRB will auto-generate Dart classes for these
+// Note: Using unique names to avoid conflicts with internal structs
 // ============================================================================
 
 /// Game data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Game {
     pub id: String,
     pub biz: String,
@@ -26,7 +25,7 @@ pub struct Game {
 }
 
 /// Game content data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Content {
     pub game_id: String,
     pub game_biz: String,
@@ -36,7 +35,7 @@ pub struct Content {
 }
 
 /// Banner data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Banner {
     pub id: String,
     pub image_url: String,
@@ -44,7 +43,7 @@ pub struct Banner {
 }
 
 /// Post data for FFI
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Post {
     pub id: String,
     pub post_type: String,
@@ -54,7 +53,7 @@ pub struct Post {
 }
 
 /// Download progress information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct DownloadProgress {
     pub downloaded: u64,
     pub total: u64,
@@ -66,7 +65,7 @@ pub struct DownloadProgress {
 }
 
 /// Settings paths
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Settings {
     pub wineprefixes_directory: String,
     pub components_directory: String,
@@ -75,7 +74,7 @@ pub struct Settings {
 }
 
 /// Available runner information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct AvailableRunner {
     pub name: String,
     pub display_name: String,
@@ -85,7 +84,7 @@ pub struct AvailableRunner {
 }
 
 /// Available component information
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct AvailableComponent {
     pub name: String,
     pub display_name: String,
@@ -93,7 +92,6 @@ pub struct AvailableComponent {
 }
 
 /// Video frame data for streaming
-/// Note: Derives are minimal to let flutter_rust_bridge auto-generate traits
 #[derive(Clone, Debug)]
 pub struct VideoFrame {
     pub data: Vec<u8>,
