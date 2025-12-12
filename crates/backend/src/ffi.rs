@@ -93,7 +93,8 @@ pub struct AvailableComponent {
 }
 
 /// Video frame data for streaming
-#[derive(Clone, Debug, Serialize, Deserialize)]
+/// Note: Derives are minimal to let flutter_rust_bridge auto-generate traits
+#[derive(Clone, Debug)]
 pub struct VideoFrame {
     pub data: Vec<u8>,
     pub width: u32,
@@ -411,7 +412,7 @@ pub async fn delete_runner(runner_name: String) -> String {
     };
 
     // Find installed runners
-    let installed_runners = crate::components::runners::get_installed_runners(&settings.components_directory);
+    let installed_runners = crate::components::runners::get_installed_runners();
     let runner = match installed_runners.iter().find(|r| r.name == runner_name) {
         Some(r) => r,
         None => return format!("Installed runner '{}' not found", runner_name),
