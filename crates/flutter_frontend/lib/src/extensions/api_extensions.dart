@@ -1,10 +1,10 @@
-// Extensions for auto-generated Rust API types
+// Extensions for auto-generated API types
 // Adds computed properties and helper methods
 
-import 'package:elysia/api.dart' as rust_api;
+import 'package:elysia/api.dart' as api;
 
 /// Extensions for DownloadProgress
-extension DownloadProgressExtensions on rust_api.DownloadProgress {
+extension DownloadProgressExtensions on api.DownloadProgress {
   /// Calculate download percentage
   double get percentage => total > 0 ? (downloaded / total) * 100 : 0;
   
@@ -16,7 +16,7 @@ extension DownloadProgressExtensions on rust_api.DownloadProgress {
 }
 
 /// Extensions for Game
-extension GameExtensions on rust_api.Game {
+extension GameExtensions on api.Game {
   /// Check if game has a video background
   bool get hasVideoBackground => 
       backgroundType == 'BACKGROUND_TYPE_VIDEO' && videoBackgroundUrl.isNotEmpty;

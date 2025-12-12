@@ -1,14 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import 'package:elysia/api.dart' as rust_api;
-import '../extensions/rust_api_extensions.dart';
+import 'package:elysia/api.dart' as api;
+import '../extensions/api_extensions.dart';
 
 /// Download control widget showing progress and action button
 class DownloadControl extends StatelessWidget {
   final String gameId;
   final bool isInstalled;
-  final rust_api.DownloadProgress? progress;
+  final api.DownloadProgress? progress;
   final VoidCallback? onActionPressed;
   
   const DownloadControl({
@@ -38,7 +38,7 @@ class DownloadControl extends StatelessWidget {
     );
   }
   
-  Widget _buildProgressBar(rust_api.DownloadProgress progress) {
+  Widget _buildProgressBar(api.DownloadProgress progress) {
     final percentage = progress.percentage;
     final statusText = _buildStatusText(progress);
     
@@ -107,7 +107,7 @@ class DownloadControl extends StatelessWidget {
     );
   }
   
-  String _buildStatusText(rust_api.DownloadProgress progress) {
+  String _buildStatusText(api.DownloadProgress progress) {
     if (progress.total > 0 && 
         (progress.status.startsWith('Downloading') || 
          progress.status.startsWith('Extracting'))) {

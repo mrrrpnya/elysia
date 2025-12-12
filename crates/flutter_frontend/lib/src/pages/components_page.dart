@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import '../models/runner.dart';
-import '../models/component.dart';
-import 'package:elysia/api.dart' as rust_api;
+import 'package:elysia/api.dart' as api;
 
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
@@ -15,8 +11,8 @@ class ComponentsPage extends StatefulWidget {
 }
 
 class _ComponentsPageState extends State<ComponentsPage> {
-  List<_RunnerData> _runners = [];
-  List<_ComponentData> _components = [];
+  List<api.AvailableRunner> _runners = [];
+  List<api.AvailableComponent> _components = [];
   final Map<String, bool> _isLoading = {};
 
   @override
@@ -32,16 +28,10 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadRunners() {
     try {
-      // New: Returns List<AvailableRunnerDto> directly!
-      final runners = rust_api.getAvailableRunners();
+      // Use generated classes directly - no conversion!
+      final runners = api.getAvailableRunners();
       setState(() {
-        _runners = _runners = runners.map((runner) => _RunnerData(
-          name: runner.name,
-          displayName: runner.displayName,
-          version: runner.version,
-          isInstalled: runner.isInstalled,
-          installPath: runner.installPath,
-        )).toList();
+        _runners = runners;
       });
     } catch (e) {
       debugPrint('Failed to load runners: $e');
@@ -50,14 +40,10 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadComponents() {
     try {
-      // New: Returns List<AvailableComponentDto> directly!
-      final components = rust_api.getAvailableComponents();
+      // Use generated classes directly - no conversion!
+      final components = api.getAvailableComponents();
       setState(() {
-        _components = _components = components.map((component) => _ComponentData(
-          name: runner.name,
-          displayName: runner.displayName,
-          isInstalled: runner.isInstalled,
-        )).toList();
+        _components = components;
       });
     } catch (e) {
       debugPrint('Failed to load components: $e');
@@ -70,7 +56,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await rust_api.installRunner(runnerName: runnerName);
+      final result = await api.installRunner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +99,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await rust_api.deleteRunner(runnerName: runnerName);
+      final result = await api.deleteRunner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -155,9 +141,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await rust_api.installUmuLauncher();
+        result = await api.installUmuLauncher();
       } else if (componentName == 'jadeite') {
-        result = await rust_api.installJadeite();
+        result = await api.installJadeite();
       } else {
         result = 'Unknown component';
       }
@@ -206,9 +192,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await rust_api.deleteUmuLauncher();
+        result = await api.deleteUmuLauncher();
       } else if (componentName == 'jadeite') {
-        result = await rust_api.deleteJadeite();
+        result = await api.deleteJadeite();
       } else {
         result = 'Unknown component';
       }
@@ -384,59 +370,6 @@ class _ComponentsPageState extends State<ComponentsPage> {
           child: Column(children: children),
         ),
       ],
-    );
-  }
-}
-
-// Data classes for JSON parsing
-class _RunnerData {
-  final String name;
-  final String displayName;
-  final String runnerType;
-  final String version;
-  final bool isInstalled;
-
-  _RunnerData({
-    required this.name,
-    required this.displayName,
-    required this.runnerType,
-    required this.version,
-    required this.isInstalled,
-  });
-
-  factory _RunnerData.fromJson(Map<String, dynamic> json) {
-    return _RunnerData(
-      name: json['name'] ?? '',
-      displayName: json['display_name'] ?? '',
-      runnerType: json['runner_type'] ?? '',
-      version: json['version'] ?? '',
-      isInstalled: json['is_installed'] ?? false,
-    );
-  }
-}
-
-class _ComponentData {
-  final String name;
-  final String displayName;
-  final String description;
-  final String version;
-  final bool isInstalled;
-
-  _ComponentData({
-    required this.name,
-    required this.displayName,
-    required this.description,
-    required this.version,
-    required this.isInstalled,
-  });
-
-  factory _ComponentData.fromJson(Map<String, dynamic> json) {
-    return _ComponentData(
-      name: json['name'] ?? '',
-      displayName: json['display_name'] ?? '',
-      description: json['description'] ?? '',
-      version: json['version'] ?? '',
-      isInstalled: json['is_installed'] ?? false,
     );
   }
 }

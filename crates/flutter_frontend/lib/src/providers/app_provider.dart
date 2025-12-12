@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:elysia/api.dart' as rust_api;
+import 'package:elysia/api.dart' as api;
 import 'package:elysia/frb_generated.dart';
-import '../extensions/rust_api_extensions.dart';
+import '../extensions/api_extensions.dart';
 
 /// Application state provider
 class AppProvider extends ChangeNotifier {
   static const String _lastSelectedGameKey = 'last_selected_game_id';
   
-  List<rust_api.Game> _games = [];
-  final Map<String, rust_api.Content> _gameContent = {};
-  rust_api.Game? _selectedGame;
+  List<api.Game> _games = [];
+  final Map<String, api.Content> _gameContent = {};
+  api.Game? _selectedGame;
   bool _isLoading = true;
   String? _error;
   Timer? _progressTimer;
@@ -20,13 +20,13 @@ class AppProvider extends ChangeNotifier {
   bool _backendInitialized = false;
   
   // Getters
-  List<rust_api.Game> get games => _games;
-  Map<String, rust_api.Content> get gameContent => _gameContent;
-  rust_api.Game? get selectedGame => _selectedGame;
+  List<api.Game> get games => _games;
+  Map<String, api.Content> get gameContent => _gameContent;
+  api.Game? get selectedGame => _selectedGame;
   bool get isLoading => _isLoading;
   String? get error => _error;
   
-  rust_api.Content? getContent(String gameId) => _gameContent[gameId];
+  api.Content? getContent(String gameId) => _gameContent[gameId];
   
   /// Initialize app data
   Future<void> initialize() async {
@@ -77,7 +77,7 @@ class AppProvider extends ChangeNotifier {
       debugPrint('[AppProvider] Initializing Rust backend...');
       await RustLib.init();
       
-      final result = rust_api.initBackend();
+      final result = api.initBackend();
       debugPrint('[AppProvider] Init result: $result');
       
       _backendInitialized = true;
@@ -89,12 +89,12 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get list of all games from Rust backend
-  Future<List<rust_api.Game>> _getGames() async {
+  Future<List<api.Game>> _getGames() async {
     try {
       debugPrint('[AppProvider] Fetching games...');
       
       // Returns List<Game> directly - no conversion needed!
-      final games = await rust_api.getAllGames();
+      final games = await api.getAllGames();
       
       debugPrint('[AppProvider] Fetched ${games.length} games');
       return games;
@@ -105,12 +105,12 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get game content (banners, news, etc.)
-  Future<rust_api.Content?> _getGameContent(String gameId, String biz) async {
+  Future<api.Content?> _getGameContent(String gameId, String biz) async {
     try {
       debugPrint('[AppProvider] Fetching content for game: $gameId');
       
       // Returns Content? directly - no conversion needed!
-      final content = await rust_api.getGameContent(gameId: gameId, biz: biz);
+      final content = await api.getGameContent(gameId: gameId, biz: biz);
       
       debugPrint('[AppProvider] Fetched content for game: $gameId');
       return content;
@@ -152,7 +152,7 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Select a game
-  void selectGame(rust_api.Game game) {
+  void selectGame(api.Game game) {
     _selectedGame = game;
     // Fire and forget - don't block UI for persistence
     _saveSelectedGame(game.id);
@@ -167,7 +167,7 @@ class AppProvider extends ChangeNotifier {
     if (game == null) return false;
     
     try {
-      return rust_api.isGameInstalled(gameId: gameId, biz: game.biz);
+      return api.isGameInstalled(gameId: gameId, biz: game.biz);
     } catch (e) {
       debugPrint('[AppProvider] Error checking installation: $e');
       return false;
@@ -175,12 +175,12 @@ class AppProvider extends ChangeNotifier {
   }
   
   /// Get download progress for a game
-  rust_api.DownloadProgress? getDownloadProgress(String gameId) {
+  api.DownloadProgress? getDownloadProgress(String gameId) {
     if (!_backendInitialized) return null;
     
     try {
       // Returns DownloadProgress? directly!
-      return rust_api.getDownloadProgress(gameId: gameId);
+      return api.getDownloadProgress(gameId: gameId);
     } catch (e) {
       debugPrint('[AppProvider] Error getting download progress: $e');
       return null;
@@ -198,7 +198,7 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Installing game: $gameId (biz: ${game.biz})');
       
-      final result = await rust_api.installGame(gameId: gameId, biz: game.biz);
+      final result = await api.installGame(gameId: gameId, biz: game.biz);
       if (result != 'ok') {
         debugPrint('[AppProvider] Installation error: $result');
         throw Exception(result);
@@ -220,7 +220,7 @@ class AppProvider extends ChangeNotifier {
     try {
       debugPrint('[AppProvider] Launching game: $gameId');
       
-      final result = await rust_api.launchGame(gameId: gameId);
+      final result = await api.launchGame(gameId: gameId);
       if (result != 'ok') {
         debugPrint('[AppProvider] Launch error: $result');
         throw Exception(result);

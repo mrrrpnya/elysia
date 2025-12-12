@@ -5,8 +5,8 @@ import '../providers/app_provider.dart';
 import '../theme/theme.dart';
 import '../widgets/widgets.dart';
 import '../services/cache_service.dart';
-import 'package:elysia/api.dart' as rust_api;
-import '../extensions/rust_api_extensions.dart';
+import 'package:elysia/api.dart' as api;
+import '../extensions/api_extensions.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -14,7 +14,7 @@ import 'dart:typed_data';
 
 /// Game page - displays game details with background, news, and action buttons
 class GamePage extends StatelessWidget {
-  final rust_api.Game game;
+  final api.Game game;
   
   const GamePage({
     super.key,
@@ -125,7 +125,7 @@ class GamePage extends StatelessWidget {
 
 /// Combined background widget that handles both video and image backgrounds
 class _GameBackground extends StatelessWidget {
-  final rust_api.Game game;
+  final api.Game game;
   
   const _GameBackground({required this.game});
   
@@ -165,7 +165,7 @@ class _VideoBackground extends StatefulWidget {
 
 class _VideoBackgroundState extends State<_VideoBackground> {
   StreamSubscription? _frameSubscription;
-  rust_api.VideoFrameDto? _currentFrame;
+  api.VideoFrameDto? _currentFrame;
   bool _isLoading = true;
   bool _hasError = false;
   Timer? _loopTimer;
@@ -238,7 +238,7 @@ class _VideoBackgroundState extends State<_VideoBackground> {
       debugPrint('Starting video stream: ${widget.videoUrl}');
       
       // Get video frame stream from Rust
-      final stream = rust_api.streamVideoFrames(url: widget.videoUrl);
+      final stream = api.streamVideoFrames(url: widget.videoUrl);
       
       _frameSubscription = stream.listen(
         (frame) async {
