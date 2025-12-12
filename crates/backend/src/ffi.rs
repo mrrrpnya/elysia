@@ -60,8 +60,8 @@ pub struct DownloadProgress {
     pub downloaded: i64,
     pub total: i64,
     pub mb_per_second: f32,
-    pub part_index: usize,
-    pub parts_total: usize,
+    pub part_index: i32,
+    pub parts_total: i32,
     pub status: String,
     pub is_busy: bool,
 }
@@ -292,11 +292,11 @@ pub fn get_download_progress(game_id: String) -> Option<DownloadProgress> {
     
     if let Some(progress) = crate::game_providers::endfield::get_progress(&key) {
         return Some(DownloadProgress {
-            downloaded: progress.downloaded,
-            total: progress.total,
+            downloaded: progress.downloaded as i64,
+            total: progress.total as i64,
             mb_per_second: progress.mb_s,
-            part_index: progress.part_index,
-            parts_total: progress.parts_total,
+            part_index: progress.part_index as i32,
+            parts_total: progress.parts_total as i32,
             status: progress.status.clone(),
             is_busy: progress.is_busy,
         });

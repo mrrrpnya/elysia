@@ -3,8 +3,8 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DownloadProgress {
-    pub downloaded: i64,
-    pub total: i64,
+    pub downloaded: u64,
+    pub total: u64,
     pub mb_s: f32,
     pub part_index: usize,
     pub parts_total: usize,
