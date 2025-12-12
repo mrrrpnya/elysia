@@ -14,6 +14,9 @@ crates/flutter_frontend/lib/api.dart
 crates/flutter_frontend/lib/frb_generated.dart
 crates/flutter_frontend/lib/frb_generated.io.dart
 crates/flutter_frontend/lib/components/*.dart
+crates/flutter_frontend/lib/video_decoder.dart
+crates/flutter_frontend/lib/lib.dart
+crates/flutter_frontend/lib/ffi.dart
 crates/backend/src/frb_generated.rs
 
 # IDE
