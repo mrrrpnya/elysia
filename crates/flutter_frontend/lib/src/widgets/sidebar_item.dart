@@ -6,27 +6,27 @@ class SidebarItem extends StatefulWidget {
   final Widget child;
   final bool isActive;
   final VoidCallback? onTap;
-  
+
   const SidebarItem({
     super.key,
     required this.child,
     this.isActive = false,
     this.onTap,
   });
-  
+
   @override
   State<SidebarItem> createState() => _SidebarItemState();
 }
 
 class _SidebarItemState extends State<SidebarItem> {
   bool _isHovering = false;
-  
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = widget.isActive || _isHovering
         ? ElysiaTheme.surfaceColor.withValues(alpha: 0.4)
         : ElysiaTheme.surfaceColor.withValues(alpha: 0.1);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),

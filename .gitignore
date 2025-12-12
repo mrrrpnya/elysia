@@ -9,6 +9,18 @@ crates/flutter_frontend/.pub/
 *.flutter-plugins
 *.flutter-plugins-dependencies
 
+# Flutter Rust Bridge generated files (auto-generated during build)
+crates/flutter_frontend/lib/api.dart
+crates/flutter_frontend/lib/frb_generated.dart
+crates/flutter_frontend/lib/frb_generated.io.dart
+crates/flutter_frontend/lib/components/*.dart
+crates/flutter_frontend/lib/video_decoder.dart
+crates/flutter_frontend/lib/lib.dart
+crates/flutter_frontend/lib/ffi.dart
+crates/flutter_frontend/lib/game_providers/hoyoplay/*.dart
+crates/flutter_frontend/lib/game_providers/endfield/*.dart
+crates/backend/src/frb_generated.rs
+
 # IDE
 .idea/
 *.iml

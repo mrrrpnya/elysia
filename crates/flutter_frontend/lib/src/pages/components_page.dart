@@ -1,10 +1,6 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import '../models/runner.dart';
-import '../models/component.dart';
-import '../rust/api.dart' as rust_api;
+import 'package:elysia/ffi.dart' as api;
 
 /// Components page for managing wine/proton runners
 class ComponentsPage extends StatefulWidget {
@@ -15,8 +11,8 @@ class ComponentsPage extends StatefulWidget {
 }
 
 class _ComponentsPageState extends State<ComponentsPage> {
-  List<_RunnerData> _runners = [];
-  List<_ComponentData> _components = [];
+  List<api.FfiAvailableRunner> _runners = [];
+  List<api.AvailableComponent> _components = [];
   final Map<String, bool> _isLoading = {};
 
   @override
@@ -32,10 +28,10 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadRunners() {
     try {
-      final runnersJson = rust_api.getAvailableRunnersJson();
-      final List<dynamic> runnersList = jsonDecode(runnersJson);
+      // Use generated classes directly - no conversion!
+      final runners = api.getAvailableRunners();
       setState(() {
-        _runners = runnersList.map((r) => _RunnerData.fromJson(r)).toList();
+        _runners = runners;
       });
     } catch (e) {
       debugPrint('Failed to load runners: $e');
@@ -44,10 +40,10 @@ class _ComponentsPageState extends State<ComponentsPage> {
 
   void _loadComponents() {
     try {
-      final componentsJson = rust_api.getAvailableComponentsJson();
-      final List<dynamic> componentsList = jsonDecode(componentsJson);
+      // Use generated classes directly - no conversion!
+      final components = api.getAvailableComponents();
       setState(() {
-        _components = componentsList.map((c) => _ComponentData.fromJson(c)).toList();
+        _components = components;
       });
     } catch (e) {
       debugPrint('Failed to load components: $e');
@@ -60,7 +56,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await rust_api.installRunner(runnerName: runnerName);
+      final result = await api.installRunner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -103,7 +99,7 @@ class _ComponentsPageState extends State<ComponentsPage> {
     });
 
     try {
-      final result = await rust_api.deleteRunner(runnerName: runnerName);
+      final result = await api.deleteRunner(runnerName: runnerName);
       if (result == 'ok') {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -145,9 +141,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await rust_api.installUmuLauncher();
+        result = await api.installUmuLauncher();
       } else if (componentName == 'jadeite') {
-        result = await rust_api.installJadeite();
+        result = await api.installJadeite();
       } else {
         result = 'Unknown component';
       }
@@ -196,9 +192,9 @@ class _ComponentsPageState extends State<ComponentsPage> {
     try {
       String result;
       if (componentName == 'umu-launcher') {
-        result = await rust_api.deleteUmuLauncher();
+        result = await api.deleteUmuLauncher();
       } else if (componentName == 'jadeite') {
-        result = await rust_api.deleteJadeite();
+        result = await api.deleteJadeite();
       } else {
         result = 'Unknown component';
       }
@@ -239,7 +235,8 @@ class _ComponentsPageState extends State<ComponentsPage> {
   @override
   Widget build(BuildContext context) {
     final wineRunners = _runners.where((r) => r.runnerType == 'wine').toList();
-    final protonRunners = _runners.where((r) => r.runnerType == 'proton').toList();
+    final protonRunners =
+        _runners.where((r) => r.runnerType == 'proton').toList();
 
     return SizedBox.expand(
       child: Container(
@@ -279,66 +276,72 @@ class _ComponentsPageState extends State<ComponentsPage> {
                   style: TextStyle(
                     color: ElysiaTheme.textSecondary,
                     fontSize: 14,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 32),
 
-              // Required Components Section
-              _buildSection(
-                title: 'Required Components',
-                icon: Icons.extension,
-                children: _components.map((component) => _ComponentListItem(
-                  name: component.name,
-                  displayName: component.displayName,
-                  description: component.description,
-                  version: component.version,
-                  isInstalled: component.isInstalled,
-                  isLoading: _isLoading[component.name] ?? false,
-                  onInstall: () => _installComponent(component.name),
-                  onDelete: () => _deleteComponent(component.name),
-                )).toList(),
-              ),
+                // Required Components Section
+                _buildSection(
+                  title: 'Required Components',
+                  icon: Icons.extension,
+                  children: _components
+                      .map((component) => _ComponentListItem(
+                            name: component.name,
+                            displayName: component.displayName,
+                            description: component.description,
+                            version: component.version,
+                            isInstalled: component.isInstalled,
+                            isLoading: _isLoading[component.name] ?? false,
+                            onInstall: () => _installComponent(component.name),
+                            onDelete: () => _deleteComponent(component.name),
+                          ))
+                      .toList(),
+                ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Wine Runners Section
-              _buildSection(
-                title: 'Wine Runners',
-                icon: Icons.wine_bar,
-                children: wineRunners.map((runner) => _RunnerListItem(
-                  name: runner.name,
-                  displayName: runner.displayName,
-                  version: runner.version,
-                  runnerType: runner.runnerType,
-                  isInstalled: runner.isInstalled,
-                  isLoading: _isLoading[runner.name] ?? false,
-                  onInstall: () => _installRunner(runner.name),
-                  onDelete: () => _deleteRunner(runner.name),
-                )).toList(),
-              ),
-              
-              const SizedBox(height: 24),
+                // Wine Runners Section
+                _buildSection(
+                  title: 'Wine Runners',
+                  icon: Icons.wine_bar,
+                  children: wineRunners
+                      .map((runner) => _RunnerListItem(
+                            name: runner.name,
+                            displayName: runner.displayName,
+                            version: runner.version,
+                            runnerType: runner.runnerType,
+                            isInstalled: runner.isInstalled,
+                            isLoading: _isLoading[runner.name] ?? false,
+                            onInstall: () => _installRunner(runner.name),
+                            onDelete: () => _deleteRunner(runner.name),
+                          ))
+                      .toList(),
+                ),
 
-              // Proton Runners Section
-              _buildSection(
-                title: 'Proton Runners',
-                icon: Icons.science,
-                children: protonRunners.map((runner) => _RunnerListItem(
-                  name: runner.name,
-                  displayName: runner.displayName,
-                  version: runner.version,
-                  runnerType: runner.runnerType,
-                  isInstalled: runner.isInstalled,
-                  isLoading: _isLoading[runner.name] ?? false,
-                  onInstall: () => _installRunner(runner.name),
-                  onDelete: () => _deleteRunner(runner.name),
-                )).toList(),
-              ),
-            ],
+                const SizedBox(height: 24),
+
+                // Proton Runners Section
+                _buildSection(
+                  title: 'Proton Runners',
+                  icon: Icons.science,
+                  children: protonRunners
+                      .map((runner) => _RunnerListItem(
+                            name: runner.name,
+                            displayName: runner.displayName,
+                            version: runner.version,
+                            runnerType: runner.runnerType,
+                            isInstalled: runner.isInstalled,
+                            isLoading: _isLoading[runner.name] ?? false,
+                            onInstall: () => _installRunner(runner.name),
+                            onDelete: () => _deleteRunner(runner.name),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -374,59 +377,6 @@ class _ComponentsPageState extends State<ComponentsPage> {
           child: Column(children: children),
         ),
       ],
-    );
-  }
-}
-
-// Data classes for JSON parsing
-class _RunnerData {
-  final String name;
-  final String displayName;
-  final String runnerType;
-  final String version;
-  final bool isInstalled;
-
-  _RunnerData({
-    required this.name,
-    required this.displayName,
-    required this.runnerType,
-    required this.version,
-    required this.isInstalled,
-  });
-
-  factory _RunnerData.fromJson(Map<String, dynamic> json) {
-    return _RunnerData(
-      name: json['name'] ?? '',
-      displayName: json['display_name'] ?? '',
-      runnerType: json['runner_type'] ?? '',
-      version: json['version'] ?? '',
-      isInstalled: json['is_installed'] ?? false,
-    );
-  }
-}
-
-class _ComponentData {
-  final String name;
-  final String displayName;
-  final String description;
-  final String version;
-  final bool isInstalled;
-
-  _ComponentData({
-    required this.name,
-    required this.displayName,
-    required this.description,
-    required this.version,
-    required this.isInstalled,
-  });
-
-  factory _ComponentData.fromJson(Map<String, dynamic> json) {
-    return _ComponentData(
-      name: json['name'] ?? '',
-      displayName: json['display_name'] ?? '',
-      description: json['description'] ?? '',
-      version: json['version'] ?? '',
-      isInstalled: json['is_installed'] ?? false,
     );
   }
 }
@@ -483,7 +433,9 @@ class _ComponentListItemState extends State<_ComponentListItem> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                widget.name == 'umu-launcher' ? Icons.rocket_launch : Icons.shield,
+                widget.name == 'umu-launcher'
+                    ? Icons.rocket_launch
+                    : Icons.shield,
                 color: ElysiaTheme.accentColor,
                 size: 24,
               ),

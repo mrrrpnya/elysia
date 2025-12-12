@@ -87,13 +87,7 @@ jobs:
       - name: Install flutter_rust_bridge_codegen
         run: |
           cargo install flutter_rust_bridge_codegen || true
-      
-      - name: Build Rust backend (release)
-        run: |
-          cargo build --release -p rust_bridge
-          echo "Rust backend built successfully"
-          ls -la target/release/librust_bridge.so || echo "Library not found"
-      
+
       - name: Get Flutter dependencies
         working-directory: crates/flutter_frontend
         run: flutter pub get
@@ -105,9 +99,12 @@ jobs:
           flutter_rust_bridge_codegen generate 2>&1 || {
             echo "Warning: Codegen had issues, checking if build can continue..."
           }
-          # List generated files
-          echo "Generated files in lib/src/rust/:"
-          ls -la lib/src/rust/ || echo "No files generated"
+      
+      - name: Build Rust backend (release)
+        run: |
+          cargo build --release -p backend
+          echo "Rust backend built successfully"
+          ls -la target/release/libbackend.so || echo "Library not found"
       
       - name: Analyze Flutter code
         working-directory: crates/flutter_frontend
@@ -120,8 +117,8 @@ jobs:
       - name: Prepare Rust library for Flutter build
         run: |
           mkdir -p crates/flutter_frontend/linux/libs
-          if [ -f "target/release/librust_bridge.so" ]; then
-            cp target/release/librust_bridge.so crates/flutter_frontend/linux/libs/
+          if [ -f "target/release/libbackend.so" ]; then
+            cp target/release/libbackend.so crates/flutter_frontend/linux/libs/
             echo "Rust library copied to Flutter linux/libs/"
           else
             echo "Warning: Rust library not found"
@@ -139,8 +136,8 @@ jobs:
           BUNDLE_DIR="crates/flutter_frontend/build/linux/x64/release/bundle/lib"
           mkdir -p "$BUNDLE_DIR"
           
-          if [ -f "target/release/librust_bridge.so" ]; then
-            cp target/release/librust_bridge.so "$BUNDLE_DIR/"
+          if [ -f "target/release/libbackend.so" ]; then
+            cp target/release/libbackend.so "$BUNDLE_DIR/"
             echo "Rust library bundled with app"
           fi
           

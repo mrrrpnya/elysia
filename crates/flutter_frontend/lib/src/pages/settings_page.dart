@@ -6,12 +6,12 @@ import '../theme/theme.dart';
 /// Settings page
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-  
+
   String get _baseDir {
     final homeDir = Platform.environment['HOME'] ?? '/home';
     return '$homeDir/.local/share/elysia';
   }
-  
+
   Future<void> _openDirectory(BuildContext context, String path) async {
     // Open the directory in the system file manager
     final uri = Uri.parse('file://$path');
@@ -25,7 +25,7 @@ class SettingsPage extends StatelessWidget {
       }
     }
   }
-  
+
   Future<void> _openUrl(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -38,11 +38,11 @@ class SettingsPage extends StatelessWidget {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final baseDir = _baseDir;
-    
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -74,7 +74,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Settings sections
             _SettingsSection(
               title: 'Directories',
@@ -99,9 +99,9 @@ class SettingsPage extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             _SettingsSection(
               title: 'About',
               children: [
@@ -115,7 +115,8 @@ class SettingsPage extends StatelessWidget {
                   icon: Icons.code,
                   title: 'Source Code',
                   subtitle: 'github.com/mrrrpnya/elysia',
-                  onTap: () => _openUrl(context, 'https://github.com/mrrrpnya/elysia'),
+                  onTap: () =>
+                      _openUrl(context, 'https://github.com/mrrrpnya/elysia'),
                 ),
               ],
             ),
@@ -129,12 +130,12 @@ class SettingsPage extends StatelessWidget {
 class _SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
-  
+
   const _SettingsSection({
     required this.title,
     required this.children,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -169,28 +170,28 @@ class _SettingsItem extends StatefulWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
-  
+
   const _SettingsItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     this.onTap,
   });
-  
+
   @override
   State<_SettingsItem> createState() => _SettingsItemState();
 }
 
 class _SettingsItemState extends State<_SettingsItem> {
   bool _isHovering = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovering = true),
       onExit: (_) => setState(() => _isHovering = false),
-      cursor: widget.onTap != null 
-          ? SystemMouseCursors.click 
+      cursor: widget.onTap != null
+          ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: widget.onTap,

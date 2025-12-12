@@ -1,11 +1,19 @@
 # flutter_rust_bridge configuration
 # See: https://cjycode.com/flutter_rust_bridge/
 
-rust_input: crate::api
-dart_output: lib/src/rust
-rust_root: ../rust_bridge/
+rust_input: crate::ffi
+dart_output: lib
+rust_root: ../backend/
 dart_root: .
 
 # Code generation options
 default_dart_async: true
 full_dep: true
+enable_lifetime: true
+
+# Linux-only build - skip web generation
+web: false
+
+# Fix serde_json value issue
+rust_preamble: |
+  use serde_json::Value;

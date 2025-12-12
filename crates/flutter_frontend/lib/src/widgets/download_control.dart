@@ -1,15 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/theme.dart';
-import '../models/models.dart';
+import 'package:elysia/ffi.dart' as api;
+import '../extensions/api_extensions.dart';
 
 /// Download control widget showing progress and action button
 class DownloadControl extends StatelessWidget {
   final String gameId;
   final bool isInstalled;
-  final DownloadProgress? progress;
+  final api.DownloadProgress? progress;
   final VoidCallback? onActionPressed;
-  
+
   const DownloadControl({
     super.key,
     required this.gameId,
@@ -17,7 +18,7 @@ class DownloadControl extends StatelessWidget {
     this.progress,
     this.onActionPressed,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -29,18 +30,17 @@ class DownloadControl extends StatelessWidget {
           _buildProgressBar(progress!),
           const SizedBox(height: 8),
         ],
-        
+
         // Action button (if not busy)
-        if (progress == null || !progress!.isBusy)
-          _buildActionButton(),
+        if (progress == null || !progress!.isBusy) _buildActionButton(),
       ],
     );
   }
-  
-  Widget _buildProgressBar(DownloadProgress progress) {
+
+  Widget _buildProgressBar(api.DownloadProgress progress) {
     final percentage = progress.percentage;
     final statusText = _buildStatusText(progress);
-    
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(ElysiaTheme.itemRadius),
       child: BackdropFilter(
@@ -73,9 +73,9 @@ class DownloadControl extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 6),
-              
+
               // Status text
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -105,11 +105,11 @@ class DownloadControl extends StatelessWidget {
       ),
     );
   }
-  
-  String _buildStatusText(DownloadProgress progress) {
-    if (progress.total > 0 && 
-        (progress.status.startsWith('Downloading') || 
-         progress.status.startsWith('Extracting'))) {
+
+  String _buildStatusText(api.DownloadProgress progress) {
+    if (progress.total > 0 &&
+        (progress.status.startsWith('Downloading') ||
+            progress.status.startsWith('Extracting'))) {
       if (progress.mbPerSecond > 0) {
         return '${progress.status} - ${progress.downloadedGb} GB / ${progress.totalGb} GB - ${progress.mbPerSecond.toStringAsFixed(2)} MB/s';
       } else {
@@ -118,10 +118,10 @@ class DownloadControl extends StatelessWidget {
     }
     return progress.status;
   }
-  
+
   Widget _buildActionButton() {
     final buttonText = isInstalled ? 'Start Game' : 'Download Game';
-    
+
     return _ActionButton(
       text: buttonText,
       onPressed: onActionPressed,
@@ -132,19 +132,19 @@ class DownloadControl extends StatelessWidget {
 class _ActionButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
-  
+
   const _ActionButton({
     required this.text,
     this.onPressed,
   });
-  
+
   @override
   State<_ActionButton> createState() => _ActionButtonState();
 }
 
 class _ActionButtonState extends State<_ActionButton> {
   bool _isHovering = false;
-  
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
